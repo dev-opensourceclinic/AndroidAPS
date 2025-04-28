@@ -51,7 +51,6 @@
     <string name="identification">Identification (email, FB or Discord nick etc)</string>
     <string name="request">Request</string>
     <string name="apsmode_title">APS Mode</string>
-    <string name="setupwizard_preferred_aps_mode">Preferred APS mode</string>
     <string name="error_asking_for_permissions">Error asking for permissions</string>
     <string name="alert_dialog_permission_battery_optimization_failed">This device does not appear to support battery optimization whitelisting - you may experience performance issues.</string>
 

@@ -1,6 +1,6 @@
 package app.aaps.core.interfaces.aps
 
-import app.aaps.core.data.model.OE
+import app.aaps.core.data.model.RM
 import app.aaps.core.data.ue.Action
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
@@ -45,24 +45,9 @@ interface Loop {
     var closedLoopEnabled: Constraint<Boolean>?
 
     /**
-     * Is loop suspended?
+     * Current running mode
      */
-    val isSuspended: Boolean
-
-    /**
-     * Is Low Glucose Suspended mode set?
-     */
-    val isLGS: Boolean
-
-    /**
-     * Is Superbolus running?
-     */
-    val isSuperBolus: Boolean
-
-    /**
-     * Is pump disconnected?
-     */
-    val isDisconnected: Boolean
+    val runningMode: RM.Mode
 
     /**
      * Timestamp of last loop run triggered by new BG
@@ -91,12 +76,12 @@ interface Loop {
     /**
      * Simulate pump disconnection
      */
-    fun goToZeroTemp(durationInMinutes: Int, profile: Profile, reason: OE.Reason, action: Action, source: Sources, listValues: List<ValueWithUnit> = listOf())
+    fun goToZeroTemp(durationInMinutes: Int, profile: Profile, mode: RM.Mode, action: Action, source: Sources, listValues: List<ValueWithUnit> = listOf())
 
     /**
      * Suspend loop
      */
-    fun suspendLoop(durationInMinutes: Int, action: Action, source: Sources, note: String? = null, listValues: List<ValueWithUnit>)
+    fun suspendLoop(mode: RM.Mode, durationInMinutes: Int, action: Action, source: Sources, note: String? = null, listValues: List<ValueWithUnit>)
     fun disableCarbSuggestions(durationMinutes: Int)
 
     /**
@@ -105,14 +90,4 @@ interface Loop {
      * @param reason Initiator
      */
     fun scheduleBuildAndStoreDeviceStatus(reason: String)
-
-    /**
-     * UI loop modes
-     */
-    fun entries(): Array<CharSequence>
-
-    /**
-     * loop modes
-     */
-    fun entryValues(): Array<CharSequence>
 }

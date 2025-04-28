@@ -621,7 +621,7 @@ class SmsCommunicatorPlugin @Inject constructor(
                 messageToConfirm = AuthRequest(injector, receivedSms, reply, passCode, object : SmsAction(pumpCommand = true) {
                     override fun run() {
                         val profile = profileFunction.getProfile() ?: return
-                        loop.goToZeroTemp(durationInMinutes = duration, profile = profile, reason = OE.Reason.DISCONNECT_PUMP, action = Action.DISCONNECT, source = Sources.SMS)
+                        loop.goToZeroTemp(durationInMinutes = duration, profile = profile, mode = OE.Reason.DISCONNECT_PUMP, action = Action.DISCONNECT, source = Sources.SMS)
                         rxBus.send(EventRefreshOverview("SMS_PUMP_DISCONNECT"))
                         sendSMS(Sms(receivedSms.phoneNumber, rh.gs(R.string.smscommunicator_pump_disconnected)))
                     }

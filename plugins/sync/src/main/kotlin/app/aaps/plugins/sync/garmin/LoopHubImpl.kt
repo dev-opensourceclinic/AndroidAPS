@@ -121,7 +121,7 @@ class LoopHubImpl @Inject constructor(
             loop.goToZeroTemp(
                 durationInMinutes = minutes,
                 profile = p,
-                reason = OE.Reason.DISCONNECT_PUMP,
+                mode = OE.Reason.DISCONNECT_PUMP,
                 action = Action.DISCONNECT,
                 source = Sources.Garmin,
                 listValues = listOf(ValueWithUnit.Minute(minutes))

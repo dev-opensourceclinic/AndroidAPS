@@ -28,6 +28,7 @@ enum class Action(val colorGroup: ColorGroup) {
     DISCONNECT(ColorGroup.Pump),
     RESUME(ColorGroup.Loop),
     SUSPEND(ColorGroup.Loop),
+    PUMP_RUNNING(ColorGroup.Loop),
     HW_PUMP_ALLOWED(ColorGroup.Pump),
     CLEAR_PAIRING_KEYS(ColorGroup.Pump),
     ACCEPTS_TEMP_BASAL(ColorGroup.BasalTreatment),

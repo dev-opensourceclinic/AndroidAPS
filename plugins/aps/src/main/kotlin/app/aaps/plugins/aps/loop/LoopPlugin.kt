@@ -15,11 +15,10 @@ import androidx.core.app.NotificationCompat
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
-import app.aaps.core.data.aps.ApsMode
 import app.aaps.core.data.configuration.Constants
 import app.aaps.core.data.model.BS
 import app.aaps.core.data.model.DS
-import app.aaps.core.data.model.OE
+import app.aaps.core.data.model.RM
 import app.aaps.core.data.model.TE
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.pump.defs.PumpDescription
@@ -71,7 +70,6 @@ import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.IntNonKey
-import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.nssdk.interfaces.RunningConfiguration
 import app.aaps.core.objects.constraints.ConstraintObject
@@ -81,10 +79,8 @@ import app.aaps.core.objects.extensions.convertedToPercent
 import app.aaps.core.objects.extensions.json
 import app.aaps.core.objects.extensions.plannedRemainingMinutes
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
-import app.aaps.core.validators.preferences.AdaptiveListPreference
 import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.loop.events.EventLoopSetLastRunGui
-import app.aaps.plugins.aps.loop.extensions.json
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import org.json.JSONObject
@@ -126,7 +122,7 @@ class LoopPlugin @Inject constructor(
         .pluginName(app.aaps.core.ui.R.string.loop)
         .shortName(R.string.loop_shortname)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)
-        .enableByDefault(config.APS)
+        .alwaysEnabled(config.APS)
         .description(R.string.description_loop),
     aapsLogger, rh
 ), Loop {
@@ -179,37 +175,114 @@ class LoopPlugin @Inject constructor(
         }
     }
 
-    override fun minutesToEndOfSuspend(): Int {
-        val offlineEvent = persistenceLayer.getOfflineEventActiveAt(dateUtil.now())
-        return if (offlineEvent != null) T.msecs(offlineEvent.timestamp + offlineEvent.duration - dateUtil.now()).mins().toInt()
-        else 0
+    override fun minutesToEndOfSuspend(): Int =
+        persistenceLayer.getRunningModeActiveAt(dateUtil.now()).let { runningMode ->
+            when {
+                runningMode.mode.isSuspended().not() -> 0
+                runningMode.duration > 0             -> T.msecs(runningMode.timestamp + runningMode.duration - dateUtil.now()).mins().toInt()
+                else                               -> Int.MAX_VALUE
+            }
+        }
+
+    override val runningMode: RM.Mode
+        get() {
+            runningModePreCheck()
+            return persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode
+        }
+
+    /**
+     * Check if running mode is corresponding to pump state and constraints
+     */
+    tailrec fun runningModePreCheck() {
+        val runningMode = persistenceLayer.getRunningModeActiveAt(dateUtil.now())
+        val permanentRunningMode = persistenceLayer.getPermanentRunningModeActiveAt(dateUtil.now())
+        val closedLoopEnabled = constraintChecker.isClosedLoopAllowed().value()
+        val maxIobAllowed = constraintChecker.getMaxIOBAllowed().value()
+
+        // Suspended pump found but suspended running mode not set
+        if (activePlugin.activePump.isSuspended() && runningMode.mode.isSuspended().not()) {
+            suspendLoop(
+                mode = RM.Mode.SUSPENDED_BY_PUMP,
+                durationInMinutes = Int.MAX_VALUE,
+                action = Action.SUSPEND,
+                source = Sources.Loop,
+                listValues = listOf(ValueWithUnit.SimpleString(rh.gs(app.aaps.core.ui.R.string.pumpsuspended)))
+            )
+            return
+        }
+        // Pump not suspended anymore but running mode is suspended -> end running mode
+        if (activePlugin.activePump.isSuspended().not() && runningMode.mode == RM.Mode.SUSPENDED_BY_PUMP) {
+            val rm = runningMode.copy()
+            rm.duration = dateUtil.now() - runningMode.timestamp
+            persistenceLayer.insertOrUpdateRunningMode(
+                runningMode = rm,
+                action = Action.PUMP_RUNNING,
+                source = Sources.Loop,
+                listValues = listOf(ValueWithUnit.SimpleString(rh.gs(app.aaps.core.ui.R.string.pump_running)))
+            )
+            // re-run to process other conditions
+            runningModePreCheck()
+            return
+        }
+
+        var action = Action.CLOSED_LOOP_MODE
+        var newMode = runningMode.mode
+        var text = ""
+
+        // Check for OPEN_LOOP limitation on CLOSED_LOOP mode
+        if (runningMode.mode == RM.Mode.CLOSED_LOOP && closedLoopEnabled.not()) {
+            action = Action.OPEN_LOOP_MODE
+            newMode = RM.Mode.OPEN_LOOP
+            text = rh.gs(app.aaps.core.ui.R.string.openloop)
+        }
+        // Check for LGS limitation on CLOSED_LOOP mode
+        else if (runningMode.mode == RM.Mode.CLOSED_LOOP && maxIobAllowed == HardLimits.MAX_IOB_LGS) {
+            action = Action.LGS_LOOP_MODE
+            newMode = RM.Mode.CLOSED_LOOP_LGS
+            text = rh.gs(app.aaps.core.ui.R.string.lowglucosesuspend)
+        }
+
+        // Perform change if needed
+        if (text.isNotEmpty())
+            persistenceLayer.insertOrUpdateRunningMode(
+                runningMode = RM(
+                    timestamp = dateUtil.now(),
+                    mode = newMode,
+                    duration = Long.MAX_VALUE
+                ),
+                action = action,
+                source = Sources.Loop,
+                listValues = listOf(ValueWithUnit.SimpleString(text))
+            )
+
+        if (
+            // Revert back from OPEN_LOOP temporary mode
+            permanentRunningMode.mode == RM.Mode.CLOSED_LOOP && runningMode.mode == RM.Mode.OPEN_LOOP && closedLoopEnabled ||
+            // Revert back from LGS temporary mode
+            permanentRunningMode.mode == RM.Mode.CLOSED_LOOP && runningMode.mode == RM.Mode.CLOSED_LOOP_LGS && maxIobAllowed != HardLimits.MAX_IOB_LGS
+        ) {
+            val rm = runningMode.copy()
+            rm.duration = dateUtil.now() - rm.timestamp
+            persistenceLayer.insertOrUpdateRunningMode(
+                runningMode = rm,
+                action = Action.CLOSED_LOOP_MODE,
+                source = Sources.Loop,
+                listValues = listOf(ValueWithUnit.SimpleString(rh.gs(app.aaps.core.ui.R.string.closedloop)))
+            )
+        }
+
+        // Revert back from LGS temporary mode
+        if (permanentRunningMode.mode == RM.Mode.CLOSED_LOOP && runningMode.mode == RM.Mode.CLOSED_LOOP_LGS && maxIobAllowed > 0.0) {
+            val rm = runningMode.copy()
+            rm.duration = dateUtil.now() - rm.timestamp
+            persistenceLayer.insertOrUpdateRunningMode(
+                runningMode = rm,
+                action = Action.CLOSED_LOOP_MODE,
+                source = Sources.Loop,
+                listValues = listOf(ValueWithUnit.SimpleString(rh.gs(app.aaps.core.ui.R.string.closedloop)))
+            )
+        }
     }
-
-    override val isSuspended: Boolean
-        get() = persistenceLayer.getOfflineEventActiveAt(dateUtil.now()) != null
-
-    override val isLGS: Boolean
-        get() {
-            val closedLoopEnabled = constraintChecker.isClosedLoopAllowed()
-            val maxIobAllowed = constraintChecker.getMaxIOBAllowed().value()
-            val apsMode = ApsMode.fromString(preferences.get(StringKey.LoopApsMode))
-            val pump = activePlugin.activePump
-            var isLGS = false
-            if (!isSuspended && !pump.isSuspended()) if (closedLoopEnabled.value()) if (maxIobAllowed == HardLimits.MAX_IOB_LGS || apsMode == ApsMode.LGS) isLGS = true
-            return isLGS
-        }
-
-    override val isSuperBolus: Boolean
-        get() {
-            val offlineEvent = persistenceLayer.getOfflineEventActiveAt(dateUtil.now())
-            return offlineEvent?.reason == OE.Reason.SUPER_BOLUS
-        }
-
-    override val isDisconnected: Boolean
-        get() {
-            val offlineEvent = persistenceLayer.getOfflineEventActiveAt(dateUtil.now())
-            return offlineEvent?.reason == OE.Reason.DISCONNECT_PUMP
-        }
 
     @Suppress("SameParameterValue")
     private fun treatmentTimeThreshold(durationMinutes: Int): Boolean {
@@ -236,7 +309,8 @@ class LoopPlugin @Inject constructor(
     override fun invoke(initiator: String, allowNotification: Boolean, tempBasalFallback: Boolean) {
         try {
             aapsLogger.debug(LTag.APS, "invoke from $initiator")
-            val loopEnabled = constraintChecker.isLoopInvocationAllowed()
+            runningModePreCheck()
+            val loopEnabled = constraintChecker.isLoopInvocationAllowed() xxxx DISABLED_LOOP
             if (!loopEnabled.value()) {
                 val message = """
                     ${rh.gs(app.aaps.core.ui.R.string.loop_disabled)}
@@ -315,18 +389,14 @@ class LoopPlugin @Inject constructor(
                 lastRun.lastSMBRequest = 0
                 scheduleBuildAndStoreDeviceStatus("APS result")
 
-                if (isSuspended) {
+                if (runningMode.isSuspended()) {
                     aapsLogger.debug(LTag.APS, rh.gs(app.aaps.core.ui.R.string.loopsuspended))
                     rxBus.send(EventLoopSetLastRunGui(rh.gs(app.aaps.core.ui.R.string.loopsuspended)))
                     return
                 }
-                if (pump.isSuspended()) {
-                    aapsLogger.debug(LTag.APS, rh.gs(app.aaps.core.ui.R.string.pumpsuspended))
-                    rxBus.send(EventLoopSetLastRunGui(rh.gs(app.aaps.core.ui.R.string.pumpsuspended)))
-                    return
-                }
+                // Store reasons
                 closedLoopEnabled = constraintChecker.isClosedLoopAllowed()
-                if (closedLoopEnabled?.value() == true) {
+                if (runningMode.isClosedLoopOrLgs()) {
                     if (allowNotification) {
                         if (resultAfterConstraints.isCarbsRequired && carbsSuggestionsSuspendedUntil < System.currentTimeMillis() && !treatmentTimeThreshold(-15)
                         ) {
@@ -453,6 +523,7 @@ class LoopPlugin @Inject constructor(
                         lastRun.smbSetByPump = null
                     }
                 } else {
+                    // LGS
                     if (resultAfterConstraints.isChangeRequested && allowNotification) {
                         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                         builder.setSmallIcon(app.aaps.core.ui.R.drawable.notif_icon)
@@ -690,13 +761,13 @@ class LoopPlugin @Inject constructor(
         return virtualPump.isEnabled()
     }
 
-    override fun goToZeroTemp(durationInMinutes: Int, profile: Profile, reason: OE.Reason, action: Action, source: Sources, listValues: List<ValueWithUnit>) {
+    override fun goToZeroTemp(durationInMinutes: Int, profile: Profile, mode: RM.Mode, action: Action, source: Sources, listValues: List<ValueWithUnit>) {
         val pump = activePlugin.activePump
-        disposable += persistenceLayer.insertAndCancelCurrentOfflineEvent(
-            offlineEvent = OE(
+        disposable += persistenceLayer.insertOrUpdateRunningMode(
+            runningMode = RM(
                 timestamp = dateUtil.now(),
                 duration = T.mins(durationInMinutes.toLong()).msecs(),
-                reason = reason
+                mode = mode
             ),
             action = action,
             source = source,
@@ -731,9 +802,10 @@ class LoopPlugin @Inject constructor(
         }
     }
 
-    override fun suspendLoop(durationInMinutes: Int, action: Action, source: Sources, note: String?, listValues: List<ValueWithUnit>) {
-        disposable += persistenceLayer.insertAndCancelCurrentOfflineEvent(
-            offlineEvent = OE(timestamp = dateUtil.now(), duration = T.mins(durationInMinutes.toLong()).msecs(), reason = OE.Reason.SUSPEND),
+    override fun suspendLoop(mode: RM.Mode, durationInMinutes: Int, action: Action, source: Sources, note: String?, listValues: List<ValueWithUnit>) {
+        assert(mode == RM.Mode.SUSPENDED_BY_PUMP || mode == RM.Mode.SUSPENDED_BY_USER)
+        disposable += persistenceLayer.insertOrUpdateRunningMode(
+            runningMode = RM(timestamp = dateUtil.now(), duration = T.mins(durationInMinutes.toLong()).msecs(), mode = mode),
             action = action,
             source = source,
             note = note,
@@ -827,22 +899,9 @@ class LoopPlugin @Inject constructor(
             key = "loop_settings"
             title = rh.gs(app.aaps.core.ui.R.string.loop)
             initialExpandedChildrenCount = 0
-            addPreference(AdaptiveListPreference(ctx = context, stringKey = StringKey.LoopApsMode, title = app.aaps.core.ui.R.string.aps_mode_title, entries = entries(), entryValues = entryValues()))
             addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.LoopOpenModeMinChange, dialogMessage = R.string.loop_open_mode_min_change_summary, title = R.string.loop_open_mode_min_change))
         }
     }
-
-    override fun entries() = arrayOf<CharSequence>(
-        rh.gs(app.aaps.core.ui.R.string.closedloop),
-        rh.gs(app.aaps.core.ui.R.string.openloop),
-        rh.gs(app.aaps.core.ui.R.string.lowglucosesuspend),
-    )
-
-    override fun entryValues() = arrayOf<CharSequence>(
-        ApsMode.CLOSED.name,
-        ApsMode.OPEN.name,
-        ApsMode.LGS.name,
-    )
 
     companion object {
 

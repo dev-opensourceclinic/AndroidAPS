@@ -31,7 +31,7 @@ class ActionLoopResume(injector: HasAndroidInjector) : Action(injector) {
 
     override fun doAction(callback: Callback) {
         if (loopPlugin.isSuspended) {
-            disposable += persistenceLayer.cancelCurrentOfflineEvent(dateUtil.now(), app.aaps.core.data.ue.Action.RESUME, Sources.Automation, title).subscribe()
+            disposable += persistenceLayer.cancelCurrentRunningMode(dateUtil.now(), app.aaps.core.data.ue.Action.RESUME, Sources.Automation, title).subscribe()
             rxBus.send(EventRefreshOverview("ActionLoopResume"))
             callback.result(instantiator.providePumpEnactResult().success(true).comment(app.aaps.core.ui.R.string.ok)).run()
         } else {

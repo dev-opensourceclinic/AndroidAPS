@@ -34,11 +34,17 @@ data class RM(
         DISABLED_LOOP,
         OPEN_LOOP,
         CLOSED_LOOP,
-        LGS,
+        CLOSED_LOOP_LGS,
+        // Temporary only
         SUPER_BOLUS,
         DISCONNECTED_PUMP,
-        PUMP_SUSPENDED
+        SUSPENDED_BY_PUMP,
+        SUSPENDED_BY_USER
         ;
+
+        fun isClosedLoopOrLgs() = this == CLOSED_LOOP || this == CLOSED_LOOP_LGS
+        fun isLoopRunning() = this == OPEN_LOOP || this == CLOSED_LOOP || this == CLOSED_LOOP_LGS
+        fun isSuspended() = this == DISCONNECTED_PUMP || this == SUSPENDED_BY_PUMP || this == SUSPENDED_BY_USER || this == SUPER_BOLUS
 
         companion object {
 

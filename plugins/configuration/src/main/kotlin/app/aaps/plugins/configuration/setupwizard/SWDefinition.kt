@@ -3,9 +3,9 @@ package app.aaps.plugins.configuration.setupwizard
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.interfaces.androidPermissions.AndroidPermission
 import app.aaps.core.interfaces.aps.Loop
@@ -154,7 +154,7 @@ class SWDefinition @Inject constructor(
             .add(SWButton(injector)
                      .text(R.string.askforpermission)
                      .visibility { !Settings.canDrawOverlays(activity) }
-                     .action { activity.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + activity.packageName))) })
+                     .action { activity.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, ("package:" + activity.packageName).toUri())) })
             .add(SWBreak(injector))
             .add(SWInfoText(injector).label(rh.gs(R.string.need_whitelisting, rh.gs(config.appName))))
             .add(SWButton(injector)
@@ -363,17 +363,6 @@ class SWDefinition @Inject constructor(
             .add(SWHtmlLink(injector).label("https://wiki.aaps.app"))
             .add(SWBreak(injector))
 
-    private val screenApsMode
-        get() = SWScreen(injector, R.string.apsmode_title)
-            .skippable(false)
-            .add(
-                SWRadioButton(injector)
-                    .option(loop.entries(), loop.entryValues())
-                    .preference(StringKey.LoopApsMode).label(R.string.apsmode_title)
-                    .comment(R.string.setupwizard_preferred_aps_mode)
-            )
-            .validator { preferences.getIfExists(StringKey.LoopApsMode) != null }
-
     private val screenLoop
         get() = SWScreen(injector, R.string.configbuilder_loop)
             .skippable(false)
@@ -434,7 +423,6 @@ class SWDefinition @Inject constructor(
             .add(screenProfileSwitch)
             .add(screenPump)
             .add(screenAps)
-            .add(screenApsMode)
             .add(screenLoop)
             .add(screenSensitivity)
             .add(getScreenObjectives)

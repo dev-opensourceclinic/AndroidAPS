@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Spanned
 import app.aaps.core.data.model.BCR
-import app.aaps.core.data.model.OE
+import app.aaps.core.data.model.RM
 import app.aaps.core.data.model.TE
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.pump.defs.PumpDescription
@@ -487,7 +487,7 @@ class BolusWizard @Inject constructor(
             if (insulinAfterConstraints > 0 || carbs > 0) {
                 if (useSuperBolus) {
                     if (loop.isEnabled()) {
-                        loop.goToZeroTemp(2 * 60, profile, OE.Reason.SUPER_BOLUS, Action.SUPERBOLUS_TBR, Sources.WizardDialog, listOf())
+                        loop.goToZeroTemp(2 * 60, profile, RM.Mode.SUPER_BOLUS, Action.SUPERBOLUS_TBR, Sources.WizardDialog, listOf())
                         rxBus.send(EventRefreshOverview("WizardDialog"))
                     }
 

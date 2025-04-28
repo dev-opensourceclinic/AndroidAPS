@@ -119,6 +119,7 @@
     <string name="duration_label">Duration</string>
     <string name="shortgramm">g</string>
     <string name="pumpsuspended">Pump suspended</string>
+    <string name="pump_running">Pump running</string>
     <string name="notconfigured">Not configured</string>
     <string name="loopsuspended">Loop suspended</string>
     <string name="trend_arrow">Trend arrow</string>
@@ -162,6 +163,8 @@
     <string name="closedloop">Closed Loop</string>
     <string name="openloop">Open Loop</string>
     <string name="lowglucosesuspend">Low Glucose Suspend</string>
+    <string name="pump_disconnected">Pump disconnected</string>
+    <string name="pump_suspended">Pump suspended</string>
     <string name="dia">DIA</string>
     <string name="ic_short">IC</string>
     <string name="isf_short">ISF</string>

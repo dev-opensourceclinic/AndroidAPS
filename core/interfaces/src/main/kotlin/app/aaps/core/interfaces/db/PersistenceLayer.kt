@@ -11,7 +11,6 @@ import app.aaps.core.data.model.GV
 import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.HR
 import app.aaps.core.data.model.NE
-import app.aaps.core.data.model.OE
 import app.aaps.core.data.model.PS
 import app.aaps.core.data.model.RM
 import app.aaps.core.data.model.SC
@@ -701,6 +700,16 @@ interface PersistenceLayer {
     fun getLastRunningModeId(): Long?
 
     /**
+     * Cancel temporary running mode if there is some running at provided timestamp
+     *
+     * @param timestamp time
+     * @param action Action for UserEntry logging
+     * @param source Source for UserEntry logging
+     * @param listValues Values for UserEntry logging
+     */
+    fun cancelCurrentRunningMode(timestamp: Long, action: Action, source: Sources, note: String? = null, listValues: List<ValueWithUnit> = listOf()): Single<TransactionResult<RM>>
+
+    /**
      * Insert or update new record in database
      *
      * @param runningMode record
@@ -1151,87 +1160,6 @@ interface PersistenceLayer {
      * @return List of modified records
      */
     fun updateTherapyEventsNsIds(therapyEvents: List<TE>): Single<TransactionResult<TE>>
-
-    // OE
-    fun getOfflineEventActiveAt(timestamp: Long): OE?
-
-    /**
-     *  Get offline event by NS id
-     *  @return offline event
-     */
-    fun getOfflineEventByNSId(nsId: String): OE?
-
-    /**
-     * Get offline events in time interval
-     *
-     * @param startTime from
-     * @param endTime to
-     * @param ascending sort order
-     * @return List of offline events
-     */
-    fun getOfflineEventsFromTimeToTime(startTime: Long, endTime: Long, ascending: Boolean): List<OE>
-
-    /**
-     *  Get highest id in database
-     *  @return id
-     */
-    fun getLastOfflineEventId(): Long?
-
-    /**
-     * Get next changed record after id
-     *
-     * @param id record id
-     * @return database record
-     */
-    fun getNextSyncElementOfflineEvent(id: Long): Maybe<Pair<OE, OE>>
-
-    /**
-     * Insert offline event and cancel running if there is some at time of new record
-     *
-     * @param offlineEvent new offline event
-     * @param action Action for UserEntry logging
-     * @param source Source for UserEntry logging
-     * @param listValues Values for UserEntry logging
-     */
-    fun insertAndCancelCurrentOfflineEvent(offlineEvent: OE, action: Action, source: Sources, note: String? = null, listValues: List<ValueWithUnit> = listOf()): Single<TransactionResult<OE>>
-
-    /**
-     * Invalidate record with id
-     *
-     * @param id record id
-     * @param action Action for UserEntry logging
-     * @param source Source for UserEntry logging
-     * @param note Note for UserEntry logging
-     * @param listValues Values for UserEntry logging
-     * @return List of changed records
-     */
-    fun invalidateOfflineEvent(id: Long, action: Action, source: Sources, note: String? = null, listValues: List<ValueWithUnit>): Single<TransactionResult<OE>>
-
-    /**
-     * Cancel offline event if there is some running at provided timestamp
-     *
-     * @param timestamp time
-     * @param action Action for UserEntry logging
-     * @param source Source for UserEntry logging
-     * @param listValues Values for UserEntry logging
-     */
-    fun cancelCurrentOfflineEvent(timestamp: Long, action: Action, source: Sources, note: String? = null, listValues: List<ValueWithUnit> = listOf()): Single<TransactionResult<OE>>
-
-    /**
-     * Store records coming from NS to database
-     *
-     * @param offlineEvents list of records
-     * @return List of inserted/updated/invalidated records
-     */
-    fun syncNsOfflineEvents(offlineEvents: List<OE>): Single<TransactionResult<OE>>
-
-    /**
-     * Update NS id' in database
-     *
-     * @param offlineEvents records containing NS id'
-     * @return List of modified records
-     */
-    fun updateOfflineEventsNsIds(offlineEvents: List<OE>): Single<TransactionResult<OE>>
 
     // DS
     /**

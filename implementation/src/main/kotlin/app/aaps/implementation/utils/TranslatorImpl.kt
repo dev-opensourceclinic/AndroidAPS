@@ -1,6 +1,6 @@
 package app.aaps.implementation.utils
 
-import app.aaps.core.data.model.OE
+import app.aaps.core.data.model.RM
 import app.aaps.core.data.model.TE
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.ue.Action
@@ -190,11 +190,14 @@ class TranslatorImpl @Inject internal constructor(
         else                   -> rh.gs(app.aaps.core.ui.R.string.unknown)
     }
 
-    override fun translate(reason: OE.Reason?): String = when (reason) {
-        OE.Reason.SUSPEND         -> rh.gs(app.aaps.core.ui.R.string.uel_suspend)
-        OE.Reason.DISABLE_LOOP    -> rh.gs(app.aaps.core.ui.R.string.disableloop)
-        OE.Reason.DISCONNECT_PUMP -> rh.gs(app.aaps.core.ui.R.string.uel_disconnect)
-        OE.Reason.OTHER           -> rh.gs(app.aaps.core.ui.R.string.uel_other)
+    override fun translate(reason: RM.Mode?): String = when (reason) {
+        RM.Mode.DISABLED_LOOP     -> rh.gs(app.aaps.core.ui.R.string.disableloop)
+        RM.Mode.OPEN_LOOP         -> rh.gs(app.aaps.core.ui.R.string.openloop)
+        RM.Mode.CLOSED_LOOP     -> rh.gs(app.aaps.core.ui.R.string.closedloop)
+        RM.Mode.CLOSED_LOOP_LGS -> rh.gs(app.aaps.core.ui.R.string.lowglucosesuspend)
+        RM.Mode.SUPER_BOLUS     -> rh.gs(app.aaps.core.ui.R.string.superbolus)
+        RM.Mode.DISCONNECTED_PUMP -> rh.gs(app.aaps.core.ui.R.string.pump_disconnected)
+        RM.Mode.SUSPENDED_BY_PUMP -> rh.gs(app.aaps.core.ui.R.string.pump_suspended)
 
         else                      -> rh.gs(app.aaps.core.ui.R.string.unknown)
     }

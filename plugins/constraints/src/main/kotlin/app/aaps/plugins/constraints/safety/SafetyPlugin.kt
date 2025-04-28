@@ -171,16 +171,6 @@ class SafetyPlugin @Inject constructor(
         return carbs
     }
 
-    override fun applyMaxIOBConstraints(maxIob: Constraint<Double>): Constraint<Double> {
-        val apsMode = ApsMode.fromString(preferences.get(StringKey.LoopApsMode))
-        if (apsMode == ApsMode.LGS) maxIob.setIfSmaller(
-            HardLimits.MAX_IOB_LGS,
-            rh.gs(app.aaps.core.ui.R.string.limiting_iob, HardLimits.MAX_IOB_LGS, rh.gs(app.aaps.core.ui.R.string.lowglucosesuspend)),
-            this
-        )
-        return maxIob
-    }
-
     override fun configuration(): JSONObject =
         JSONObject()
             .put(StringKey.SafetyAge, preferences)
