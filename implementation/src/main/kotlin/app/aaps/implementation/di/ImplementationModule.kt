@@ -12,7 +12,6 @@ import app.aaps.core.interfaces.notifications.NotificationHolder
 import app.aaps.core.interfaces.overview.LastBgData
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.ProfileFunction
-import app.aaps.core.interfaces.profile.ProfileSourceWithConcentration
 import app.aaps.core.interfaces.profile.ProfileStore
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.profiling.Profiler
@@ -53,7 +52,6 @@ import app.aaps.implementation.logging.UserEntryLoggerImpl
 import app.aaps.implementation.overview.LastBgDataImpl
 import app.aaps.implementation.plugin.PluginStore
 import app.aaps.implementation.profile.ProfileFunctionImpl
-import app.aaps.implementation.profile.ProfileSourceWithConcentrationImpl
 import app.aaps.implementation.profile.ProfileStoreObject
 import app.aaps.implementation.profile.ProfileUtilImpl
 import app.aaps.implementation.profiling.ProfilerImpl
@@ -123,7 +121,6 @@ class ImplementationModule {
         @Binds fun bindBlePreCheck(blePreCheckImpl: BlePreCheckImpl): BlePreCheck
         @Binds fun bindLocaleDependentSetting(localeDependentSettingImpl: LocaleDependentSettingImpl): LocaleDependentSetting
         @Binds fun bindPumpWithConcentration(pumpWithConcentrationImpl: PumpWithConcentrationImpl): PumpWithConcentration
-        @Binds fun bindProfileSourceWithConcentration(profileSourceWithConcentrationImpl: ProfileSourceWithConcentrationImpl): ProfileSourceWithConcentration
 
         @Binds fun bindTrendCalculatorInterface(trendCalculator: TrendCalculatorImpl): TrendCalculator
         @Binds fun bindTddCalculatorInterface(tddCalculator: TddCalculatorImpl): TddCalculator

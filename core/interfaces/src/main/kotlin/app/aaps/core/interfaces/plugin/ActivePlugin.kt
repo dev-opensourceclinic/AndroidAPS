@@ -8,7 +8,7 @@ import app.aaps.core.interfaces.constraints.Safety
 import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.iob.IobCobCalculator
 import app.aaps.core.interfaces.overview.Overview
-import app.aaps.core.interfaces.profile.ProfileSourceWithConcentration
+import app.aaps.core.interfaces.profile.ProfileSource
 import app.aaps.core.interfaces.pump.PumpWithConcentration
 import app.aaps.core.interfaces.smoothing.Smoothing
 import app.aaps.core.interfaces.source.BgSource
@@ -24,10 +24,9 @@ interface ActivePlugin {
     val activeBgSource: BgSource
 
     /**
-     *  ProfileSourceWithConcentration should pass data to real ProfileSource plugin if U100 is used
-     *  or do proper recalculation if other concentration is used (U20, U50, U200 etc)
+     *  Currently selected Profile plugin
      */
-    val activeProfileSource: ProfileSourceWithConcentration
+    val activeProfileSource: ProfileSource
 
     /**
      *  Currently selected Insulin plugin

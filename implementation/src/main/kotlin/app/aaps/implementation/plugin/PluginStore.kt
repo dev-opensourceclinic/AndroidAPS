@@ -15,21 +15,19 @@ import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
 import app.aaps.core.interfaces.profile.ProfileSource
-import app.aaps.core.interfaces.profile.ProfileSourceWithConcentration
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpWithConcentration
 import app.aaps.core.interfaces.smoothing.Smoothing
 import app.aaps.core.interfaces.source.BgSource
 import app.aaps.core.interfaces.sync.NsClient
 import app.aaps.core.interfaces.sync.Sync
+import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Singleton
-import dagger.Lazy
 
 @Singleton
 class PluginStore @Inject constructor(
     private val aapsLogger: AAPSLogger,
-    private val profileSourceWithConcentration: Lazy<ProfileSourceWithConcentration>,
     private val pumpWithConcentration: Lazy<PumpWithConcentration>
 ) : ActivePlugin {
 
@@ -186,13 +184,7 @@ class PluginStore @Inject constructor(
     override val activeBgSource: BgSource
         get() = activeBgSourceStore ?: checkNotNull(activeBgSourceStore) { "No bg source selected" }
 
-    override val activeProfileSource: ProfileSourceWithConcentration
-        get() = profileSourceWithConcentration.get()
-    /**
-     * Points to real ProfileStore plugin selected in ConfigBuilder
-     * For use only from [app.aaps.implementation.profile.ProfileSourceWithConcentrationImpl]
-     */
-    internal val activeProfileSourceInternal: ProfileSource
+    override val activeProfileSource: ProfileSource
         get() = activeProfile ?: checkNotNull(activeProfile) { "No profile selected" }
 
     override val activeInsulin: Insulin
