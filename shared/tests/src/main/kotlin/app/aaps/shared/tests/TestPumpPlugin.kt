@@ -6,15 +6,15 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
-import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpSync
+import app.aaps.core.interfaces.pump.PumpWithConcentration
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.implementation.pump.PumpEnactResultObject
 import org.json.JSONObject
 
 @Suppress("MemberVisibilityCanBePrivate")
-class TestPumpPlugin(val rh: ResourceHelper) : Pump {
+class TestPumpPlugin(val rh: ResourceHelper) : PumpWithConcentration {
 
     var connected = false
     var isProfileSet = true

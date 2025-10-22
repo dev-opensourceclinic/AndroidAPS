@@ -12,6 +12,7 @@ import app.aaps.core.interfaces.notifications.NotificationHolder
 import app.aaps.core.interfaces.overview.LastBgData
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileSourceWithConcentration
 import app.aaps.core.interfaces.profile.ProfileStore
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.profiling.Profiler
@@ -23,6 +24,7 @@ import app.aaps.core.interfaces.pump.BlePreCheck
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpSync
+import app.aaps.core.interfaces.pump.PumpWithConcentration
 import app.aaps.core.interfaces.pump.TemporaryBasalStorage
 import app.aaps.core.interfaces.pump.WarnColors
 import app.aaps.core.interfaces.receivers.ReceiverStatusStore
@@ -51,6 +53,7 @@ import app.aaps.implementation.logging.UserEntryLoggerImpl
 import app.aaps.implementation.overview.LastBgDataImpl
 import app.aaps.implementation.plugin.PluginStore
 import app.aaps.implementation.profile.ProfileFunctionImpl
+import app.aaps.implementation.profile.ProfileSourceWithConcentrationImpl
 import app.aaps.implementation.profile.ProfileStoreObject
 import app.aaps.implementation.profile.ProfileUtilImpl
 import app.aaps.implementation.profiling.ProfilerImpl
@@ -62,6 +65,7 @@ import app.aaps.implementation.pump.BlePreCheckImpl
 import app.aaps.implementation.pump.DetailedBolusInfoStorageImpl
 import app.aaps.implementation.pump.PumpEnactResultObject
 import app.aaps.implementation.pump.PumpSyncImplementation
+import app.aaps.implementation.pump.PumpWithConcentrationImpl
 import app.aaps.implementation.pump.TemporaryBasalStorageImpl
 import app.aaps.implementation.pump.WarnColorsImpl
 import app.aaps.implementation.receivers.NetworkChangeReceiver
@@ -118,6 +122,8 @@ class ImplementationModule {
         @Binds fun bindResourceHelper(resourceHelperImpl: ResourceHelperImpl): ResourceHelper
         @Binds fun bindBlePreCheck(blePreCheckImpl: BlePreCheckImpl): BlePreCheck
         @Binds fun bindLocaleDependentSetting(localeDependentSettingImpl: LocaleDependentSettingImpl): LocaleDependentSetting
+        @Binds fun bindPumpWithConcentration(pumpWithConcentrationImpl: PumpWithConcentrationImpl): PumpWithConcentration
+        @Binds fun bindProfileSourceWithConcentration(profileSourceWithConcentrationImpl: ProfileSourceWithConcentrationImpl): ProfileSourceWithConcentration
 
         @Binds fun bindTrendCalculatorInterface(trendCalculator: TrendCalculatorImpl): TrendCalculator
         @Binds fun bindTddCalculatorInterface(tddCalculator: TddCalculatorImpl): TddCalculator

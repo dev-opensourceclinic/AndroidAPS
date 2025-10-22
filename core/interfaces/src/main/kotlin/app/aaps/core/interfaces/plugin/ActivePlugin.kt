@@ -8,8 +8,8 @@ import app.aaps.core.interfaces.constraints.Safety
 import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.iob.IobCobCalculator
 import app.aaps.core.interfaces.overview.Overview
-import app.aaps.core.interfaces.profile.ProfileSource
-import app.aaps.core.interfaces.pump.Pump
+import app.aaps.core.interfaces.profile.ProfileSourceWithConcentration
+import app.aaps.core.interfaces.pump.PumpWithConcentration
 import app.aaps.core.interfaces.smoothing.Smoothing
 import app.aaps.core.interfaces.source.BgSource
 import app.aaps.core.interfaces.sync.NsClient
@@ -24,10 +24,10 @@ interface ActivePlugin {
     val activeBgSource: BgSource
 
     /**
-     *  Currently selected Profile plugin
-     *  Default LocalProfile
+     *  Currently selected Profile plugin or ProfileSourceWithConcentration
+     *  Default ProfilePlugin
      */
-    val activeProfileSource: ProfileSource
+    val activeProfileSource: ProfileSourceWithConcentration
 
     /**
      *  Currently selected Insulin plugin
@@ -42,10 +42,10 @@ interface ActivePlugin {
     val activeAPS: APS
 
     /**
-     *  Currently selected Pump plugin
+     *  Currently selected Pump plugin or PumpWithConcentration
      *  Default VirtualPump
      */
-    val activePump: Pump
+    val activePump: PumpWithConcentration
 
     /**
      *  Currently selected Sensitivity plugin
