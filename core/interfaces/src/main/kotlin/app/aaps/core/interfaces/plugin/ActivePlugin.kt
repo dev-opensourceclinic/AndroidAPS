@@ -24,8 +24,8 @@ interface ActivePlugin {
     val activeBgSource: BgSource
 
     /**
-     *  Currently selected Profile plugin or ProfileSourceWithConcentration
-     *  Default ProfilePlugin
+     *  ProfileSourceWithConcentration should pass data to real ProfileSource plugin if U100 is used
+     *  or do proper recalculation if other concentration is used (U20, U50, U200 etc)
      */
     val activeProfileSource: ProfileSourceWithConcentration
 
@@ -42,8 +42,8 @@ interface ActivePlugin {
     val activeAPS: APS
 
     /**
-     *  Currently selected Pump plugin or PumpWithConcentration
-     *  Default VirtualPump
+     *  PumpWithConcentration should pass data to real Pump plugin if U100 is used
+     *  or do proper recalculation if other concentration is used (U20, U50, U200 etc)
      */
     val activePump: PumpWithConcentration
 
