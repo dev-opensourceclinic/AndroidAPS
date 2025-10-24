@@ -30,6 +30,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.defs.fillFor
@@ -1993,7 +1994,7 @@ class ComboV2Plugin @Inject constructor(
             is ComboCtlPump.Event.QuickBolusInfused    -> {
                 pumpSync.syncBolusWithPumpId(
                     event.timestamp.toEpochMilliseconds(),
-                    event.bolusAmount.cctlBolusToIU(),
+                    PumpInsulin(event.bolusAmount.cctlBolusToIU()),
                     BS.Type.NORMAL,
                     event.bolusId,
                     PumpType.ACCU_CHEK_COMBO,
@@ -2009,7 +2010,7 @@ class ComboV2Plugin @Inject constructor(
                 }
                 pumpSync.syncBolusWithPumpId(
                     event.timestamp.toEpochMilliseconds(),
-                    event.bolusAmount.cctlBolusToIU(),
+                    PumpInsulin(event.bolusAmount.cctlBolusToIU()),
                     bolusType,
                     event.bolusId,
                     PumpType.ACCU_CHEK_COMBO,

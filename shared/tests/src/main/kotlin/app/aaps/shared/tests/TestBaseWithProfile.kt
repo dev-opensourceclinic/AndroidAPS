@@ -14,6 +14,7 @@ import app.aaps.core.interfaces.db.ProcessedTbrEbData
 import app.aaps.core.interfaces.iob.GlucoseStatusProvider
 import app.aaps.core.interfaces.iob.IobCobCalculator
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileStore
 import app.aaps.core.interfaces.profile.ProfileUtil
@@ -85,6 +86,8 @@ open class TestBaseWithProfile : TestBase() {
     lateinit var deltaCalculator: DeltaCalculator
     lateinit var apsResultProvider: Provider<APSResult>
 
+    val someICfg = ICfg(insulinLabel = "Fake", insulinEndTime = 9 * 3600 * 1000, insulinPeakTime = 60 * 60 * 1000, concentration = 1.0)
+
     val smbGlucoseStatusProvider = object : GlucoseStatusProvider {
         override val glucoseStatusData: GlucoseStatus?
             get() = getGlucoseStatusData(false)
@@ -140,6 +143,7 @@ open class TestBaseWithProfile : TestBase() {
     private lateinit var invalidProfileJSON: String
     lateinit var preferenceManager: PreferenceManager
     lateinit var validProfile: ProfileSealed.Pure
+    lateinit var effectiveProfile: EffectiveProfile
     lateinit var effectiveProfileSwitch: EPS
     lateinit var testPumpPlugin: TestPumpPlugin
 
@@ -184,8 +188,9 @@ open class TestBaseWithProfile : TestBase() {
             originalPercentage = 100,
             originalDuration = 0,
             originalEnd = 0,
-            iCfg = ICfg("", 0, 0)
+            iCfg = someICfg
         )
+        effectiveProfile = ProfileSealed.EPS(effectiveProfileSwitch, activePlugin)
 
         Mockito.`when`(rh.gs(R.string.ok)).thenReturn("OK")
         Mockito.`when`(rh.gs(R.string.error)).thenReturn("Error")

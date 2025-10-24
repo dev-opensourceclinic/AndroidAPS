@@ -31,6 +31,7 @@ import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Insight
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.PumpState.TemporaryBasal
@@ -527,7 +528,7 @@ class InsightPlugin @Inject constructor(
                     insightDbHelper.getInsightBolusID(serial, bolusID, now)?.also {
                         pumpSync.syncBolusWithPumpId(
                             it.timestamp,
-                            detailedBolusInfo.insulin,
+                            PumpInsulin(detailedBolusInfo.insulin),
                             detailedBolusInfo.bolusType,
                             it.id,
                             PumpType.ACCU_CHEK_INSIGHT,
@@ -1348,7 +1349,7 @@ class InsightPlugin @Inject constructor(
             if (event.bolusType == BolusType.STANDARD || event.bolusType == BolusType.MULTIWAVE) {
                 pumpSync.syncBolusWithPumpId(
                     timestamp = timestamp,
-                    amount = event.immediateAmount,
+                    amount = PumpInsulin(event.immediateAmount),
                     type = null,
                     pumpId = insightBolusID.id,
                     pumpType = PumpType.ACCU_CHEK_INSIGHT,
@@ -1394,7 +1395,7 @@ class InsightPlugin @Inject constructor(
             if (event.bolusType == BolusType.STANDARD || event.bolusType == BolusType.MULTIWAVE) {
                 pumpSync.syncBolusWithPumpId(
                     timestamp = insightBolusID.timestamp,
-                    amount = event.immediateAmount,
+                    amount = PumpInsulin(event.immediateAmount),
                     type = null,
                     pumpId = insightBolusID.id,
                     pumpType = PumpType.ACCU_CHEK_INSIGHT,

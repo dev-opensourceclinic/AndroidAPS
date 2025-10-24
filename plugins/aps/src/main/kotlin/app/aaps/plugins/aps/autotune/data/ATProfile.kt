@@ -1,5 +1,6 @@
 package app.aaps.plugins.aps.autotune.data
 
+import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.data.Block
 import app.aaps.core.data.time.T
@@ -130,14 +131,14 @@ class ATProfile @Inject constructor(
             json.put("name", profileName)
             json.put("min_5m_carbimpact", preferences.get(DoubleKey.ApsAmaMin5MinCarbsImpact))
             json.put("dia", dia)
-            if (insulinInterface.id === Insulin.InsulinType.OREF_ULTRA_RAPID_ACTING) json.put(
+            if (insulinInterface.id === InsulinType.OREF_ULTRA_RAPID_ACTING) json.put(
                 "curve",
                 "ultra-rapid"
-            ) else if (insulinInterface.id === Insulin.InsulinType.OREF_RAPID_ACTING) json.put("curve", "rapid-acting") else if (insulinInterface.id === Insulin.InsulinType.OREF_LYUMJEV) {
+            ) else if (insulinInterface.id === InsulinType.OREF_RAPID_ACTING) json.put("curve", "rapid-acting") else if (insulinInterface.id === InsulinType.OREF_LYUMJEV) {
                 json.put("curve", "ultra-rapid")
                 json.put("useCustomPeakTime", true)
                 json.put("insulinPeakTime", 45)
-            } else if (insulinInterface.id === Insulin.InsulinType.OREF_FREE_PEAK) {
+            } else if (insulinInterface.id === InsulinType.OREF_FREE_PEAK) {
                 val peakTime: Int = preferences.get(IntKey.InsulinOrefPeak)
                 json.put("curve", if (peakTime > 50) "rapid-acting" else "ultra-rapid")
                 json.put("useCustomPeakTime", true)

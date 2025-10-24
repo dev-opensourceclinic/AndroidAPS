@@ -1,6 +1,7 @@
 package app.aaps.plugins.sync.nsclientV3.extensions
 
 import app.aaps.core.data.model.BS
+import app.aaps.core.data.model.ICfg
 import app.aaps.core.data.model.IDs
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
@@ -17,7 +18,8 @@ fun NSBolus.toBolus(): BS =
         type = type.toBolusType(),
         notes = notes,
         isBasalInsulin = isBasalInsulin,
-        ids = IDs(nightscoutId = identifier, pumpId = pumpId, pumpType = PumpType.fromString(pumpType), pumpSerial = pumpSerial, endId = endId)
+        ids = IDs(nightscoutId = identifier, pumpId = pumpId, pumpType = PumpType.fromString(pumpType), pumpSerial = pumpSerial, endId = endId),
+        icfg = ICfg.FAKE
     )
 
 fun NSBolus.BolusType?.toBolusType(): BS.Type =

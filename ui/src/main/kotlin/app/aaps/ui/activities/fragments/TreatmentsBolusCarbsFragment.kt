@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.util.forEach
+import androidx.core.util.size
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,7 +27,6 @@ import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.UserEntryLogger
-import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
@@ -62,7 +62,6 @@ class TreatmentsBolusCarbsFragment : DaggerFragment(), MenuProvider {
     @Inject lateinit var aapsSchedulers: AapsSchedulers
     @Inject lateinit var uel: UserEntryLogger
     @Inject lateinit var persistenceLayer: PersistenceLayer
-    @Inject lateinit var activePlugin: ActivePlugin
 
     private var _binding: TreatmentsBolusCarbsFragmentBinding? = null
 
@@ -189,7 +188,6 @@ class TreatmentsBolusCarbsFragment : DaggerFragment(), MenuProvider {
             MealLinkLoadedViewHolder(LayoutInflater.from(viewGroup.context).inflate(R.layout.treatments_bolus_carbs_item, viewGroup, false))
 
         override fun onBindViewHolder(holder: MealLinkLoadedViewHolder, position: Int) {
-            val profile = profileFunction.getProfile() ?: return
             val ml = mealLinks[position]
 
             val newDay = position == 0 || !dateUtil.isSameDayGroup(timestamp(ml), timestamp(mealLinks[position - 1]))
@@ -222,7 +220,7 @@ class TreatmentsBolusCarbsFragment : DaggerFragment(), MenuProvider {
                 holder.binding.bolusNs.visibility = (bolus.ids.nightscoutId != null).toVisibility()
                 holder.binding.bolusPump.visibility = bolus.ids.isPumpHistory().toVisibility()
                 holder.binding.bolusInvalid.visibility = bolus.isValid.not().toVisibility()
-                val iob = bolus.iobCalc(activePlugin, System.currentTimeMillis(), profile.dia)
+                val iob = bolus.iobCalc(System.currentTimeMillis())
                 if (iob.iobContrib > 0.01) {
                     holder.binding.iob.setTextColor(rh.gac(context, app.aaps.core.ui.R.attr.activeColor))
                     holder.binding.iob.text = rh.gs(app.aaps.core.ui.R.string.format_insulin_units, iob.iobContrib)
@@ -349,7 +347,7 @@ class TreatmentsBolusCarbsFragment : DaggerFragment(), MenuProvider {
 
     private fun deleteFutureTreatments() {
         activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.overview_treatment_label), rh.gs(app.aaps.core.ui.R.string.delete_future_treatments) + "?", Runnable {
+            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.overview_treatment_label), rh.gs(app.aaps.core.ui.R.string.delete_future_treatments) + "?", {
                 disposable += persistenceLayer
                     .getBolusesFromTime(dateUtil.now(), false)
                     .observeOn(aapsSchedulers.main)
@@ -391,7 +389,7 @@ class TreatmentsBolusCarbsFragment : DaggerFragment(), MenuProvider {
     }
 
     private fun getConfirmationText(selectedItems: SparseArray<MealLink>): String {
-        if (selectedItems.size() == 1) {
+        if (selectedItems.size == 1) {
             val mealLink = selectedItems.valueAt(0)
             val bolus = mealLink.bolus
             if (bolus != null)
@@ -402,12 +400,12 @@ class TreatmentsBolusCarbsFragment : DaggerFragment(), MenuProvider {
                 return rh.gs(app.aaps.core.ui.R.string.carbs) + ": " + rh.gs(app.aaps.core.objects.R.string.format_carbs, carbs.amount.toInt()) + "\n" +
                     rh.gs(app.aaps.core.ui.R.string.date) + ": " + dateUtil.dateAndTimeString(carbs.timestamp)
         }
-        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
+        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size)
     }
 
     private fun removeSelected(selectedItems: SparseArray<MealLink>) {
         activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
+            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), {
                 selectedItems.forEach { _, ml ->
                     ml.bolus?.let { bolus ->
                         disposable += persistenceLayer.invalidateBolus(

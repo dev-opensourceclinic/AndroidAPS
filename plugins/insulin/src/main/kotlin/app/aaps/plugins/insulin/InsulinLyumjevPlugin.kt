@@ -1,7 +1,7 @@
 package app.aaps.plugins.insulin
 
+import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.interfaces.configuration.Config
-import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -23,7 +23,7 @@ class InsulinLyumjevPlugin @Inject constructor(
     uiInteraction: UiInteraction
 ) : InsulinOrefBasePlugin(rh, profileFunction, rxBus, aapsLogger, config, hardLimits, uiInteraction) {
 
-    override val id get(): Insulin.InsulinType = Insulin.InsulinType.OREF_LYUMJEV
+    override val id get(): InsulinType = InsulinType.OREF_LYUMJEV
     override val friendlyName get(): String = rh.gs(R.string.lyumjev)
 
     override fun configuration(): JSONObject = JSONObject()

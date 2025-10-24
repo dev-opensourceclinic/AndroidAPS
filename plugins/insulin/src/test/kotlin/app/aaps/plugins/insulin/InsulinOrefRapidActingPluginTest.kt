@@ -1,7 +1,7 @@
 package app.aaps.plugins.insulin
 
+import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.interfaces.configuration.Config
-import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -45,7 +45,7 @@ class InsulinOrefRapidActingPluginTest {
 
     @Test
     fun getIdTest() {
-        assertThat(sut.id).isEqualTo(Insulin.InsulinType.OREF_RAPID_ACTING)
+        assertThat(sut.id).isEqualTo(InsulinType.OREF_RAPID_ACTING)
     }
 
     @Test

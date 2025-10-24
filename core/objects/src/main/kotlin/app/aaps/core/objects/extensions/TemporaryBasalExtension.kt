@@ -5,7 +5,7 @@ import app.aaps.core.data.model.TB
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.IobTotal
-import app.aaps.core.interfaces.insulin.Insulin
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.utils.DateUtil
@@ -55,7 +55,7 @@ fun TB.toStringShort(rh: ResourceHelper): String =
     if (isAbsolute || type == TB.Type.FAKE_EXTENDED) rh.gs(app.aaps.core.ui.R.string.pump_base_basal_rate, rate)
     else rh.gs(app.aaps.core.ui.R.string.formatPercent, rate)
 
-fun TB.iobCalc(time: Long, profile: Profile, insulinInterface: Insulin): IobTotal {
+fun TB.iobCalc(time: Long, profile: EffectiveProfile): IobTotal {
     if (!isValid) return IobTotal(time)
     val result = IobTotal(time)
     val realDuration = getPassedDurationToTimeInMinutes(time)
@@ -81,9 +81,10 @@ fun TB.iobCalc(time: Long, profile: Profile, insulinInterface: Insulin): IobTota
                 val tempBolusPart = BS(
                     timestamp = calcDate,
                     amount = tempBolusSize,
-                    type = BS.Type.NORMAL
+                    type = BS.Type.NORMAL,
+                    icfg = profile.iCfg
                 )
-                val aIOB = insulinInterface.iobCalcForTreatment(tempBolusPart, time, dia)
+                val aIOB = tempBolusPart.iobCalc(time)
                 result.basaliob += aIOB.iobContrib
                 result.activity += aIOB.activityContrib
                 result.netbasalinsulin += tempBolusPart.amount
@@ -99,12 +100,11 @@ fun TB.iobCalc(time: Long, profile: Profile, insulinInterface: Insulin): IobTota
 
 fun TB.iobCalc(
     time: Long,
-    profile: Profile,
+    profile: EffectiveProfile,
     lastAutosensResult: AutosensResult,
     exerciseMode: Boolean,
     halfBasalExerciseTarget: Int,
-    isTempTarget: Boolean,
-    insulinInterface: Insulin
+    isTempTarget: Boolean
 ): IobTotal {
     if (!isValid) return IobTotal(time)
     val result = IobTotal(time)
@@ -141,9 +141,10 @@ fun TB.iobCalc(
                 val tempBolusPart = BS(
                     timestamp = calcDate,
                     amount = tempBolusSize,
-                    type = BS.Type.NORMAL
+                    type = BS.Type.NORMAL,
+                    icfg = profile.iCfg
                 )
-                val aIOB = insulinInterface.iobCalcForTreatment(tempBolusPart, time, dia)
+                val aIOB = tempBolusPart.iobCalc(time)
                 result.basaliob += aIOB.iobContrib
                 result.activity += aIOB.activityContrib
                 result.netbasalinsulin += tempBolusPart.amount

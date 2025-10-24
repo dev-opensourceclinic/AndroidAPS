@@ -6,6 +6,7 @@ import app.aaps.core.data.model.BS
 import app.aaps.core.data.model.CA
 import app.aaps.core.data.model.EB
 import app.aaps.core.data.model.GV
+import app.aaps.core.data.model.ICfg
 import app.aaps.core.data.model.IDs
 import app.aaps.core.data.model.TB
 import app.aaps.core.data.model.TE
@@ -287,7 +288,9 @@ open class AutotuneIob @Inject constructor(
                 ids = bolusInterfaceIDs,
                 timestamp = calcDate,
                 amount = tempBolusSize,
-                type = BS.Type.NORMAL
+                type = BS.Type.NORMAL,
+                // @Philoul replace this
+                icfg = ICfg.FAKE
             )
             result.add(tempBolusPart)
         }
@@ -317,7 +320,9 @@ open class AutotuneIob @Inject constructor(
                 ids = bolusInterfaceIDs,
                 timestamp = calcDate,
                 amount = tempBolusSize,
-                type = BS.Type.NORMAL
+                type = BS.Type.NORMAL,
+                // @Philoul replace this
+                icfg = ICfg.FAKE
             )
             result.add(tempBolusPart)
         }

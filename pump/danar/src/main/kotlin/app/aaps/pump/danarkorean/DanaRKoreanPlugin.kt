@@ -21,6 +21,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
 import app.aaps.core.interfaces.pump.defs.fillFor
@@ -179,7 +180,7 @@ class DanaRKoreanPlugin @Inject constructor(
         aapsLogger.debug(LTag.PUMP, "deliverTreatment: OK. Asked: " + detailedBolusInfo.insulin + " Delivered: " + result.bolusDelivered)
         if (detailedBolusInfo.insulin > 0) pumpSync.syncBolusWithPumpId(
             dateUtil.now(),
-            BolusProgressData.delivered,
+            PumpInsulin(BolusProgressData.delivered),
             detailedBolusInfo.bolusType,
             dateUtil.now(),
             PumpType.DANA_R_KOREAN,

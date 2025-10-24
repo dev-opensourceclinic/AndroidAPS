@@ -25,6 +25,7 @@ import app.aaps.core.interfaces.notifications.Notification;
 import app.aaps.core.interfaces.profile.Profile;
 import app.aaps.core.interfaces.pump.DetailedBolusInfo;
 import app.aaps.core.interfaces.pump.PumpEnactResult;
+import app.aaps.core.interfaces.pump.PumpInsulin;
 import app.aaps.core.interfaces.pump.PumpSync;
 import app.aaps.core.interfaces.pump.defs.PumpTypeExtensionKt;
 import app.aaps.core.interfaces.resources.ResourceHelper;
@@ -736,7 +737,7 @@ public class AapsOmnipodErosManager {
         }
         pumpSync.syncBolusWithPumpId(
                 detailedBolusInfo.timestamp,
-                detailedBolusInfo.insulin,
+                new PumpInsulin(detailedBolusInfo.insulin),
                 detailedBolusInfo.getBolusType(),
                 detailedBolusInfo.getBolusPumpId(),
                 detailedBolusInfo.getPumpType(),

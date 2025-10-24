@@ -22,6 +22,7 @@ import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.StringKey
+import app.aaps.implementation.pump.PumpWithConcentrationImpl
 import app.aaps.plugins.aps.openAPSAMA.DetermineBasalAMA
 import app.aaps.plugins.aps.openAPSAMA.OpenAPSAMAPlugin
 import app.aaps.plugins.aps.openAPSSMB.DetermineBasalSMB
@@ -80,6 +81,7 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
     @Mock lateinit var determineBasalAMA: DetermineBasalAMA
     @Mock lateinit var loop: Loop
     @Mock lateinit var passwordCheck: PasswordCheck
+    @Mock lateinit var pumpWithConcentration: PumpWithConcentrationImpl
 
     private lateinit var danaPump: DanaPump
     private lateinit var insightDbHelper: InsightDbHelper
@@ -118,6 +120,9 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
         `when`(rh.gs(app.aaps.core.ui.R.string.limitingbolus)).thenReturn("Limiting bolus to %1\$.1f U because of %2\$s")
         `when`(rh.gs(app.aaps.core.ui.R.string.limitingbasalratio)).thenReturn("Limiting max basal rate to %1\$.2f U/h because of %2\$s")
         `when`(rh.gs(R.string.objectivenotstarted)).thenReturn("Objective %1\$d not started")
+
+        `when`(activePlugin.activePump).thenReturn(pumpWithConcentration)
+        `when`(pumpWithConcentration.pumpDescription).thenReturn(PumpDescription())
 
         // RS constructor
         `when`(preferences.get(DanaStringKey.RsName)).thenReturn("")
@@ -255,7 +260,7 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
     // applyBasalConstraints tests
     @Test
     fun basalRateShouldBeLimited() {
-        `when`(activePlugin.activePump).thenReturn(danaRPlugin)
+        `when`(pumpWithConcentration.activePumpInternal).thenReturn(danaRPlugin)
         // DanaR, RS
         danaRPlugin.setPluginEnabled(PluginType.PUMP, true)
         danaRSPlugin.setPluginEnabled(PluginType.PUMP, true)
@@ -282,7 +287,7 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
 
     @Test
     fun percentBasalRateShouldBeLimited() {
-        `when`(activePlugin.activePump).thenReturn(danaRPlugin)
+        `when`(pumpWithConcentration.activePumpInternal).thenReturn(danaRPlugin)
         // DanaR, RS
         danaRPlugin.setPluginEnabled(PluginType.PUMP, true)
         danaRSPlugin.setPluginEnabled(PluginType.PUMP, true)
@@ -310,7 +315,7 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
     // applyBolusConstraints tests
     @Test
     fun bolusAmountShouldBeLimited() {
-        `when`(activePlugin.activePump).thenReturn(virtualPumpPlugin)
+        `when`(pumpWithConcentration.activePumpInternal).thenReturn(virtualPumpPlugin)
         `when`(virtualPumpPlugin.pumpDescription).thenReturn(PumpDescription())
         // DanaR, RS
         danaRPlugin.setPluginEnabled(PluginType.PUMP, true)

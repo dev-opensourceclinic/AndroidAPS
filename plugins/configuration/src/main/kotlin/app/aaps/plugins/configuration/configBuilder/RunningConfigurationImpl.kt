@@ -1,5 +1,6 @@
 package app.aaps.plugins.configuration.configBuilder
 
+import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.interfaces.aps.APS
@@ -88,7 +89,7 @@ class RunningConfigurationImpl @Inject constructor(
                 uiInteraction.addNotification(Notification.NSCLIENT_VERSION_DOES_NOT_MATCH, rh.gs(R.string.nsclient_version_does_not_match), Notification.NORMAL)
         }
         configuration.insulin?.let {
-            val insulin = Insulin.InsulinType.fromInt(it)
+            val insulin = InsulinType.fromInt(it)
             for (p in activePlugin.getSpecificPluginsListByInterface(Insulin::class.java)) {
                 val insulinPlugin = p as Insulin
                 if (insulinPlugin.id == insulin) {

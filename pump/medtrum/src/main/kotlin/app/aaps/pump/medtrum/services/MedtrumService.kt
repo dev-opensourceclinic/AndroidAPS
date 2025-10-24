@@ -17,6 +17,7 @@ import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.queue.Callback
 import app.aaps.core.interfaces.queue.CommandQueue
@@ -375,7 +376,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
         // Sync the initial bolus
         val newRecord = pumpSync.addBolusWithTempId(
             timestamp = detailedBolusInfo.timestamp,
-            amount = detailedBolusInfo.insulin,
+            amount = PumpInsulin(detailedBolusInfo.insulin),
             temporaryId = detailedBolusInfo.timestamp,
             type = detailedBolusInfo.bolusType,
             pumpType = medtrumPump.pumpType(),
@@ -396,7 +397,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
             // In this case we don't get a bolus end event, so need to remove all the stuff added previously
             val syncOk = pumpSync.syncBolusWithTempId(
                 timestamp = bolusStart,
-                amount = 0.0,
+                amount = PumpInsulin(0.0),
                 temporaryId = bolusStart,
                 type = detailedBolusInfo.bolusType,
                 pumpId = bolusStart,

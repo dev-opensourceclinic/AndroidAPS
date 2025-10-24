@@ -10,17 +10,19 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.util.forEach
+import androidx.core.util.isNotEmpty
+import androidx.core.util.size
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import app.aaps.core.interfaces.aps.IobTotal
 import app.aaps.core.data.model.EB
 import app.aaps.core.data.model.TB
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Action
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
+import app.aaps.core.interfaces.aps.IobTotal
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.plugin.ActivePlugin
@@ -188,7 +190,7 @@ class TreatmentsTemporaryBasalsFragment : DaggerFragment(), MenuProvider {
             val now = dateUtil.now()
             var iob = IobTotal(now)
             val profile = profileFunction.getProfile(now)
-            if (profile != null) iob = tempBasal.iobCalc(now, profile, activePlugin.activeInsulin)
+            if (profile != null) iob = tempBasal.iobCalc(now, profile)
             holder.binding.iob.text = rh.gs(app.aaps.core.ui.R.string.format_insulin_units, iob.basaliob)
             holder.binding.extendedFlag.visibility = (tempBasal.type == TB.Type.FAKE_EXTENDED).toVisibility()
             holder.binding.suspendFlag.visibility = (tempBasal.type == TB.Type.PUMP_SUSPEND).toVisibility()
@@ -258,7 +260,7 @@ class TreatmentsTemporaryBasalsFragment : DaggerFragment(), MenuProvider {
         }
 
     private fun getConfirmationText(selectedItems: SparseArray<TB>): String {
-        if (selectedItems.size() == 1) {
+        if (selectedItems.size == 1) {
             val tempBasal = selectedItems.valueAt(0)
             val isFakeExtended = tempBasal.type == TB.Type.FAKE_EXTENDED
             val profile = profileFunction.getProfile(dateUtil.now())
@@ -272,13 +274,13 @@ class TreatmentsTemporaryBasalsFragment : DaggerFragment(), MenuProvider {
                 }\n" +
                     "${rh.gs(app.aaps.core.ui.R.string.date)}: ${dateUtil.dateAndTimeString(tempBasal.timestamp)}"
         }
-        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
+        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size)
     }
 
     private fun removeSelected(selectedItems: SparseArray<TB>) {
-        if (selectedItems.size() > 0)
+        if (selectedItems.isNotEmpty())
             activity?.let { activity ->
-                OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
+                OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), {
                     selectedItems.forEach { _, tempBasal ->
                         var extendedBolus: EB? = null
                         val isFakeExtended = tempBasal.type == TB.Type.FAKE_EXTENDED

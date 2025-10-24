@@ -9,6 +9,7 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.profile.Profile.ProfileValue
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
@@ -289,7 +290,7 @@ class EquilManager @Inject constructor(
                 val currentTime = System.currentTimeMillis()
                 pumpSync.syncBolusWithPumpId(
                     currentTime,
-                    result.bolusDelivered,
+                    PumpInsulin(result.bolusDelivered),
                     detailedBolusInfo.bolusType,
                     detailedBolusInfo.timestamp,
                     PumpType.EQUIL,
