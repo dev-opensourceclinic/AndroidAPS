@@ -24,6 +24,7 @@ class PumpWithConcentrationImpl @Inject constructor(
 ) : PumpWithConcentration {
 
     private val activePumpInternal get() = (activePlugin as PluginStore).activePumpInternal
+    private val concentration: Double get() = if (config.enableInsulinConcentration()) TODO("Not yet implemented") else 1.0
 
     override fun isInitialized(): Boolean = activePumpInternal.isInitialized()
     override fun isSuspended(): Boolean = activePumpInternal.isSuspended()
@@ -71,15 +72,9 @@ class PumpWithConcentrationImpl @Inject constructor(
         } else activePumpInternal.isThisProfileSet(profile)
 
     override val baseBasalRate: Double
-        get() =
-            if (config.enableInsulinConcentration()) {
-                TODO("Not yet implemented")
-            } else activePumpInternal.baseBasalRate
+        get() = activePumpInternal.baseBasalRate * concentration
 
-    override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult =
-        if (config.enableInsulinConcentration()) {
-            TODO("Not yet implemented")
-        } else activePumpInternal.deliverTreatment(detailedBolusInfo)
+    override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult = activePumpInternal.deliverTreatment(detailedBolusInfo.also { it.insulin /= concentration } )
 
     override fun setTempBasalAbsolute(
         absoluteRate: Double,
