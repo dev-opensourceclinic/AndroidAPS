@@ -7,7 +7,7 @@ fun InsulinConfiguration.fromDb(): ICfg =
     ICfg(
         insulinLabel = this.insulinLabel,
         insulinEndTime = this.insulinEndTime,
-        insulinPeakTime = this.peak,
+        insulinPeakTime = this.insulinPeakTime,
         concentration = this.concentration
     )
 
@@ -15,6 +15,6 @@ fun ICfg.toDb(): InsulinConfiguration =
     InsulinConfiguration(
         insulinLabel = this.insulinLabel,
         insulinEndTime = this.insulinEndTime,
-        peak = this.insulinPeakTime,
+        insulinPeakTime = this.insulinPeakTime,
         concentration = this.concentration
     )
