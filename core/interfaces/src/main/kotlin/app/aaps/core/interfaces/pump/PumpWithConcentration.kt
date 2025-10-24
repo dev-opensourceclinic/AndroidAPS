@@ -6,8 +6,7 @@ interface PumpWithConcentration : Pump {
      */
 
     /**
-     * Return real pump (selected in ConfigBuilder) class
-     * ie. VirtualPumpPlugin::class.java
+     * Return real pump (selected in ConfigBuilder)
      */
-    fun activePumpInternalClass(): Class<out Pump>
+    fun selectedActivePump(): Pump
 }

@@ -9,9 +9,11 @@ import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
+import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpWithConcentration
+import app.aaps.core.interfaces.pump.VirtualPump
 import app.aaps.core.interfaces.pump.actions.CustomAction
 import app.aaps.core.interfaces.pump.actions.CustomActionType
 import app.aaps.core.interfaces.queue.CustomCommand
@@ -24,8 +26,10 @@ class PumpWithConcentrationImpl @Inject constructor(
     private val config: Config
 ) : PumpWithConcentration {
 
-    @VisibleForTesting val activePumpInternal get() = (activePlugin as PluginStore).activePumpInternal
-    override fun activePumpInternalClass() = activePumpInternal.javaClass
+    @VisibleForTesting val activePumpInternal
+        get() = (activePlugin as PluginStore).activePumpInternal
+
+    override fun selectedActivePump(): Pump = activePumpInternal
 
     override fun isInitialized(): Boolean = activePumpInternal.isInitialized()
     override fun isSuspended(): Boolean = activePumpInternal.isSuspended()

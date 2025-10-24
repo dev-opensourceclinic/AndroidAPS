@@ -90,7 +90,7 @@ class NSClientAddUpdateWorker(
                 json = ebJson
                 eventType = JsonHelper.safeGetString(json, "eventType")
 
-                activePlugin.activePump.let { if (it is VirtualPump) it.fakeDataDetected = true }
+                activePlugin.activePump.selectedActivePump().let { if (it is VirtualPump) it.fakeDataDetected = true }
             }
             when {
                 insulin > 0 || carbs > 0                                          -> Any()

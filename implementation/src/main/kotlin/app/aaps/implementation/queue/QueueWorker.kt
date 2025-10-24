@@ -59,7 +59,7 @@ class QueueWorker internal constructor(
                 val secondsElapsed = (System.currentTimeMillis() - connectionStartTime) / 1000
                 val pump = activePlugin.activePump
                 //  Manifest.permission.BLUETOOTH_CONNECT
-                if (config.PUMPDRIVERS && pump !is VirtualPump)
+                if (config.PUMPDRIVERS && pump.selectedActivePump() !is VirtualPump)
                     if (androidPermission.permissionNotGranted(context, "android.permission.BLUETOOTH_CONNECT") || androidPermission.permissionNotGranted(context, "android.permission.BLUETOOTH_SCAN")) {
                         ToastUtils.errorToast(context, R.string.need_connect_permission)
                         aapsLogger.debug(LTag.PUMPQUEUE, "no permission")
