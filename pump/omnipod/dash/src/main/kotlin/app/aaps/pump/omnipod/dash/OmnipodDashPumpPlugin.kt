@@ -23,6 +23,7 @@ import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.OmnipodDash
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.actions.CustomAction
@@ -370,7 +371,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
                     val bolusHistoryEntry = history.getById(historyId)
                     val sync = pumpSync.syncBolusWithPumpId(
                         timestamp = bolusHistoryEntry.createdAt,
-                        amount = deliveredUnits,
+                        amount = PumpInsulin(deliveredUnits),
                         pumpId = bolusHistoryEntry.pumpId(),
                         pumpType = PumpType.OMNIPOD_DASH,
                         pumpSerial = serialNumber(),
@@ -789,7 +790,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
         val historyEntry = history.getById(activeCommand.historyId)
         val ret = pumpSync.syncBolusWithPumpId(
             timestamp = historyEntry.createdAt,
-            amount = requestedBolusAmount,
+            amount = PumpInsulin(requestedBolusAmount),
             type = bolusType,
             pumpId = historyEntry.pumpId(),
             pumpType = PumpType.OMNIPOD_DASH,
@@ -1488,7 +1489,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
                 } else {
                     pumpSync.syncBolusWithPumpId(
                         timestamp = historyEntry.createdAt,
-                        amount = 0.0,
+                        amount = PumpInsulin(0.0),
                         pumpId = historyEntry.pumpId(),
                         pumpType = PumpType.OMNIPOD_DASH,
                         pumpSerial = serialNumber(),
@@ -1509,7 +1510,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
                         val bolusHistoryEntry = history.getById(historyId)
                         val sync = pumpSync.syncBolusWithPumpId(
                             timestamp = bolusHistoryEntry.createdAt,
-                            amount = deliveredUnits,
+                            amount = PumpInsulin(deliveredUnits),
                             pumpId = bolusHistoryEntry.pumpId(),
                             pumpType = PumpType.OMNIPOD_DASH,
                             pumpSerial = serialNumber(),

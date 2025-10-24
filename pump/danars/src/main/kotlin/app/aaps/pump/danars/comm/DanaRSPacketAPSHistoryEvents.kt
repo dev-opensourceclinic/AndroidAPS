@@ -5,6 +5,7 @@ import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.TemporaryBasalStorage
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -208,7 +209,7 @@ open class DanaRSPacketAPSHistoryEvents @Inject constructor(
                 val detailedBolusInfo = detailedBolusInfoStorage.findDetailedBolusInfo(datetime, param1 / 100.0)
                 val newRecord = pumpSync.syncBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    amount = PumpInsulin(param1 / 100.0),
                     type = detailedBolusInfo?.bolusType,
                     pumpId = pumpId,
                     pumpType = danaPump.pumpType(),
@@ -229,7 +230,7 @@ open class DanaRSPacketAPSHistoryEvents @Inject constructor(
                 val detailedBolusInfo = detailedBolusInfoStorage.findDetailedBolusInfo(datetime, param1 / 100.0)
                 val newRecord = pumpSync.syncBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    amount = PumpInsulin(param1 / 100.0),
                     type = detailedBolusInfo?.bolusType,
                     pumpId = pumpId,
                     pumpType = danaPump.pumpType(),

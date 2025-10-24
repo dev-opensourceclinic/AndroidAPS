@@ -1,5 +1,6 @@
 package app.aaps.implementation.plugin
 
+import androidx.annotation.OpenForTesting
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.interfaces.aps.APS
 import app.aaps.core.interfaces.aps.Sensitivity
@@ -202,7 +203,7 @@ class PluginStore @Inject constructor(
      * For use only from [app.aaps.implementation.pump.PumpWithConcentrationImpl]
      */
     internal val activePumpInternal: Pump
-        get() = activePumpStore
+        @OpenForTesting get() = activePumpStore
         // Following line can be used only during initialization
             ?: getTheOneEnabledInArray(getSpecificPluginsList(PluginType.PUMP), PluginType.PUMP) as Pump?
             ?: checkNotNull(activePumpStore) { "No pump selected" }

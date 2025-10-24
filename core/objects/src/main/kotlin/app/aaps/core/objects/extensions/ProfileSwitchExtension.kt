@@ -53,7 +53,7 @@ fun pureProfileFromJson(jsonObject: JSONObject, dateUtil: DateUtil, defaultUnits
             timeZone = timezone,
             dia = dia
         )
-    } catch (ignored: Exception) {
+    } catch (_: Exception) {
         return null
     }
 }

@@ -7,6 +7,7 @@ import android.view.View
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
+import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Action
@@ -14,7 +15,6 @@ import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
 import app.aaps.core.interfaces.autotune.Autotune
 import app.aaps.core.interfaces.configuration.Config
-import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.logging.UserEntryLogger
@@ -342,16 +342,16 @@ class AutotunePlugin @Inject constructor(
 
             val peakTime: Int = insulinInterface.peak
             when {
-                insulinInterface.id === Insulin.InsulinType.OREF_ULTRA_RAPID_ACTING -> jsonSettings.put("curve", "ultra-rapid")
-                insulinInterface.id === Insulin.InsulinType.OREF_RAPID_ACTING       -> jsonSettings.put("curve", "rapid-acting")
+                insulinInterface.id === InsulinType.OREF_ULTRA_RAPID_ACTING -> jsonSettings.put("curve", "ultra-rapid")
+                insulinInterface.id === InsulinType.OREF_RAPID_ACTING       -> jsonSettings.put("curve", "rapid-acting")
 
-                insulinInterface.id === Insulin.InsulinType.OREF_LYUMJEV            -> {
+                insulinInterface.id === InsulinType.OREF_LYUMJEV            -> {
                     jsonSettings.put("curve", "ultra-rapid")
                     jsonSettings.put("useCustomPeakTime", true)
                     jsonSettings.put("insulinPeakTime", peakTime)
                 }
 
-                insulinInterface.id === Insulin.InsulinType.OREF_FREE_PEAK          -> {
+                insulinInterface.id === InsulinType.OREF_FREE_PEAK          -> {
                     jsonSettings.put("curve", if (peakTime > 55) "rapid-acting" else "ultra-rapid")
                     jsonSettings.put("useCustomPeakTime", true)
                     jsonSettings.put("insulinPeakTime", peakTime)

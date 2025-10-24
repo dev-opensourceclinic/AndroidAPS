@@ -130,6 +130,13 @@ interface Profile {
     fun getIsfsMgdlValues(): Array<ProfileValue>
     fun getSingleTargetsMgdl(): Array<ProfileValue>
 
+    /**
+     * Active insulin concentration used
+     * @return Insulin concentration (5.0 for U20, 0.5 for U200 insulin)
+     * @See [app.aaps.core.interfaces.pump.PumpInsulin]
+     */
+    fun insulinConcentration(): Double
+
     open class ProfileValue(var timeAsSeconds: Int, var value: Double) {
 
         override fun equals(other: Any?): Boolean {

@@ -1,7 +1,5 @@
 package app.aaps.plugins.insulin
 
-import app.aaps.core.data.iob.Iob
-import app.aaps.core.data.model.BS
 import app.aaps.core.data.model.ICfg
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.time.T
@@ -16,8 +14,6 @@ import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.HardLimits
-import kotlin.math.exp
-import kotlin.math.pow
 
 /**
  * Created by adrian on 13.08.2017.
@@ -71,27 +67,6 @@ abstract class InsulinOrefBasePlugin(
             val profile = profileFunction.getProfile()
             return profile?.dia ?: hardLimits.minDia()
         }
-
-    override fun iobCalcForTreatment(bolus: BS, time: Long, dia: Double): Iob {
-        assert(dia != 0.0)
-        assert(peak != 0)
-        val result = Iob()
-        if (bolus.amount != 0.0) {
-            val bolusTime = bolus.timestamp
-            val t = (time - bolusTime) / 1000.0 / 60.0
-            val td = dia * 60 //getDIA() always >= MIN_DIA
-            val tp = peak.toDouble()
-            // force the IOB to 0 if over DIA hours have passed
-            if (t < td) {
-                val tau = tp * (1 - tp / td) / (1 - 2 * tp / td)
-                val a = 2 * tau / td
-                val s = 1 / (1 - a + (1 + a) * exp(-td / tau))
-                result.activityContrib = bolus.amount * (s / tau.pow(2.0)) * t * (1 - t / td) * exp(-t / tau)
-                result.iobContrib = bolus.amount * (1 - s * (1 - a) * ((t.pow(2.0) / (tau * td * (1 - a)) - t / tau - 1) * exp(-t / tau) + 1))
-            }
-        }
-        return result
-    }
 
     override val iCfg: ICfg
         get() = ICfg(friendlyName, (dia * 1000.0 * 3600.0).toLong(), T.mins(peak.toLong()).msecs())

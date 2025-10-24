@@ -21,6 +21,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
 import app.aaps.core.interfaces.pump.defs.fillFor
@@ -181,7 +182,7 @@ class DanaRPlugin @Inject constructor(
         detailedBolusInfo.timestamp = System.currentTimeMillis()
         if (detailedBolusInfo.insulin > 0) pumpSync.syncBolusWithPumpId(
             detailedBolusInfo.timestamp,
-            detailedBolusInfo.insulin,
+            PumpInsulin(detailedBolusInfo.insulin),
             detailedBolusInfo.bolusType,
             dateUtil.now(),
             PumpType.DANA_R,

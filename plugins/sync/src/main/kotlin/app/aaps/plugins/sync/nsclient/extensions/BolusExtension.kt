@@ -1,6 +1,7 @@
 package app.aaps.plugins.sync.nsclient.extensions
 
 import app.aaps.core.data.model.BS
+import app.aaps.core.data.model.ICfg
 import app.aaps.core.data.model.TE
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.interfaces.utils.DateUtil
@@ -51,6 +52,7 @@ fun BS.Companion.fromJson(jsonObject: JSONObject): BS? {
         type = type,
         notes = notes,
         isValid = isValid,
+        icfg = ICfg.FAKE
     ).also {
         it.ids.nightscoutId = id
         it.ids.pumpId = pumpId

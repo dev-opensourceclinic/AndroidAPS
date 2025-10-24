@@ -1,15 +1,15 @@
 package app.aaps.plugins.insulin
 
-import app.aaps.core.data.configuration.Constants
+import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.data.model.BS
 import app.aaps.core.interfaces.configuration.Config
-import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.objects.extensions.iobCalc
 import com.google.common.truth.Truth.assertThat
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
@@ -49,7 +49,7 @@ class InsulinOrefBasePluginTest {
             get() = testPeak
 
         override fun commentStandardText(): String = ""
-        override val id get(): Insulin.InsulinType = Insulin.InsulinType.UNKNOWN
+        override val id get(): InsulinType = InsulinType.UNKNOWN
         override val friendlyName get(): String = ""
         override fun configuration(): JSONObject = JSONObject()
         override fun applyConfiguration(configuration: JSONObject) {}
@@ -83,29 +83,29 @@ class InsulinOrefBasePluginTest {
 
     @Test
     fun testIobCalcForTreatment() {
-        val treatment = BS(timestamp = 0, amount = 10.0, type = BS.Type.NORMAL)
         testPeak = 30
         testUserDefinedDia = 4.0
+        val treatment = BS(timestamp = 0, amount = 10.0, type = BS.Type.NORMAL, icfg = sut.iCfg)
         val time = System.currentTimeMillis()
         // check directly after bolus
         treatment.timestamp = time
         treatment.amount = 10.0
-        assertThat(sut.iobCalcForTreatment(treatment, time, Constants.defaultDIA).iobContrib).isWithin(0.01).of(10.0)
+        assertThat(treatment.iobCalc(time).iobContrib).isWithin(0.01).of(10.0)
         // check after 1 hour
         treatment.timestamp = time - 1 * 60 * 60 * 1000 // 1 hour
         treatment.amount = 10.0
-        assertThat(sut.iobCalcForTreatment(treatment, time, Constants.defaultDIA).iobContrib).isWithin(0.01).of(3.92)
+        assertThat(treatment.iobCalc(time).iobContrib).isWithin(0.01).of(3.92)
         // check after 2 hour
         treatment.timestamp = time - 2 * 60 * 60 * 1000 // 2 hours
         treatment.amount = 10.0
-        assertThat(sut.iobCalcForTreatment(treatment, time, Constants.defaultDIA).iobContrib).isWithin(0.01).of(0.77)
+        assertThat(treatment.iobCalc(time).iobContrib).isWithin(0.01).of(0.77)
         // check after 3 hour
         treatment.timestamp = time - 3 * 60 * 60 * 1000 // 3 hours
         treatment.amount = 10.0
-        assertThat(sut.iobCalcForTreatment(treatment, time, Constants.defaultDIA).iobContrib).isWithin(0.01).of(0.10)
+        assertThat(treatment.iobCalc(time).iobContrib).isWithin(0.01).of(0.10)
         // check after dia
         treatment.timestamp = time - 4 * 60 * 60 * 1000 // 4 hours
         treatment.amount = 10.0
-        assertThat(sut.iobCalcForTreatment(treatment, time, Constants.defaultDIA).iobContrib).isWithin(0.01).of(0.0)
+        assertThat(treatment.iobCalc(time).iobContrib).isWithin(0.01).of(0.0)
     }
 }

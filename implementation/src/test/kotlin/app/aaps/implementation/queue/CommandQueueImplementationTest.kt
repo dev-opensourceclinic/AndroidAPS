@@ -202,7 +202,8 @@ class CommandQueueImplementationTest : TestBaseWithProfile() {
             BS(
                 timestamp = Calendar.getInstance().also { it.set(2000, 0, 1) }.timeInMillis,
                 type = BS.Type.NORMAL,
-                amount = 0.0
+                amount = 0.0,
+                icfg = someICfg
             )
         )
         Mockito.`when`(profileFunction.getProfile()).thenReturn(validProfile)

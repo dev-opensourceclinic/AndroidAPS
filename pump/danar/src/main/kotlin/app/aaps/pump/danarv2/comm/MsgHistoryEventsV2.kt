@@ -3,6 +3,7 @@ package app.aaps.pump.danarv2.comm
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.rx.events.EventPumpStatusChanged
 import app.aaps.pump.dana.DanaPump
 import app.aaps.pump.dana.R
@@ -140,7 +141,7 @@ class MsgHistoryEventsV2(
                 val detailedBolusInfo = detailedBolusInfoStorage.findDetailedBolusInfo(datetime, param1 / 100.0)
                 val newRecord = pumpSync.syncBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    amount = PumpInsulin(param1 / 100.0),
                     type = detailedBolusInfo?.bolusType,
                     pumpId = datetime,
                     pumpType = PumpType.DANA_RV2,
@@ -162,7 +163,7 @@ class MsgHistoryEventsV2(
                 val detailedBolusInfo = detailedBolusInfoStorage.findDetailedBolusInfo(datetime, param1 / 100.0)
                 val newRecord = pumpSync.syncBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    amount = PumpInsulin(param1 / 100.0),
                     type = detailedBolusInfo?.bolusType,
                     pumpId = datetime,
                     pumpType = PumpType.DANA_RV2,

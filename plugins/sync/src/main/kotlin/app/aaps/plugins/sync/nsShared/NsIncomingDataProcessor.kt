@@ -92,7 +92,6 @@ class NsIncomingDataProcessor @Inject constructor(
      *
      * @return true if there was an accepted SGV
      */
-    @Suppress("SpellCheckingInspection")
     fun processSgvs(sgvs: Any, doFullSync: Boolean): Boolean {
         // Objective0
         preferences.put(BooleanNonKey.ObjectivesBgIsAvailableInNs, true)

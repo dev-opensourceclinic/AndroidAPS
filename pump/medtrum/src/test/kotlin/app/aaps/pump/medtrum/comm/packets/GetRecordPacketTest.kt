@@ -4,6 +4,7 @@ import app.aaps.core.data.model.BS
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.pump.medtrum.MedtrumTestBase
 import app.aaps.pump.medtrum.util.MedtrumTimeUtil
@@ -11,6 +12,7 @@ import com.google.common.truth.Truth.assertThat
 import dagger.android.AndroidInjector
 import dagger.android.HasAndroidInjector
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -96,13 +98,13 @@ class GetRecordPacketTest : MedtrumTestBase() {
 
         // Expected values
         Mockito.verify(pumpSync).syncBolusWithTempId(
-            timestamp = timestamp,
-            amount = amount,
-            temporaryId = timestamp,
-            type = bolusType,
-            pumpId = timestamp,
-            pumpType = medtrumPump.pumpType(),
-            pumpSerial = medtrumPump.pumpSN.toString(radix = 16)
+            timestamp = eq(timestamp),
+            amount = eqObject(PumpInsulin(amount)),
+            temporaryId = eq(timestamp),
+            type = eq(bolusType),
+            pumpId = eq(timestamp),
+            pumpType = eqObject(medtrumPump.pumpType()),
+            pumpSerial = eqObject(medtrumPump.pumpSN.toString(radix = 16))
         )
 
         assertThat(result).isTrue()
@@ -127,7 +129,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncBolusWithPumpId(
             timestamp = timestamp,
-            amount = amount,
+            amount = PumpInsulin(amount),
             type = null,
             pumpId = timestamp,
             pumpType = medtrumPump.pumpType(),
@@ -184,7 +186,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncBolusWithPumpId(
             timestamp = timestamp,
-            amount = amountDirect,
+            amount = PumpInsulin(amountDirect),
             type = null,
             pumpId = timestamp,
             pumpType = medtrumPump.pumpType(),
@@ -307,7 +309,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         val packet = GetRecordPacket(packetInjector, 0)
         val result = packet.handleResponse(data)
 
-        // Just check the pumpSync here, rest of the behavoir of medtrumPump is tested in MedtrumPumpTest
+        // Just check the pumpSync here, rest of the behaviour of medtrumPump is tested in MedtrumPumpTest
         // Expected values
         Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = endTime,
@@ -343,7 +345,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         val packet = GetRecordPacket(packetInjector, 0)
         val result = packet.handleResponse(data)
 
-        // Just check the pumpSync here, rest of the behavoir of medtrumPump is tested in MedtrumPumpTest
+        // Just check the pumpSync here, rest of the behaviour of medtrumPump is tested in MedtrumPumpTest
         // Expected values
         Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = endTime,
@@ -383,7 +385,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         val packet = GetRecordPacket(packetInjector, 0)
         val result = packet.handleResponse(data)
 
-        // Just check the pumpSync here, rest of the behavoir of medtrumPump is tested in MedtrumPumpTest
+        // Just check the pumpSync here, rest of the behaviour of medtrumPump is tested in MedtrumPumpTest
         // Expected values
         Mockito.verify(pumpSync, Mockito.never()).syncTemporaryBasalWithPumpId(
             timestamp = endTime,

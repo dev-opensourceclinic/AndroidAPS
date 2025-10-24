@@ -3,6 +3,7 @@ package app.aaps.pump.common.sync
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
@@ -93,7 +94,7 @@ class PumpSyncStorage @Inject constructor(
         val temporaryId = creator.generateTempId(detailedBolusInfo.timestamp)
         val result = pumpSync.addBolusWithTempId(
             detailedBolusInfo.timestamp,
-            detailedBolusInfo.insulin,
+            amount = PumpInsulin(detailedBolusInfo.insulin),
             temporaryId,
             detailedBolusInfo.bolusType,
             creator.model(),

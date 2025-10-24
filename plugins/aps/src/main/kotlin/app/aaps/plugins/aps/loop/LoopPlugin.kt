@@ -84,7 +84,6 @@ import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.loop.events.EventLoopSetLastRunGui
-import app.aaps.plugins.aps.loop.extensions.json
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import org.json.JSONObject
@@ -107,7 +106,6 @@ class LoopPlugin @Inject constructor(
     private val context: Context,
     private val commandQueue: CommandQueue,
     private val activePlugin: ActivePlugin,
-    private val virtualPump: VirtualPump,
     private val iobCobCalculator: IobCobCalculator,
     private val processedTbrEbData: ProcessedTbrEbData,
     private val receiverStatusStore: ReceiverStatusStore,
@@ -897,9 +895,7 @@ class LoopPlugin @Inject constructor(
         commandQueue.bolus(detailedBolusInfo, callback)
     }
 
-    private fun allowPercentage(): Boolean {
-        return virtualPump.isEnabled()
-    }
+    private fun allowPercentage(): Boolean = activePlugin.activePump.activePumpInternalClass() == VirtualPump::class.java
 
     /**
      * Simulate pump disconnection

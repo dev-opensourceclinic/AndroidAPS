@@ -1,6 +1,7 @@
 package app.aaps.plugins.sync.nsclientV3.extensions
 
 import app.aaps.core.data.model.BS
+import app.aaps.core.data.model.ICfg
 import app.aaps.core.data.model.IDs
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.nssdk.localmodel.treatment.NSBolus
@@ -9,9 +10,9 @@ import app.aaps.plugins.sync.extensions.contentEqualsTo
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
-@Suppress("SpellCheckingInspection")
 internal class BolusExtensionKtTest {
 
+    val iCfg = ICfg(insulinLabel = "Fake", insulinEndTime = 9 * 3600 * 1000, insulinPeakTime = 60 * 60 * 1000, concentration = 1.0)
     @Test
     fun toBolus() {
         var bolus = BS(
@@ -26,7 +27,8 @@ internal class BolusExtensionKtTest {
                 pumpId = 11000,
                 pumpType = PumpType.DANA_I,
                 pumpSerial = "bbbb"
-            )
+            ),
+            icfg = iCfg
         )
 
         var bolus2 = (bolus.toNSBolus().convertToRemoteAndBack() as NSBolus).toBolus()
@@ -45,7 +47,8 @@ internal class BolusExtensionKtTest {
                 pumpId = 11000,
                 pumpType = PumpType.DANA_I,
                 pumpSerial = "bbbb"
-            )
+            ),
+            icfg = iCfg
         )
 
         bolus2 = (bolus.toNSBolus().convertToRemoteAndBack() as NSBolus).toBolus()

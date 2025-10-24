@@ -11,6 +11,7 @@ import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.Profile.ProfileValue
 import app.aaps.core.interfaces.profile.PureProfile
@@ -46,10 +47,10 @@ sealed class ProfileSealed(
     var duration: Long?, // [milliseconds]
     var ts: Int, // timeshift [hours]
     var pct: Int,
-    var iCfg: ICfg,
+    override var iCfg: ICfg,
     val utcOffset: Long,
     val aps: APS?
-) : Profile {
+) : EffectiveProfile {
 
     /**
      * Profile interface created from ProfileSwitch
@@ -115,7 +116,7 @@ sealed class ProfileSealed(
         null,
         0,
         100,
-        ICfg("", (value.dia * 3600 * 1000).toLong(), 0),
+        ICfg("", (value.dia * 3600 * 1000).toLong(), 0, concentration = 1.0),
         value.timeZone.rawOffset.toLong(),
         activePlugin?.activeAPS
     )
@@ -471,6 +472,8 @@ sealed class ProfileSealed(
 
     fun isInProgress(dateUtil: DateUtil): Boolean =
         dateUtil.now() in timestamp..timestamp + (duration ?: 0L)
+
+    override fun insulinConcentration() = iCfg.concentration
 
     private fun toMgdl(value: Double, units: GlucoseUnit): Double =
         if (units == GlucoseUnit.MGDL) value else value * GlucoseUnit.MMOLL_TO_MGDL

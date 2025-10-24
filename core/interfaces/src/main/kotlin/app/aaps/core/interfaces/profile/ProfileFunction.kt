@@ -36,12 +36,12 @@ interface ProfileFunction {
     /**
      * Get effective (active) profile confirmed by pump for "now"
      */
-    fun getProfile(): Profile?
+    fun getProfile(): EffectiveProfile?
 
     /**
      * Get effective (active) profile confirmed by pump for time
      */
-    fun getProfile(time: Long): Profile?
+    fun getProfile(time: Long): EffectiveProfile?
 
     /**
      * Get requested profile by user (profile must not be active yet)

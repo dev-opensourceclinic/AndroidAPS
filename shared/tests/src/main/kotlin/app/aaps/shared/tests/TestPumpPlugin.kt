@@ -6,6 +6,7 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
+import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpWithConcentration
@@ -76,4 +77,6 @@ class TestPumpPlugin(val rh: ResourceHelper) : PumpWithConcentration {
     override fun canHandleDST(): Boolean = true
     override fun timezoneOrDSTChanged(timeChangeType: TimeChangeType) { /* not needed */
     }
+
+    override fun activePumpInternalClass(): Class<out Pump> = TestPumpPlugin::class.java
 }

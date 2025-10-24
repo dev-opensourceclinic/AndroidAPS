@@ -4,17 +4,13 @@ import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.TE
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.time.T
-import app.aaps.pump.virtual.VirtualPumpPlugin
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.skyscreamer.jsonassert.JSONAssert
 import java.util.Optional
 
 class TriggerPodChangeTest : TriggerTestBase() {
-
-    @Mock lateinit var virtualPumpPlugin: VirtualPumpPlugin
 
     @Test fun shouldRunTest() {
         // Cannula change is "now"
@@ -66,10 +62,9 @@ class TriggerPodChangeTest : TriggerTestBase() {
 
     @Test fun iconTest() {
         val t = TriggerPodChange(injector)
-        `when`(activePlugin.activePump).thenReturn(virtualPumpPlugin)
         val pumpDescription = PumpDescription()
         pumpDescription.isPatchPump = false
-        `when`(virtualPumpPlugin.pumpDescription).thenReturn(pumpDescription)
+        `when`(pumpPluginWithConcentration.pumpDescription).thenReturn(pumpDescription)
         assertThat(t.icon()).isEqualTo(Optional.of(app.aaps.core.objects.R.drawable.ic_cp_age_cannula))
         pumpDescription.isPatchPump = true
         assertThat(t.icon()).isEqualTo(Optional.of(app.aaps.core.objects.R.drawable.ic_patch_pump_outline))

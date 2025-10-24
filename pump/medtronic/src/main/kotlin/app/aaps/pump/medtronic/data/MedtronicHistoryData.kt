@@ -6,6 +6,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.ui.UiInteraction
@@ -629,7 +630,7 @@ class MedtronicHistoryData @Inject constructor(
             if (temporaryId != null) {
                 val result = pumpSync.syncBolusWithTempId(
                     timestamp = tryToGetByLocalTime(bolus.atechDateTime),
-                    amount = deliveredAmount,
+                    amount = PumpInsulin(deliveredAmount),
                     temporaryId = temporaryId,
                     type = null,
                     pumpId = bolus.pumpId,
@@ -647,7 +648,7 @@ class MedtronicHistoryData @Inject constructor(
             } else {
                 val result = pumpSync.syncBolusWithPumpId(
                     timestamp = tryToGetByLocalTime(bolus.atechDateTime),
-                    amount = deliveredAmount,
+                    amount = PumpInsulin(deliveredAmount),
                     type = null,
                     pumpId = bolus.pumpId,
                     pumpType = medtronicPumpStatus.pumpType,
@@ -1428,6 +1429,7 @@ class MedtronicHistoryData @Inject constructor(
          * Note: June 2020. Since this seems to be fixed, I am disabling this per default. I will leave code inside
          * in case we need it again. Code that turns this on is commented out RileyLinkMedtronicService#verifyConfiguration()
          */
+        @Suppress("ConstPropertyName")
         const val doubleBolusDebug = false
     }
 

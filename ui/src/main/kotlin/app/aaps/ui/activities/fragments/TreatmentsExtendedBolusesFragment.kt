@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.util.forEach
+import androidx.core.util.size
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,7 +22,6 @@ import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
-import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
@@ -51,7 +51,6 @@ class TreatmentsExtendedBolusesFragment : DaggerFragment(), MenuProvider {
 
     private val millsToThePast = T.days(30).msecs()
 
-    @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var rxBus: RxBus
     @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var aapsLogger: AAPSLogger
@@ -150,7 +149,7 @@ class TreatmentsExtendedBolusesFragment : DaggerFragment(), MenuProvider {
             val profile = profileFunction.getProfile(extendedBolus.timestamp) ?: return
             holder.binding.duration.text = rh.gs(app.aaps.core.ui.R.string.format_mins, T.msecs(extendedBolus.duration).mins())
             holder.binding.insulin.text = rh.gs(app.aaps.core.ui.R.string.format_insulin_units, extendedBolus.amount)
-            val iob = extendedBolus.iobCalc(System.currentTimeMillis(), profile, activePlugin.activeInsulin)
+            val iob = extendedBolus.iobCalc(System.currentTimeMillis(), profile)
             holder.binding.iob.text = rh.gs(app.aaps.core.ui.R.string.format_insulin_units, iob.iob)
             holder.binding.ratio.text = rh.gs(app.aaps.core.ui.R.string.pump_base_basal_rate, extendedBolus.rate)
             if (iob.iob != 0.0) holder.binding.iob.setTextColor(
@@ -217,17 +216,17 @@ class TreatmentsExtendedBolusesFragment : DaggerFragment(), MenuProvider {
     }
 
     private fun getConfirmationText(selectedItems: SparseArray<EB>): String {
-        if (selectedItems.size() == 1) {
+        if (selectedItems.size == 1) {
             val bolus = selectedItems.valueAt(0)
             return rh.gs(app.aaps.core.ui.R.string.extended_bolus) + "\n" +
                 "${rh.gs(app.aaps.core.ui.R.string.date)}: ${dateUtil.dateAndTimeString(bolus.timestamp)}"
         }
-        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size())
+        return rh.gs(app.aaps.core.ui.R.string.confirm_remove_multiple_items, selectedItems.size)
     }
 
     private fun removeSelected(selectedItems: SparseArray<EB>) {
         activity?.let { activity ->
-            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), Runnable {
+            OKDialog.showConfirmation(activity, rh.gs(app.aaps.core.ui.R.string.removerecord), getConfirmationText(selectedItems), {
                 selectedItems.forEach { _, extendedBolus ->
                     disposable += persistenceLayer.invalidateExtendedBolus(
                         id = extendedBolus.id,

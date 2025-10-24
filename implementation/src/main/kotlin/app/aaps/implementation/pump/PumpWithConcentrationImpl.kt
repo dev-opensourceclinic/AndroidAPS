@@ -1,5 +1,6 @@
 package app.aaps.implementation.pump
 
+import androidx.annotation.VisibleForTesting
 import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
@@ -23,7 +24,8 @@ class PumpWithConcentrationImpl @Inject constructor(
     private val config: Config
 ) : PumpWithConcentration {
 
-    private val activePumpInternal get() = (activePlugin as PluginStore).activePumpInternal
+    @VisibleForTesting val activePumpInternal get() = (activePlugin as PluginStore).activePumpInternal
+    override fun activePumpInternalClass() = activePumpInternal.javaClass
 
     override fun isInitialized(): Boolean = activePumpInternal.isInitialized()
     override fun isSuspended(): Boolean = activePumpInternal.isSuspended()

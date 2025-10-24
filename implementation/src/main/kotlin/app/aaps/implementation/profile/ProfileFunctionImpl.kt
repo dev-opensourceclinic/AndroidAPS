@@ -12,7 +12,7 @@ import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
 import app.aaps.core.interfaces.plugin.ActivePlugin
-import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileStore
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -48,7 +48,7 @@ class ProfileFunctionImpl @Inject constructor(
 ) : ProfileFunction {
 
     @VisibleForTesting
-    val cache = ConcurrentHashMap<Long, Profile?>()
+    val cache = ConcurrentHashMap<Long, EffectiveProfile?>()
 
     private val disposable = CompositeDisposable()
 
@@ -87,10 +87,10 @@ class ProfileFunctionImpl @Inject constructor(
 
     override fun isProfileValid(from: String): Boolean = getProfile() != null
 
-    override fun getProfile(): Profile? =
+    override fun getProfile(): EffectiveProfile? =
         getProfile(dateUtil.now())
 
-    override fun getProfile(time: Long): Profile? {
+    override fun getProfile(time: Long): EffectiveProfile? {
         val rounded = time - time % 1000
         // Clear cache after longer use
         synchronized(cache) {

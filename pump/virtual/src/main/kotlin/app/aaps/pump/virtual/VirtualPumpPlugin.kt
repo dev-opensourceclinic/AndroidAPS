@@ -11,8 +11,6 @@ import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
 import app.aaps.core.data.time.T
-import app.aaps.core.data.ue.Action
-import app.aaps.core.data.ue.Sources
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
@@ -26,6 +24,7 @@ import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.VirtualPump
@@ -210,15 +209,16 @@ open class VirtualPumpPlugin @Inject constructor(
         lastDataTime = System.currentTimeMillis()
         if (detailedBolusInfo.insulin > 0) {
             if (config.AAPSCLIENT) // do not store pump serial (record will not be marked PH)
-                disposable += persistenceLayer.insertOrUpdateBolus(
-                    bolus = detailedBolusInfo.createBolus(),
-                    action = Action.BOLUS,
-                    source = Sources.Pump
-                ).subscribe()
+                error("This should not happen. It must be handled inside Insulin dialog.")
+            // disposable += persistenceLayer.insertOrUpdateBolus(
+            //     bolus = detailedBolusInfo.createBolus(profile.iCfg),
+            //     action = Action.BOLUS,
+            //     source = Sources.Pump
+            // ).subscribe()
             else
                 pumpSync.syncBolusWithPumpId(
                     timestamp = detailedBolusInfo.timestamp,
-                    amount = detailedBolusInfo.insulin,
+                    amount = PumpInsulin(detailedBolusInfo.insulin),
                     type = detailedBolusInfo.bolusType,
                     pumpId = dateUtil.now(),
                     pumpType = pumpType ?: PumpType.GENERIC_AAPS,

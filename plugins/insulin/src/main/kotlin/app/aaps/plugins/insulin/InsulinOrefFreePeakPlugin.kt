@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
+import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.interfaces.configuration.Config
-import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.ProfileFunction
@@ -37,7 +37,7 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
     uiInteraction: UiInteraction
 ) : InsulinOrefBasePlugin(rh, profileFunction, rxBus, aapsLogger, config, hardLimits, uiInteraction) {
 
-    override val id get(): Insulin.InsulinType = Insulin.InsulinType.OREF_FREE_PEAK
+    override val id get(): InsulinType = InsulinType.OREF_FREE_PEAK
 
     override val friendlyName get(): String = rh.gs(R.string.free_peak_oref)
 
