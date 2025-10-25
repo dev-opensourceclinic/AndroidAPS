@@ -7,6 +7,7 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
@@ -69,12 +70,12 @@ class PumpWithConcentrationImpl @Inject constructor(
 
     override fun setNewBasalProfile(profile: Profile): PumpEnactResult =
         if (config.enableInsulinConcentration()) {
-            TODO("Not yet implemented")
+            activePumpInternal.setNewBasalProfile((profile as EffectiveProfile).toPump())
         } else activePumpInternal.setNewBasalProfile(profile)
 
     override fun isThisProfileSet(profile: Profile): Boolean =
         if (config.enableInsulinConcentration()) {
-            TODO("Not yet implemented")
+            activePumpInternal.isThisProfileSet((profile as EffectiveProfile).toPump())
         } else activePumpInternal.isThisProfileSet(profile)
 
     override val baseBasalRate: Double
@@ -90,7 +91,7 @@ class PumpWithConcentrationImpl @Inject constructor(
         tbrType: PumpSync.TemporaryBasalType
     ): PumpEnactResult =
         if (config.enableInsulinConcentration()) {
-            TODO("Not yet implemented")
+            activePumpInternal.setTempBasalAbsolute(absoluteRate / concentration, durationInMinutes, (profile as EffectiveProfile).toPump(), enforceNew, tbrType)
         } else activePumpInternal.setTempBasalAbsolute(absoluteRate, durationInMinutes, profile, enforceNew, tbrType)
 
     override fun setTempBasalPercent(
@@ -101,12 +102,12 @@ class PumpWithConcentrationImpl @Inject constructor(
         tbrType: PumpSync.TemporaryBasalType
     ): PumpEnactResult =
         if (config.enableInsulinConcentration()) {
-            TODO("Not yet implemented")
+            activePumpInternal.setTempBasalPercent(percent, durationInMinutes, (profile as EffectiveProfile).toPump(), enforceNew, tbrType)
         } else activePumpInternal.setTempBasalPercent(percent, durationInMinutes, profile, enforceNew, tbrType)
 
     override fun setExtendedBolus(insulin: Double, durationInMinutes: Int): PumpEnactResult =
         if (config.enableInsulinConcentration()) {
-            TODO("Not yet implemented")
+            activePumpInternal.setExtendedBolus(insulin / concentration, durationInMinutes)
         } else activePumpInternal.setExtendedBolus(insulin, durationInMinutes)
 
     override val pumpDescription: PumpDescription =
