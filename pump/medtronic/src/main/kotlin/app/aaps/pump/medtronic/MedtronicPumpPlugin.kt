@@ -23,6 +23,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
 import app.aaps.core.interfaces.pump.actions.CustomAction
@@ -830,7 +831,7 @@ class MedtronicPumpPlugin @Inject constructor(
 
                 val result = pumpSync.syncTemporaryBasalWithTempId(
                     timestamp = item.date,
-                    rate = item.rate,
+                    rate = PumpRate(item.rate),
                     duration = differenceS * 1000L,
                     isAbsolute = item.isAbsolute,
                     temporaryId = item.temporaryId,
@@ -1074,7 +1075,7 @@ class MedtronicPumpPlugin @Inject constructor(
 
                     val result = pumpSync.syncTemporaryBasalWithPumpId(
                         runningTBR.date,
-                        runningTBR.rate,
+                        PumpRate(runningTBR.rate),
                         differenceTime,
                         runningTBR.isAbsolute,
                         runningTBR.tbrType,

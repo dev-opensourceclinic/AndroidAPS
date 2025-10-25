@@ -4,6 +4,7 @@ import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
 import app.aaps.core.interfaces.pump.PumpInsulin
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.TemporaryBasalStorage
 import app.aaps.core.interfaces.utils.DateUtil
@@ -209,7 +210,7 @@ class GetRecordPacket(injector: HasAndroidInjector, private val recordIndex: Int
             BolusType.EXTENDED -> {
                 val newRecord = pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = bolusStartTime,
-                    amount = bolusExtendedDelivered,
+                    rate = PumpRate(bolusExtendedDelivered),
                     duration = bolusExtendedDuration,
                     isEmulatingTB = false,
                     pumpId = bolusStartTime,
@@ -235,7 +236,7 @@ class GetRecordPacket(injector: HasAndroidInjector, private val recordIndex: Int
                 )
                 pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = bolusStartTime,
-                    amount = bolusExtendedDelivered,
+                    rate = PumpRate(bolusExtendedDelivered),
                     duration = bolusExtendedDuration,
                     isEmulatingTB = false,
                     pumpId = bolusStartTime,
@@ -244,7 +245,7 @@ class GetRecordPacket(injector: HasAndroidInjector, private val recordIndex: Int
                 )
                 aapsLogger.error(
                     LTag.PUMPCOMM,
-                    "from record: ${newRecordInfo(newRecord)}EVENT COMBI BOLUS ${dateUtil.dateAndTimeString(bolusStartTime)} ($bolusStartTime) Bolus: ${bolusNormalDelivered}U Extended: $bolusExtendedDelivered THIS SHOULD NOT HAPPEN!!!"
+                    "from record: ${newRecordInfo(newRecord)}EVENT COMBO BOLUS ${dateUtil.dateAndTimeString(bolusStartTime)} ($bolusStartTime) Bolus: ${bolusNormalDelivered}U Extended: $bolusExtendedDelivered THIS SHOULD NOT HAPPEN!!!"
                 )
                 if (!newRecord && detailedBolusInfo != null) {
                     // detailedInfo can be from another similar record. Reinsert
@@ -295,7 +296,7 @@ class GetRecordPacket(injector: HasAndroidInjector, private val recordIndex: Int
 
                 val newRecord = pumpSync.syncTemporaryBasalWithPumpId(
                     timestamp = basalStartTime,
-                    rate = if (basalType == BasalType.ABSOLUTE_TEMP) basalRate else basalPercent.toDouble(),
+                    rate = PumpRate(if (basalType == BasalType.ABSOLUTE_TEMP) basalRate else basalPercent.toDouble()),
                     duration = duration,
                     isAbsolute = (basalType == BasalType.ABSOLUTE_TEMP),
                     type = PumpSync.TemporaryBasalType.NORMAL,
@@ -316,7 +317,7 @@ class GetRecordPacket(injector: HasAndroidInjector, private val recordIndex: Int
                 val duration = (basalEndTime - basalStartTime)
                 val newRecord = pumpSync.syncTemporaryBasalWithPumpId(
                     timestamp = basalStartTime,
-                    rate = 0.0,
+                    rate = PumpRate(0.0),
                     duration = duration,
                     isAbsolute = true,
                     type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,

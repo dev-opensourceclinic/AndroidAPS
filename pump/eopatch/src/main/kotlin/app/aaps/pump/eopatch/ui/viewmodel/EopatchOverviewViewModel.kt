@@ -7,6 +7,7 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
@@ -225,7 +226,7 @@ class EopatchOverviewViewModel @Inject constructor(
                            if (response.isSuccess) {
                                val result = pumpSync.syncTemporaryBasalWithPumpId(
                                    timestamp = dateUtil.now(),
-                                   rate = 0.0,
+                                   rate = PumpRate(0.0),
                                    duration = T.mins((pauseDurationHour * 60).toLong()).msecs(),
                                    isAbsolute = true,
                                    type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,

@@ -7,6 +7,7 @@ import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.pump.PumpInsulin
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.ui.UiInteraction
@@ -673,7 +674,7 @@ class MedtronicHistoryData @Inject constructor(
 
         val result = pumpSync.syncExtendedBolusWithPumpId(
             tryToGetByLocalTime(bolus.atechDateTime),
-            bolusDTO.deliveredAmount,
+            PumpRate(bolusDTO.deliveredAmount),
             durationMs,
             false,
             bolus.pumpId,
@@ -773,7 +774,7 @@ class MedtronicHistoryData @Inject constructor(
                         } else {
                             val result = pumpSync.syncTemporaryBasalWithTempId(
                                 tryToGetByLocalTime(tempBasalProcessDTO.atechDateTime),
-                                tbrEntry.insulinRate,
+                                PumpRate(tbrEntry.insulinRate),
                                 tempBasalProcessDTO.durationAsSeconds * 1000L,
                                 isAbsolute = !tbrEntry.isPercent,
                                 entryWithTempId.temporaryId,
@@ -815,7 +816,7 @@ class MedtronicHistoryData @Inject constructor(
                         } else {
                             val result = pumpSync.syncTemporaryBasalWithPumpId(
                                 tryToGetByLocalTime(tempBasalProcessDTO.atechDateTime),
-                                tbrEntry.insulinRate,
+                                PumpRate(tbrEntry.insulinRate),
                                 tempBasalProcessDTO.durationAsSeconds * 1000L,
                                 !tbrEntry.isPercent,
                                 PumpSync.TemporaryBasalType.NORMAL,
@@ -1085,7 +1086,7 @@ class MedtronicHistoryData @Inject constructor(
             } else {
                 val result = pumpSync.syncTemporaryBasalWithPumpId(
                     tryToGetByLocalTime(tempBasalProcess.itemOne.atechDateTime),
-                    0.0,
+                    PumpRate(0.0),
                     tempBasalProcess.durationAsSeconds * 1000L,
                     true,
                     PumpSync.TemporaryBasalType.PUMP_SUSPEND,

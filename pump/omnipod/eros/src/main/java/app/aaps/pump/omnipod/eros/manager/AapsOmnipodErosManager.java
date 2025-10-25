@@ -26,6 +26,7 @@ import app.aaps.core.interfaces.profile.Profile;
 import app.aaps.core.interfaces.pump.DetailedBolusInfo;
 import app.aaps.core.interfaces.pump.PumpEnactResult;
 import app.aaps.core.interfaces.pump.PumpInsulin;
+import app.aaps.core.interfaces.pump.PumpRate;
 import app.aaps.core.interfaces.pump.PumpSync;
 import app.aaps.core.interfaces.pump.defs.PumpTypeExtensionKt;
 import app.aaps.core.interfaces.resources.ResourceHelper;
@@ -753,7 +754,7 @@ public class AapsOmnipodErosManager {
 
             pumpSync.syncTemporaryBasalWithPumpId(
                     System.currentTimeMillis(),
-                    0.0,
+                    new PumpRate(0.0),
                     OmnipodConstants.SERVICE_DURATION.getMillis(),
                     true,
                     PumpSync.TemporaryBasalType.EMULATED_PUMP_SUSPEND,
@@ -828,7 +829,7 @@ public class AapsOmnipodErosManager {
 
                 pumpSync.syncTemporaryBasalWithPumpId(
                         System.currentTimeMillis(),
-                        previouslyRunningTempBasal.getRate(),
+                        new PumpRate(previouslyRunningTempBasal.getRate()),
                         minutesRemaining,
                         true,
                         PumpSync.TemporaryBasalType.NORMAL,
@@ -843,7 +844,7 @@ public class AapsOmnipodErosManager {
     private void addTempBasalTreatment(long time, long pumpId, TempBasalPair tempBasalPair) {
         pumpSync.syncTemporaryBasalWithPumpId(
                 time,
-                tempBasalPair.getInsulinRate(),
+                new PumpRate(tempBasalPair.getInsulinRate()),
                 T.Companion.mins(tempBasalPair.getDurationMinutes()).msecs(),
                 true,
                 PumpSync.TemporaryBasalType.NORMAL,

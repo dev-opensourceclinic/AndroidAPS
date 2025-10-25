@@ -4,6 +4,7 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.pump.PumpInsulin
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.rx.events.EventPumpStatusChanged
 import app.aaps.pump.dana.DanaPump
 import app.aaps.pump.dana.R
@@ -79,7 +80,7 @@ class MsgHistoryEventsV2(
                 val temporaryBasalInfo = temporaryBasalStorage.findTemporaryBasal(datetime, param1.toDouble())
                 pumpSync.syncTemporaryBasalWithPumpId(
                     timestamp = datetime,
-                    rate = param1.toDouble(),
+                    rate = PumpRate(param1.toDouble()),
                     duration = T.mins(param2.toLong()).msecs(),
                     isAbsolute = false,
                     type = temporaryBasalInfo?.type,
@@ -107,7 +108,7 @@ class MsgHistoryEventsV2(
             DanaPump.HistoryEntry.EXTENDED_START      -> {
                 val newRecord = pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    rate = PumpRate(param1 / 100.0),
                     duration = T.mins(param2.toLong()).msecs(),
                     isEmulatingTB = false,
                     pumpId = datetime,
@@ -184,7 +185,7 @@ class MsgHistoryEventsV2(
             DanaPump.HistoryEntry.DUAL_EXTENDED_START -> {
                 val newRecord = pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    rate = PumpRate(param1 / 100.0),
                     duration = T.mins(param2.toLong()).msecs(),
                     isEmulatingTB = false,
                     pumpId = datetime,

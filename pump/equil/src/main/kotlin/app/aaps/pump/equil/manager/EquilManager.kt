@@ -10,6 +10,7 @@ import app.aaps.core.interfaces.profile.Profile.ProfileValue
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpInsulin
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
@@ -188,7 +189,7 @@ class EquilManager @Inject constructor(
                     setTempBasal(tempBasalRecord)
                     pumpSync.syncTemporaryBasalWithPumpId(
                         currentTime,
-                        insulin,
+                        PumpRate(insulin),
                         time.toLong() * 60 * 1000,
                         true,
                         PumpSync.TemporaryBasalType.NORMAL,
@@ -233,7 +234,7 @@ class EquilManager @Inject constructor(
                 } else {
                     pumpSync.syncExtendedBolusWithPumpId(
                         currentTimeMillis,
-                        insulin,
+                        PumpRate(insulin),
                         time.toLong() * 60 * 1000,
                         true,
                         currentTimeMillis,

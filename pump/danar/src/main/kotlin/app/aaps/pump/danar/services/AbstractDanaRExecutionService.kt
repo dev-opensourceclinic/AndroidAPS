@@ -19,6 +19,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
@@ -257,7 +258,8 @@ abstract class AbstractDanaRExecutionService : DaggerService() {
                     aapsLogger.error(LTag.PUMP, "Different temporary basal found running AAPS: " + (temporaryBasal.toString() + " DanaPump " + danaPump.temporaryBasalToString()))
                     pumpSync.syncTemporaryBasalWithPumpId(
                         danaPump.tempBasalStart,
-                        danaPump.tempBasalPercent.toDouble(), danaPump.tempBasalDuration,
+                        PumpRate(danaPump.tempBasalPercent.toDouble()),
+                        danaPump.tempBasalDuration,
                         false,
                         PumpSync.TemporaryBasalType.NORMAL,
                         danaPump.tempBasalStart,
@@ -279,7 +281,8 @@ abstract class AbstractDanaRExecutionService : DaggerService() {
             if (danaPump.isTempBasalInProgress) { // Create new
                 pumpSync.syncTemporaryBasalWithPumpId(
                     danaPump.tempBasalStart,
-                    danaPump.tempBasalPercent.toDouble(), danaPump.tempBasalDuration,
+                    PumpRate(danaPump.tempBasalPercent.toDouble()),
+                    danaPump.tempBasalDuration,
                     false,
                     PumpSync.TemporaryBasalType.NORMAL,
                     danaPump.tempBasalStart,
@@ -300,7 +303,7 @@ abstract class AbstractDanaRExecutionService : DaggerService() {
                     aapsLogger.error(LTag.PUMP, "Different extended bolus found running AAPS: " + (extendedBolus.toString() + " DanaPump " + danaPump.extendedBolusToString()))
                     pumpSync.syncExtendedBolusWithPumpId(
                         danaPump.extendedBolusStart,
-                        danaPump.extendedBolusAmount,
+                        PumpRate(danaPump.extendedBolusAmount),
                         danaPump.extendedBolusDuration,
                         activePlugin.activePump.isFakingTempsByExtendedBoluses,
                         danaPump.tempBasalStart,
@@ -324,7 +327,7 @@ abstract class AbstractDanaRExecutionService : DaggerService() {
                 aapsLogger.error(LTag.PUMP, "Extended bolus should not be running:  DanaPump " + danaPump.extendedBolusToString())
                 pumpSync.syncExtendedBolusWithPumpId(
                     danaPump.extendedBolusStart,
-                    danaPump.extendedBolusAmount,
+                    PumpRate(danaPump.extendedBolusAmount),
                     danaPump.extendedBolusDuration,
                     activePlugin.activePump.isFakingTempsByExtendedBoluses,
                     danaPump.tempBasalStart,

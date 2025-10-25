@@ -5,7 +5,7 @@ package app.aaps.core.interfaces.pump
  *
  * Example: when using U20 insulin and user request 0.6U insulin,
  * pump should deliver 0.6 * (100 / 20) = 3.0U.
- * In this case pump driver must use Insulin(3.0) which will be translated
+ * In this case pump driver must use PumpInsulin(3.0) which will be translated
  * by PumpSync back to 0.6U to store in database
  */
 class PumpInsulin(private val concentratedUnits: Double) {
@@ -22,4 +22,6 @@ class PumpInsulin(private val concentratedUnits: Double) {
         else false
 
     override fun hashCode(): Int = (concentratedUnits * 10000).toInt()
+
+    override fun toString(): String = "PumpInsulin($concentratedUnits)"
 }

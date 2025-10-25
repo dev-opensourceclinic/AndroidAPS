@@ -24,6 +24,7 @@ import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.actions.CustomAction
 import app.aaps.core.interfaces.pump.actions.CustomActionType
@@ -177,7 +178,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
                 aapsLogger.info(LTag.PUMP, "createFakeTBRWhenNoActivePod")
                 pumpSync.syncTemporaryBasalWithPumpId(
                     timestamp = System.currentTimeMillis(),
-                    rate = 0.0,
+                    rate = PumpRate(0.0),
                     duration = T.mins(PodConstants.MAX_POD_LIFETIME.toMinutes()).msecs(),
                     isAbsolute = true,
                     type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,
@@ -353,7 +354,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
             if (tbr == null || tbr.rate != 0.0) {
                 pumpSync.syncTemporaryBasalWithPumpId(
                     timestamp = System.currentTimeMillis(),
-                    rate = 0.0,
+                    rate = PumpRate(0.0),
                     duration = T.mins(PodConstants.MAX_POD_LIFETIME.toMinutes()).msecs(),
                     isAbsolute = true,
                     type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,
@@ -880,7 +881,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
         )
         val ret = pumpSync.syncTemporaryBasalWithPumpId(
             timestamp = historyEntry.createdAt,
-            rate = absoluteRate,
+            rate = PumpRate(absoluteRate),
             duration = T.mins(durationInMinutes).msecs(),
             isAbsolute = true,
             type = tbrType,

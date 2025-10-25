@@ -18,6 +18,7 @@ import app.aaps.core.interfaces.pump.Dana
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
 import app.aaps.core.interfaces.queue.CommandQueue
@@ -213,7 +214,7 @@ abstract class AbstractDanaRPlugin protected constructor(
             aapsLogger.debug(LTag.PUMP, "setTempBasalPercent: OK")
             pumpSync.syncTemporaryBasalWithPumpId(
                 danaPump.tempBasalStart,
-                danaPump.tempBasalPercent.toDouble(),
+                PumpRate(danaPump.tempBasalPercent.toDouble()),
                 danaPump.tempBasalDuration,
                 false,
                 tbrType,
@@ -266,7 +267,7 @@ abstract class AbstractDanaRPlugin protected constructor(
             if (!preferences.get(DanaBooleanKey.UseExtended)) result.bolusDelivered(danaPump.extendedBolusAmount)
             pumpSync.syncExtendedBolusWithPumpId(
                 danaPump.extendedBolusStart,
-                danaPump.extendedBolusAmount,
+                PumpRate(danaPump.extendedBolusAmount),
                 danaPump.extendedBolusDuration,
                 preferences.get(DanaBooleanKey.UseExtended),
                 danaPump.extendedBolusStart,

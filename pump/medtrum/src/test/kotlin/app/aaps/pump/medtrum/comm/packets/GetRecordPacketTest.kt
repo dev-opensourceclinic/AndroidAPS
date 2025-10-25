@@ -5,6 +5,7 @@ import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
 import app.aaps.core.interfaces.pump.PumpInsulin
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.pump.medtrum.MedtrumTestBase
 import app.aaps.pump.medtrum.util.MedtrumTimeUtil
@@ -156,7 +157,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncExtendedBolusWithPumpId(
             timestamp = timestamp,
-            amount = amount,
+            rate = PumpRate(amount),
             duration = duration,
             isEmulatingTB = false,
             pumpId = timestamp,
@@ -194,7 +195,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         )
         Mockito.verify(pumpSync).syncExtendedBolusWithPumpId(
             timestamp = timestamp,
-            amount = amountExtended,
+            rate = PumpRate(amountExtended),
             duration = duration,
             isEmulatingTB = false,
             pumpId = timestamp,
@@ -221,7 +222,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = startTime,
-            rate = rate,
+            rate = PumpRate(rate),
             duration = duration,
             isAbsolute = true,
             type = PumpSync.TemporaryBasalType.NORMAL,
@@ -249,7 +250,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = startTime,
-            rate = rate,
+            rate = PumpRate(rate),
             duration = duration,
             isAbsolute = false,
             type = PumpSync.TemporaryBasalType.NORMAL,
@@ -277,7 +278,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = startTime,
-            rate = rate,
+            rate = PumpRate(rate),
             duration = duration,
             isAbsolute = true,
             type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,
@@ -313,7 +314,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = endTime,
-            rate = 0.0,
+            rate = PumpRate(0.0),
             duration = T.mins(4800L).msecs(),
             isAbsolute = true,
             type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,
@@ -349,7 +350,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = endTime,
-            rate = 0.0,
+            rate = PumpRate(0.0),
             duration = T.mins(4800L).msecs(),
             isAbsolute = true,
             type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,
@@ -389,7 +390,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync, Mockito.never()).syncTemporaryBasalWithPumpId(
             timestamp = endTime,
-            rate = 0.0,
+            rate = PumpRate(0.0),
             duration = T.mins(4800L).msecs(),
             isAbsolute = true,
             type = PumpSync.TemporaryBasalType.PUMP_SUSPEND,
