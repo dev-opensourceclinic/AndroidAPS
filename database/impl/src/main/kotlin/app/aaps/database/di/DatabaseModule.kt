@@ -204,25 +204,22 @@ open class DatabaseModule {
 
     internal val migration31to32 = object : Migration(31, 32) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            // Migration pour la table boluses
+            // Migration of boluses table
             db.execSQL("ALTER TABLE `boluses` ADD COLUMN `insulinPeakTime` INTEGER")
             db.execSQL("ALTER TABLE `boluses` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
-
-            // Copier les données de peak vers insulinPeakTime
+            // Copy data from peak to insulinPeakTime
             db.execSQL("UPDATE `boluses` SET `insulinPeakTime` = `peak`")
 
-            // Migration pour la table effectiveProfileSwitches
+            // Migration of effectiveProfileSwitches table
             db.execSQL("ALTER TABLE `effectiveProfileSwitches` ADD COLUMN `insulinPeakTime` INTEGER")
             db.execSQL("ALTER TABLE `effectiveProfileSwitches` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
-
-            // Copier les données de peak vers insulinPeakTime
+            // Copy data from peak to insulinPeakTime
             db.execSQL("UPDATE `effectiveProfileSwitches` SET `insulinPeakTime` = `peak`")
 
-            // Migration pour la table profileSwitches
+            // Migration of profileSwitches table
             db.execSQL("ALTER TABLE `profileSwitches` ADD COLUMN `insulinPeakTime` INTEGER")
             db.execSQL("ALTER TABLE `profileSwitches` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
-
-            // Copier les données de peak vers insulinPeakTime
+            // Copy data from peak to insulinPeakTime
             db.execSQL("UPDATE `profileSwitches` SET `insulinPeakTime` = `peak`")
 
             // Custom indexes must be dropped on migration to pass room schema checking after upgrade
