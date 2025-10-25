@@ -78,5 +78,5 @@ class TestPumpPlugin(val rh: ResourceHelper) : PumpWithConcentration {
     override fun timezoneOrDSTChanged(timeChangeType: TimeChangeType) { /* not needed */
     }
 
-    override fun activePumpInternalClass(): Class<out Pump> = TestPumpPlugin::class.java
+    override fun selectedActivePump(): Pump = this
 }

@@ -896,7 +896,7 @@ class LoopPlugin @Inject constructor(
         commandQueue.bolus(detailedBolusInfo, callback)
     }
 
-    private fun allowPercentage(): Boolean = activePlugin.activePump.activePumpInternalClass() == VirtualPump::class.java
+    private fun allowPercentage(): Boolean = activePlugin.activePump.selectedActivePump() is VirtualPump
 
     /**
      * Simulate pump disconnection

@@ -106,7 +106,7 @@ class AndroidPermissionImpl @Inject constructor(
     @SuppressLint("MissingPermission")
     @Synchronized
     override fun notifyForBtConnectPermission(activity: FragmentActivity) {
-        if (activePlugin.activePump !is VirtualPump)
+        if (activePlugin.activePump.selectedActivePump() !is VirtualPump)
         //  Manifest.permission.BLUETOOTH_CONNECT
             if (permissionNotGranted(activity, Manifest.permission.BLUETOOTH_CONNECT) || permissionNotGranted(activity, Manifest.permission.BLUETOOTH_SCAN))
                 uiInteraction.addNotification(

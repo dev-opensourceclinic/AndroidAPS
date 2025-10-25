@@ -66,7 +66,7 @@ class PumpSyncImplementation @Inject constructor(
     override fun verifyPumpIdentification(type: PumpType, serialNumber: String): Boolean {
         val storedType = preferences.get(StringNonKey.ActivePumpType)
         val storedSerial = preferences.get(StringNonKey.ActivePumpSerialNumber)
-        if (activePlugin.activePump is VirtualPump) return true
+        if (activePlugin.activePump.selectedActivePump() is VirtualPump) return true
         if (type.description == storedType && serialNumber == storedSerial) return true
         aapsLogger.debug(LTag.PUMP, "verifyPumpIdentification failed for $type $serialNumber")
         return false
@@ -94,7 +94,7 @@ class PumpSyncImplementation @Inject constructor(
             return timestamp > dateUtil.now() - T.mins(1).msecs() // allow first record to be 1 min old
         }
 
-        if (activePlugin.activePump is VirtualPump || (type.description == storedType && serialNumber == storedSerial && timestamp >= storedTimestamp)) {
+        if (activePlugin.activePump.selectedActivePump() is VirtualPump || (type.description == storedType && serialNumber == storedSerial && timestamp >= storedTimestamp)) {
             // data match
             return true
         }
