@@ -12,7 +12,7 @@ import app.aaps.core.data.pump.defs.PumpTempBasalType
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.db.PersistenceLayer
-import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.defs.baseBasalRange
 import app.aaps.core.interfaces.pump.defs.hasExtendedBasals
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -41,7 +41,7 @@ class VirtualPumpFragment : DaggerFragment() {
     @Inject lateinit var dateUtil: DateUtil
     @Inject lateinit var fabricPrivacy: FabricPrivacy
     @Inject lateinit var virtualPumpPlugin: VirtualPumpPlugin
-    @Inject lateinit var profileFunction: ProfileFunction
+    @Inject lateinit var pumpSync: PumpSync
     @Inject lateinit var aapsSchedulers: AapsSchedulers
     @Inject lateinit var decimalFormatter: DecimalFormatter
     @Inject lateinit var persistenceLayer: PersistenceLayer

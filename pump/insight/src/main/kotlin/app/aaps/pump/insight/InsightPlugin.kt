@@ -26,7 +26,6 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Insight
 import app.aaps.core.interfaces.pump.Pump
@@ -141,7 +140,6 @@ class InsightPlugin @Inject constructor(
     preferences: Preferences,
     commandQueue: CommandQueue,
     private val rxBus: RxBus,
-    private val profileFunction: ProfileFunction,
     private val context: Context,
     private val dateUtil: DateUtil,
     private val insightDbHelper: InsightDbHelper,
@@ -883,7 +881,7 @@ class InsightPlugin @Inject constructor(
                 status.put("timestamp", dateUtil.toISOString(service.lastConnected))
                 extended.put("Version", version)
                 try {
-                    extended.put("ActiveProfile", profileFunction.getProfileName())
+                    extended.put("ActiveProfile", profileName)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
