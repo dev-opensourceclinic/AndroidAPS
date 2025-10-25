@@ -156,7 +156,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         // Expected values
         Mockito.verify(pumpSync).syncExtendedBolusWithPumpId(
             timestamp = timestamp,
-            amount = amount,
+            rate = amount,
             duration = duration,
             isEmulatingTB = false,
             pumpId = timestamp,
@@ -194,7 +194,7 @@ class GetRecordPacketTest : MedtrumTestBase() {
         )
         Mockito.verify(pumpSync).syncExtendedBolusWithPumpId(
             timestamp = timestamp,
-            amount = amountExtended,
+            rate = amountExtended,
             duration = duration,
             isEmulatingTB = false,
             pumpId = timestamp,

@@ -26,6 +26,7 @@ import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.VirtualPump
 import app.aaps.core.interfaces.pump.defs.fillFor
@@ -239,7 +240,7 @@ open class VirtualPumpPlugin @Inject constructor(
         result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         pumpSync.syncTemporaryBasalWithPumpId(
             timestamp = dateUtil.now(),
-            rate = absoluteRate,
+            rate = PumpRate(absoluteRate),
             duration = T.mins(durationInMinutes.toLong()).msecs(),
             isAbsolute = true,
             type = tbrType,
@@ -264,7 +265,7 @@ open class VirtualPumpPlugin @Inject constructor(
         result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         pumpSync.syncTemporaryBasalWithPumpId(
             timestamp = dateUtil.now(),
-            rate = percent.toDouble(),
+            rate = PumpRate(percent.toDouble()),
             duration = T.mins(durationInMinutes.toLong()).msecs(),
             isAbsolute = false,
             type = tbrType,
@@ -289,7 +290,7 @@ open class VirtualPumpPlugin @Inject constructor(
         result.comment = rh.gs(app.aaps.core.ui.R.string.virtualpump_resultok)
         pumpSync.syncExtendedBolusWithPumpId(
             timestamp = dateUtil.now(),
-            amount = insulin,
+            rate = PumpRate(insulin),
             duration = T.mins(durationInMinutes.toLong()).msecs(),
             isEmulatingTB = false,
             pumpId = dateUtil.now(),

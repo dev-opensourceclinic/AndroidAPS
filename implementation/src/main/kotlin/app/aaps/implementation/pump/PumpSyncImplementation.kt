@@ -20,6 +20,7 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.PumpInsulin
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.VirtualPump
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -310,7 +311,7 @@ class PumpSyncImplementation @Inject constructor(
 
     override fun syncTemporaryBasalWithPumpId(
         timestamp: Long,
-        rate: Double,
+        rate: PumpRate,
         duration: Long,
         isAbsolute: Boolean,
         type: PumpSync.TemporaryBasalType?,
@@ -319,21 +320,26 @@ class PumpSyncImplementation @Inject constructor(
         pumpSerial: String
     ): Boolean {
         if (!confirmActivePump(timestamp, pumpType, pumpSerial)) return false
-        val temporaryBasal = TB(
-            timestamp = timestamp,
-            rate = rate,
-            duration = duration,
-            type = type?.toDbType() ?: TB.Type.NORMAL,
-            isAbsolute = isAbsolute,
-            ids = IDs(
-                pumpId = pumpId,
-                pumpType = pumpType,
-                pumpSerial = pumpSerial
+        return profileFunction.getProfile(timestamp)?.let { profile ->
+            val temporaryBasal = TB(
+                timestamp = timestamp,
+                rate = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
+                duration = duration,
+                type = type?.toDbType() ?: TB.Type.NORMAL,
+                isAbsolute = isAbsolute,
+                ids = IDs(
+                    pumpId = pumpId,
+                    pumpType = pumpType,
+                    pumpSerial = pumpSerial
+                )
             )
-        )
-        return persistenceLayer.syncPumpTemporaryBasal(temporaryBasal, type?.toDbType())
+            persistenceLayer.syncPumpTemporaryBasal(temporaryBasal, type?.toDbType())
             .map { result -> result.inserted.isNotEmpty() }
             .blockingGet()
+        } ?: run {
+            aapsLogger.debug(LTag.DATABASE, "Storing of TemporaryBasal $rate ${dateUtil.dateAndTimeAndSecondsString(timestamp)} ignored. No profile running.")
+            false
+        }
     }
 
     override fun syncStopTemporaryBasalWithPumpId(timestamp: Long, endPumpId: Long, pumpType: PumpType, pumpSerial: String, ignorePumpIds: Boolean): Boolean {
@@ -345,7 +351,7 @@ class PumpSyncImplementation @Inject constructor(
 
     override fun addTemporaryBasalWithTempId(
         timestamp: Long,
-        rate: Double,
+        rate: PumpRate,
         duration: Long,
         isAbsolute: Boolean,
         tempId: Long,
@@ -354,26 +360,31 @@ class PumpSyncImplementation @Inject constructor(
         pumpSerial: String
     ): Boolean {
         if (!confirmActivePump(timestamp, pumpType, pumpSerial)) return false
-        val temporaryBasal = TB(
-            timestamp = timestamp,
-            rate = rate,
-            duration = duration,
-            type = type.toDbType(),
-            isAbsolute = isAbsolute,
-            ids = IDs(
-                temporaryId = tempId,
-                pumpType = pumpType,
-                pumpSerial = pumpSerial
+        return profileFunction.getProfile(timestamp)?.let { profile ->
+            val temporaryBasal = TB(
+                timestamp = timestamp,
+                rate = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
+                duration = duration,
+                type = type.toDbType(),
+                isAbsolute = isAbsolute,
+                ids = IDs(
+                    temporaryId = tempId,
+                    pumpType = pumpType,
+                    pumpSerial = pumpSerial
+                )
             )
-        )
-        return persistenceLayer.insertTemporaryBasalWithTempId(temporaryBasal)
-            .map { result -> result.inserted.isNotEmpty() }
-            .blockingGet()
+            persistenceLayer.insertTemporaryBasalWithTempId(temporaryBasal)
+                .map { result -> result.inserted.isNotEmpty() }
+                .blockingGet()
+        } ?: run {
+            aapsLogger.debug(LTag.DATABASE, "Storing of TemporaryBasal $rate ${dateUtil.dateAndTimeAndSecondsString(timestamp)} ignored. No profile running.")
+            false
+        }
     }
 
     override fun syncTemporaryBasalWithTempId(
         timestamp: Long,
-        rate: Double,
+        rate: PumpRate,
         duration: Long,
         isAbsolute: Boolean,
         temporaryId: Long,
@@ -383,22 +394,27 @@ class PumpSyncImplementation @Inject constructor(
         pumpSerial: String
     ): Boolean {
         if (!confirmActivePump(timestamp, pumpType, pumpSerial)) return false
-        val temporaryBasal = TB(
-            timestamp = timestamp,
-            rate = rate,
-            duration = duration,
-            type = TB.Type.NORMAL, // not used for update
-            isAbsolute = isAbsolute,
-            ids = IDs(
-                temporaryId = temporaryId,
-                pumpId = pumpId,
-                pumpType = pumpType,
-                pumpSerial = pumpSerial
+        return profileFunction.getProfile(timestamp)?.let { profile ->
+            val temporaryBasal = TB(
+                timestamp = timestamp,
+                rate = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
+                duration = duration,
+                type = TB.Type.NORMAL, // not used for update
+                isAbsolute = isAbsolute,
+                ids = IDs(
+                    temporaryId = temporaryId,
+                    pumpId = pumpId,
+                    pumpType = pumpType,
+                    pumpSerial = pumpSerial
+                )
             )
-        )
-        return persistenceLayer.syncPumpTemporaryBasalWithTempId(temporaryBasal, type?.toDbType())
-            .map { result -> result.updated.isNotEmpty() }
-            .blockingGet()
+            persistenceLayer.syncPumpTemporaryBasalWithTempId(temporaryBasal, type?.toDbType())
+                .map { result -> result.updated.isNotEmpty() }
+                .blockingGet()
+        } ?: run {
+            aapsLogger.debug(LTag.DATABASE, "Storing of TemporaryBasal $rate ${dateUtil.dateAndTimeAndSecondsString(timestamp)} ignored. No profile running.")
+            false
+        }
     }
 
     override fun invalidateTemporaryBasal(id: Long, sources: Sources, timestamp: Long): Boolean =
@@ -421,22 +437,27 @@ class PumpSyncImplementation @Inject constructor(
             .map { result -> result.invalidated.isNotEmpty() }
             .blockingGet()
 
-    override fun syncExtendedBolusWithPumpId(timestamp: Long, amount: Double, duration: Long, isEmulatingTB: Boolean, pumpId: Long, pumpType: PumpType, pumpSerial: String): Boolean {
+    override fun syncExtendedBolusWithPumpId(timestamp: Long, rate: PumpRate, duration: Long, isEmulatingTB: Boolean, pumpId: Long, pumpType: PumpType, pumpSerial: String): Boolean {
         if (!confirmActivePump(timestamp, pumpType, pumpSerial)) return false
-        val extendedBolus = EB(
-            timestamp = timestamp,
-            amount = amount,
-            duration = duration,
-            isEmulatingTempBasal = isEmulatingTB,
-            ids = IDs(
-                pumpId = pumpId,
-                pumpType = pumpType,
-                pumpSerial = pumpSerial
+        return profileFunction.getProfile(timestamp)?.let { profile ->
+            val extendedBolus = EB(
+                timestamp = timestamp,
+                amount = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = true),
+                duration = duration,
+                isEmulatingTempBasal = isEmulatingTB,
+                ids = IDs(
+                    pumpId = pumpId,
+                    pumpType = pumpType,
+                    pumpSerial = pumpSerial
+                )
             )
-        )
-        return persistenceLayer.syncPumpExtendedBolus(extendedBolus)
-            .map { result -> result.inserted.isNotEmpty() }
-            .blockingGet()
+            persistenceLayer.syncPumpExtendedBolus(extendedBolus)
+                .map { result -> result.inserted.isNotEmpty() }
+                .blockingGet()
+        } ?: run {
+            aapsLogger.debug(LTag.DATABASE, "Storing of TemporaryBasal $rate ${dateUtil.dateAndTimeAndSecondsString(timestamp)} ignored. No profile running.")
+            false
+        }
     }
 
     override fun syncStopExtendedBolusWithPumpId(timestamp: Long, endPumpId: Long, pumpType: PumpType, pumpSerial: String): Boolean {

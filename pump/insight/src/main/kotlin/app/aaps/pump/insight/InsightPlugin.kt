@@ -33,6 +33,7 @@ import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.PumpState.TemporaryBasal
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
@@ -1143,7 +1144,7 @@ class InsightPlugin @Inject constructor(
                 if (temporaryBasal.rate != 100.0) {
                     pumpSync.syncTemporaryBasalWithPumpId(
                         timestamp = temporaryBasal.timestamp,
-                        rate = temporaryBasal.rate,
+                        rate = PumpRate(temporaryBasal.rate),
                         duration = temporaryBasal.duration,
                         isAbsolute = temporaryBasal.isAbsolute,
                         type = temporaryBasal.type,
@@ -1359,7 +1360,7 @@ class InsightPlugin @Inject constructor(
             if (event.bolusType == BolusType.EXTENDED || event.bolusType == BolusType.MULTIWAVE) {
                 if (profileFunction.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = timestamp,
-                    amount = event.extendedAmount,
+                    rate = PumpRate(event.extendedAmount),
                     duration = T.mins(event.duration.toLong()).msecs(),
                     isEmulatingTB = isFakingTempsByExtendedBoluses,
                     pumpId = insightBolusID.id,
@@ -1409,7 +1410,7 @@ class InsightPlugin @Inject constructor(
             if (event.bolusType == BolusType.EXTENDED || event.bolusType == BolusType.MULTIWAVE) {
                 if (event.duration > 0 && profileFunction.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = insightBolusID.timestamp,
-                    amount = event.extendedAmount,
+                    rate = PumpRate(event.extendedAmount),
                     duration = timestamp - startTimestamp,
                     isEmulatingTB = isFakingTempsByExtendedBoluses,
                     pumpId = insightBolusID.id,

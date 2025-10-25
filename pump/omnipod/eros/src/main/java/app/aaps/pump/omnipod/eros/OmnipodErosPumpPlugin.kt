@@ -33,6 +33,7 @@ import app.aaps.core.interfaces.pump.OmnipodEros
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.PumpState
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
@@ -349,7 +350,7 @@ class OmnipodErosPumpPlugin @Inject constructor(
 
                 pumpSync.syncTemporaryBasalWithPumpId(
                     podStateManager.tempBasalStartTime.millis,
-                    podStateManager.tempBasalAmount,
+                    PumpRate(podStateManager.tempBasalAmount),
                     podStateManager.tempBasalDuration.millis,
                     true,
                     TemporaryBasalType.NORMAL,

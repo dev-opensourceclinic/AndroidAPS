@@ -6,6 +6,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
 import app.aaps.core.interfaces.pump.PumpInsulin
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.TemporaryBasalStorage
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -145,7 +146,7 @@ open class DanaRSPacketAPSHistoryEvents @Inject constructor(
                 val temporaryBasalInfo = temporaryBasalStorage.findTemporaryBasal(datetime, param1.toDouble())
                 val newRecord = pumpSync.syncTemporaryBasalWithPumpId(
                     timestamp = datetime,
-                    rate = param1.toDouble(),
+                    rate = PumpRate(param1.toDouble()),
                     duration = T.mins(param2.toLong()).msecs(),
                     isAbsolute = false,
                     type = temporaryBasalInfo?.type,
@@ -177,7 +178,7 @@ open class DanaRSPacketAPSHistoryEvents @Inject constructor(
             DanaPump.HistoryEntry.EXTENDED_START      -> {
                 val newRecord = pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    rate = PumpRate(param1 / 100.0),
                     duration = T.mins(param2.toLong()).msecs(),
                     isEmulatingTB = false,
                     pumpId = pumpId,
@@ -250,7 +251,7 @@ open class DanaRSPacketAPSHistoryEvents @Inject constructor(
             DanaPump.HistoryEntry.DUAL_EXTENDED_START -> {
                 val newRecord = pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = datetime,
-                    amount = param1 / 100.0,
+                    rate = PumpRate(param1 / 100.0),
                     duration = T.mins(param2.toLong()).msecs(),
                     isEmulatingTB = false,
                     pumpId = pumpId,

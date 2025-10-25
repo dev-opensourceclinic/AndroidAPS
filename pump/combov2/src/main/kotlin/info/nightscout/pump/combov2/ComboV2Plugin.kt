@@ -32,6 +32,7 @@ import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.defs.fillFor
 import app.aaps.core.interfaces.queue.CommandQueue
@@ -2021,7 +2022,7 @@ class ComboV2Plugin @Inject constructor(
             is ComboCtlPump.Event.ExtendedBolusStarted -> {
                 pumpSync.syncExtendedBolusWithPumpId(
                     event.timestamp.toEpochMilliseconds(),
-                    event.totalBolusAmount.cctlBolusToIU(),
+                    PumpRate(event.totalBolusAmount.cctlBolusToIU()),
                     event.totalDurationMinutes.toLong() * 60 * 1000,
                     false,
                     event.bolusId,
@@ -2051,7 +2052,7 @@ class ComboV2Plugin @Inject constructor(
                 }
                 pumpSync.syncTemporaryBasalWithPumpId(
                     timestamp = tbrStartTimestampInMs,
-                    rate = event.tbr.percentage.toDouble(),
+                    rate = PumpRate(event.tbr.percentage.toDouble()),
                     duration = event.tbr.durationInMinutes.toLong() * 60 * 1000,
                     isAbsolute = false,
                     type = tbrType,
