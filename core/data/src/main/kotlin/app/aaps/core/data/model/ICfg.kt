@@ -30,20 +30,11 @@ data class ICfg(
      * Insulin concentration (5.0 for U20, 0.5 for U200 insulin)
      * within my previous PR, concentration value was in the other direction... 2.0 for U200 or 0.2 for U20
      */
-    var concentration: Double = 1.0,
-    /**
-     * Insulin configuration is based on this template
-     *
-     * @Philoul is this necessary? It should be described enough by peak and dia
-     * Here Template was used to make peak values "Read Only", if based on RapidActing, UltraRapidActing or Lyumjev templates,
-     * or Read/Write if iCfg has been created from FreePeak template. (insulin managed within a unique InsulinPlugin the same way profilePlugin Manage profiles)
-     * We can probably remove insulinTemplate and have peak value as "Read/Write" within InsulinPlugin whatever the template used to initialise insulin...
-     */
-    var insulinTemplate: InsulinType = InsulinType.UNKNOWN
+    var concentration: Double = 1.0
 ) {
 
-    constructor(insulinLabel: String, peak: Int, dia: Double, concentration: Double, insulinTemplate: InsulinType = InsulinType.UNKNOWN)
-        : this(insulinLabel = insulinLabel, insulinEndTime = (dia * 3600 * 1000).toLong(), insulinPeakTime = (peak * 60000).toLong(), concentration = concentration, insulinTemplate = insulinTemplate)
+    constructor(insulinLabel: String, peak: Int, dia: Double, concentration: Double)
+        : this(insulinLabel = insulinLabel, insulinEndTime = (dia * 3600 * 1000).toLong(), insulinPeakTime = (peak * 60000).toLong(), concentration = concentration)
     /*
     this is for discussion. Purpose? => This function was linked to "InsulinPlugin" management.
     Because ICfg are recorded within EPS, PS from DB, list of available insulins recorded within the unique "InsulinPlugin" can miss the one embeded insulin from DB,
@@ -86,7 +77,7 @@ data class ICfg(
         insulinPeakTime = (minutes * 60000).toLong()
     }
 
-    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, concentration, insulinTemplate)
+    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, concentration)
 
     fun iobCalcForTreatment(bolus: BS, time: Long): Iob {
         assert(insulinEndTime != 0L)
