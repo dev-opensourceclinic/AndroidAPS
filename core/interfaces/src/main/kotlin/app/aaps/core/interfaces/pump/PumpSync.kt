@@ -565,7 +565,32 @@ interface PumpSync {
 
     fun createOrUpdateTotalDailyDose(timestamp: Long, bolusAmount: Double, basalAmount: Double, totalAmount: Double, pumpId: Long?, pumpType: PumpType, pumpSerial: String): Boolean
 
+    /*
+    *   PumpProfile
+    */
+
+    /**
+     * Provide Concentrated Profile to the Pump Driver
+     *
+     * if another concentration is put within the Pump (i.e. U200) profile sent to the pump should be converted to deliver
+     * the right basal rates (twice lower) consistent with the rate in Internation Units defined within current EffectiveProfile
+     * selected within AAPS
+     *
+     * @return Profile
+     **/
+
     fun getProfile(): Profile?
+
+    /**
+     * Provide Concentrated Profile to the Pump Driver
+     *
+     * if another concentration is put within the Pump (i.e. U200) profile sent to the pump should be converted to deliver
+     * the right basal rates (twice lower) consistent with the rate in Internation Units defined within current EffectiveProfile
+     * selected within AAPS
+     *
+     * @param time     time of the requested Concentrated Profile
+     * @return Profile
+     **/
 
     fun getProfile(time: Long): Profile?
 }

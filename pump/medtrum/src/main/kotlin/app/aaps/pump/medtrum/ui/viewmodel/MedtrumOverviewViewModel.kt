@@ -165,7 +165,7 @@ class MedtrumOverviewViewModel @Inject constructor(
 
     fun onClickChangePatch() {
         aapsLogger.debug(LTag.PUMP, "ChangePatch Patch clicked!")
-        val profile = profileFunction.getProfile()
+        val profile = pumpSync.getProfile()
         if (profile == null) {
             _eventHandler.postValue(UIEvent(EventType.PROFILE_NOT_SET))
         } else if (medtrumPump.pumpSN == 0L) {

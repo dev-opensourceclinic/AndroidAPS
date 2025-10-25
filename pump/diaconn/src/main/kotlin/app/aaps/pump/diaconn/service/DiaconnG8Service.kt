@@ -200,7 +200,7 @@ class DiaconnG8Service : DaggerService() {
 
             diaconnG8Pump.lastConnection = System.currentTimeMillis()
 
-            val profile = profileFunction.getProfile()
+            val profile = pumpSync.getProfile()
             if (profile != null && abs(diaconnG8Pump.baseAmount - profile.getBasal()) >= pump.pumpDescription.basalStep) {
                 rxBus.send(EventPumpStatusChanged(rh.gs(R.string.gettingpumpsettings)))
 

@@ -465,7 +465,7 @@ class PumpSyncImplementation @Inject constructor(
             .blockingGet()
     }
 
-    override fun getProfile() = profileFunction.getProfile()?.toPump()
+    override fun getProfile() = profileFunction.getProfile()?.toPump()?.profile
 
-    override fun getProfile(time: Long) = profileFunction.getProfile(time)?.toPump()
+    override fun getProfile(time: Long) = profileFunction.getProfile(time)?.toPump()?.profile
 }

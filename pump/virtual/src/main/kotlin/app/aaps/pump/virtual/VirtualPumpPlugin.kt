@@ -170,7 +170,7 @@ open class VirtualPumpPlugin @Inject constructor(
     override fun lastDataTime(): Long = lastDataTime
 
     override val baseBasalRate: Double
-        get() = profileFunction.getProfile()?.getBasal() ?: 0.0
+        get() = pumpSync.getProfile()?.getBasal() ?: 0.0
 
     override val reservoirLevel: Double
         get() =

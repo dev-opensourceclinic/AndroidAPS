@@ -1357,7 +1357,7 @@ class InsightPlugin @Inject constructor(
                 )
             }
             if (event.bolusType == BolusType.EXTENDED || event.bolusType == BolusType.MULTIWAVE) {
-                if (profileFunction.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
+                if (pumpSync.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = timestamp,
                     amount = event.extendedAmount,
                     duration = T.mins(event.duration.toLong()).msecs(),
@@ -1407,7 +1407,7 @@ class InsightPlugin @Inject constructor(
                 preferences.put(InsightDoubleNonKey.LastBolusAmount, lastBolusAmount)
             }
             if (event.bolusType == BolusType.EXTENDED || event.bolusType == BolusType.MULTIWAVE) {
-                if (event.duration > 0 && profileFunction.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
+                if (event.duration > 0 && pumpSync.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = insightBolusID.timestamp,
                     amount = event.extendedAmount,
                     duration = timestamp - startTimestamp,
