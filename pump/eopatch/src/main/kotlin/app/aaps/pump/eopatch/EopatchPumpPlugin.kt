@@ -15,7 +15,6 @@ import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
@@ -81,7 +80,6 @@ class EopatchPumpPlugin @Inject constructor(
     private val alarmManager: IAlarmManager,
     private val preferenceManager: PreferenceManager,
     private val uiInteraction: UiInteraction,
-    private val profileFunction: ProfileFunction,
     private val pumpEnactResultProvider: Provider<PumpEnactResult>,
     private val patchConfig: PatchConfig,
     private val normalBasalManager: NormalBasalManager
@@ -527,7 +525,7 @@ class EopatchPumpPlugin @Inject constructor(
             }
             extended.put("BaseBasalRate", baseBasalRate)
             try {
-                extended.put("ActiveProfile", profileFunction.getProfileName())
+                extended.put("ActiveProfile", profileName)
             } catch (e: Exception) {
                 aapsLogger.error("Unhandled exception", e)
             }
