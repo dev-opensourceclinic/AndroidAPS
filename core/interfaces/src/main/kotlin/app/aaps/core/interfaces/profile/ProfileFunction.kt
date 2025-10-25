@@ -44,6 +44,16 @@ interface ProfileFunction {
     fun getProfile(time: Long): EffectiveProfile?
 
     /**
+     * Get effective (active) profile confirmed by pump for "now", converted in Concentrated Units
+     */
+    fun getPumpProfile(): EffectiveProfile?
+
+    /**
+     * Get effective (active) profile confirmed by pump for time, converted in Concentrated Units
+     */
+    fun getPumpProfile(time: Long): EffectiveProfile?
+
+    /**
      * Get requested profile by user (profile must not be active yet)
      *
      * @return ProfileSwitch if exists

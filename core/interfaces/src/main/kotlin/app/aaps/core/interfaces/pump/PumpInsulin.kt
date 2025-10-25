@@ -12,7 +12,7 @@ class PumpInsulin(private val concentratedUnits: Double) {
 
     /**
      * Convert amount of insulin delivered by pump to U100 units
-     * @param concentration Insulin concentration (5.0 for U20, 0.5 for U200 insulin)
+     * @param concentration Insulin concentration (0.2 for U20, 2.0 for U200 insulin)
      * @return Insulin amount recalculated to U100 units used inside core of AAPS
      */
     fun internationalUnits(concentration: Double): Double = concentratedUnits * concentration

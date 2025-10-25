@@ -9,4 +9,5 @@ interface EffectiveProfile : Profile {
 
     /** Applied insulin configuration */
     val iCfg: ICfg
+    fun toPump(): Profile
 }

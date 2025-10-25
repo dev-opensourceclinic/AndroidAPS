@@ -133,6 +133,10 @@ class ProfileFunctionImpl @Inject constructor(
         return null
     }
 
+    override fun getPumpProfile(): EffectiveProfile? = getProfile()?.toPump() as EffectiveProfile
+
+    override fun getPumpProfile(time: Long): EffectiveProfile? = getPumpProfile(time)?.toPump() as EffectiveProfile
+
     override fun getRequestedProfile(): PS? = persistenceLayer.getProfileSwitchActiveAt(dateUtil.now())
 
     override fun isProfileChangePending(): Boolean {
