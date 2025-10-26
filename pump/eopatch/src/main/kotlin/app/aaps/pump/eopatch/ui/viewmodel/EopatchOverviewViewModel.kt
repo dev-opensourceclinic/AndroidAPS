@@ -183,7 +183,7 @@ class EopatchOverviewViewModel @Inject constructor(
     }
 
     fun onClickActivation() {
-        val profile = pumpSync.getProfile()
+        val profile = pumpSync.expectedPumpState().profile
         if (profile == null) {
             _eventHandler.postValue(UIEvent(EventType.PROFILE_NOT_SET))
         } else {

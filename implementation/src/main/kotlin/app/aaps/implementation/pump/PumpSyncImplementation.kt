@@ -18,6 +18,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpRate
@@ -147,7 +148,7 @@ class PumpSyncImplementation @Inject constructor(
                     amount = bolus.amount
                 )
             },
-            profile = profileFunction.getProfile(),
+            profile = profileFunction.getProfile()?.toPump(),
             serialNumber = preferences.get(StringNonKey.ActivePumpSerialNumber)
         )
     }
@@ -486,7 +487,5 @@ class PumpSyncImplementation @Inject constructor(
             .blockingGet()
     }
 
-    override fun getProfile() = profileFunction.getProfile()?.toPump()?.profile
-
-    override fun getProfile(time: Long) = profileFunction.getProfile(time)?.toPump()?.profile
+    override fun isProfileRunning(time: Long): Boolean = profileFunction.getProfile() != null
 }

@@ -107,7 +107,7 @@ class EquilPairAirFragment : EquilPairFragmentBase() {
     }
 
     private fun setProfile() {
-        val profile = pumpSync.getProfile()
+        val profile = pumpSync.expectedPumpState().profile
         if (profile == null) {
             setTime()
             return

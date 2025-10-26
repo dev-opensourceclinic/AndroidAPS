@@ -54,7 +54,7 @@ class DashInsertCannulaViewModel @Inject constructor(
     override fun isPodDeactivatable(): Boolean = true // TODO
 
     override fun doExecuteAction(): Single<PumpEnactResult> = Single.create { source ->
-        val profile = pumpSync.getProfile()
+        val profile = pumpSync.expectedPumpState().profile
         if (profile == null) {
             source.onError(IllegalStateException("No profile set"))
         } else {

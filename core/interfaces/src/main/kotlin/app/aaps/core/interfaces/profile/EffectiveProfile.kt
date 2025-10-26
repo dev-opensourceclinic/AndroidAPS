@@ -21,5 +21,5 @@ interface EffectiveProfile : Profile {
      * @return PumpProfile
      **/
 
-    fun toPump(): PumpProfile
+    fun toPump(): Profile
 }
