@@ -34,7 +34,7 @@ class PumpWithConcentrationImpl @Inject constructor(
 
     override fun selectedActivePump(): Pump = activePumpInternal
     private val concentration: Double
-        get() = if (config.enableInsulinConcentration()) profileFunction.getProfile()?.iCfg?.concentration ?: 1.0 else 1.0
+        get() = if (config.enableInsulinConcentration()) profileFunction.getProfile()?.insulinConcentration() ?: 1.0 else 1.0
 
     override fun isInitialized(): Boolean = activePumpInternal.isInitialized()
     override fun isSuspended(): Boolean = activePumpInternal.isSuspended()
@@ -113,8 +113,18 @@ class PumpWithConcentrationImpl @Inject constructor(
             activePumpInternal.setExtendedBolus(insulin / concentration, durationInMinutes)
         } else activePumpInternal.setExtendedBolus(insulin, durationInMinutes)
 
+    /** PumpWithConcentration.pumpDescription should be used instead of Pump.pumpDescription outside Pump Driver to have corrected values */
     override val pumpDescription: PumpDescription =
         if (config.enableInsulinConcentration()) {
-            TODO("Not yet implemented")
+            activePumpInternal.pumpDescription.also {
+                it.bolusStep *= concentration
+                it.extendedBolusStep *= concentration
+                it.maxTempAbsolute *= concentration
+                it.tempAbsoluteStep *= concentration
+                it.basalStep *= concentration
+                it.basalMinimumRate *= concentration
+                it.basalMaximumRate *= concentration
+                it.maxResorvoirReading = (it.maxResorvoirReading * concentration).toInt()
+            }
         } else activePumpInternal.pumpDescription
 }
