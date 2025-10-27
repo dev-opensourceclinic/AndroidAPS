@@ -55,7 +55,7 @@ internal class EffectiveProfileSwitchExtensionKtTest : TestBaseWithProfile() {
             )
         )
 
-        val profileSwitch2 = (profileSwitch.toNSEffectiveProfileSwitch(dateUtil).convertToRemoteAndBack() as NSEffectiveProfileSwitch).toEffectiveProfileSwitch(dateUtil)!!
+        val profileSwitch2 = (profileSwitch.toNSEffectiveProfileSwitch(dateUtil).convertToRemoteAndBack() as NSEffectiveProfileSwitch).toEffectiveProfileSwitch(dateUtil, insulin)!!
         assertThat(profileSwitch.contentEqualsTo(profileSwitch2)).isTrue()
         assertThat(profileSwitch.ids.contentEqualsTo(profileSwitch2.ids)).isTrue()
     }

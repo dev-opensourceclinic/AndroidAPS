@@ -226,7 +226,8 @@ internal fun RemoteTreatment.toTreatment(): NSTreatment? {
                 originalTimeshift = this.originalTimeshift,
                 originalPercentage = this.originalPercentage,
                 originalDuration = this.originalDuration,
-                originalEnd = this.originalEnd
+                originalEnd = this.originalEnd,
+                iCfg = this.iCfg.toNSICfg()
             )
         }
 
@@ -259,6 +260,7 @@ internal fun RemoteTreatment.toTreatment(): NSTreatment? {
                 duration = durationInMilliseconds,
                 timeShift = this.timeshift,
                 percentage = this.percentage,
+                iCfg = this.iCfg.toNSICfg()
             )
         }
 

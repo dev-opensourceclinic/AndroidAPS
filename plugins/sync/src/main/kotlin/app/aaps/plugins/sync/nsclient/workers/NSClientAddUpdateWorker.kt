@@ -103,7 +103,7 @@ class NSClientAddUpdateWorker(
 
                 eventType == TE.Type.NOTE.text && json.isEffectiveProfileSwitch() -> // replace this by new Type when available in NS
                     if (preferences.get(BooleanKey.NsClientAcceptProfileSwitch) || config.AAPSCLIENT) {
-                        EPS.fromJson(json, dateUtil)?.let { effectiveProfileSwitch ->
+                        EPS.fromJson(json, dateUtil, activePlugin.activeInsulin)?.let { effectiveProfileSwitch ->
                             storeDataForDb.addToEffectiveProfileSwitches(effectiveProfileSwitch)
                         } ?: aapsLogger.error("Error parsing EffectiveProfileSwitch json $json")
                     }
@@ -145,7 +145,7 @@ class NSClientAddUpdateWorker(
 
                 eventType == TE.Type.PROFILE_SWITCH.text                          ->
                     if (preferences.get(BooleanKey.NsClientAcceptProfileSwitch) || config.AAPSCLIENT) {
-                        PS.fromJson(json, dateUtil, activePlugin)?.let { profileSwitch ->
+                        PS.fromJson(json, dateUtil, activePlugin, activePlugin.activeInsulin)?.let { profileSwitch ->
                             storeDataForDb.addToProfileSwitches(profileSwitch)
                         } ?: aapsLogger.error("Error parsing ProfileSwitch json $json")
                     }

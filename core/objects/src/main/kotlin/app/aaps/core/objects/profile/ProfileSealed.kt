@@ -48,10 +48,9 @@ sealed class ProfileSealed(
     var duration: Long?, // [milliseconds]
     var ts: Int, // timeshift [hours]
     var pct: Int,
-    override var iCfg: ICfg,
     val utcOffset: Long,
     val aps: APS?
-) : EffectiveProfile {
+) : Profile {
 
     /**
      * Profile interface created from ProfileSwitch
@@ -71,10 +70,12 @@ sealed class ProfileSealed(
         value.duration,
         T.msecs(value.timeshift).hours().toInt(),
         value.percentage,
-        value.iCfg,
         value.utcOffset,
         activePlugin?.activeAPS
-    )
+    ), EffectiveProfile {
+
+        override val iCfg: ICfg = value.iCfg
+    }
 
     /**
      * Profile interface created from EffectiveProfileSwitch
@@ -94,10 +95,12 @@ sealed class ProfileSealed(
         null, // already converted to non customized
         0, // already converted to non customized
         100, // already converted to non customized
-        value.iCfg,
         value.utcOffset,
         activePlugin?.activeAPS
-    )
+    ), EffectiveProfile {
+
+        override val iCfg: ICfg = value.iCfg
+    }
 
     /**
      * Profile interface created from PureProfile ie. without customization
@@ -117,10 +120,33 @@ sealed class ProfileSealed(
         null,
         0,
         100,
-        ICfg("", (value.dia * 3600 * 1000).toLong(), 0, concentration = 1.0),
         value.timeZone.rawOffset.toLong(),
         activePlugin?.activeAPS
     )
+
+    /**
+     * This class represents concentrated Profile synchronised within the pump.
+     *
+     * Example: when using U20 insulin within the Pump,
+     * if EffectiveProfile define a basal rate of 0.6U/h, pump should deliver 0.6 * (100 / 20) = 3.0U/h
+     * In this case pump must use a rate of 3.0U/hour
+     */
+    class PP(val value: PureProfile, val activePlugin: ActivePlugin?) : ProfileSealed(
+        0,
+        true,
+        null,
+        0,
+        value.basalBlocks,
+        value.isfBlocks,
+        value.icBlocks,
+        value.targetBlocks,
+        "",
+        null,
+        0,
+        100,
+        value.timeZone.rawOffset.toLong(),
+        null
+    ), PumpProfile
 
     override fun isValid(from: String, pump: Pump, config: Config, rh: ResourceHelper, rxBus: RxBus, hardLimits: HardLimits, sendNotifications: Boolean): Profile.ValidityCheck {
         val validityCheck = Profile.ValidityCheck()
@@ -234,9 +260,10 @@ sealed class ProfileSealed(
             is PS   -> value.glucoseUnit
             is EPS  -> value.glucoseUnit
             is Pure -> value.glucoseUnit
+            is PP -> value.glucoseUnit
         }
     override val dia: Double
-        get() = iCfg.insulinEndTime / 1000.0 / 60.0 / 60.0
+        get() = if (this is EffectiveProfile) iCfg.insulinEndTime / 1000.0 / 60.0 / 60.0 else error("Requesting DIA on wrong profile")
 
     override val timeshift: Int
         get() = ts
@@ -323,27 +350,9 @@ sealed class ProfileSealed(
                 is PS   -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
                 is EPS  -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
                 is Pure -> this.value.dia
+                is PP -> error("Dia not available in PumpProfile")
             },
             timeZone = TimeZone.getDefault()
-        )
-
-    override fun toPump(): Profile =
-        Pure(
-            PureProfile(
-                jsonObject = JSONObject(),
-                basalBlocks = basalBlocks.shiftBlock(percentage / 100.0 / iCfg.concentration, timeshift),
-                isfBlocks = isfBlocks.shiftBlock(100.0 / percentage * iCfg.concentration, timeshift),
-                icBlocks = icBlocks.shiftBlock(100.0 / percentage * iCfg.concentration, timeshift),
-                targetBlocks = targetBlocks.shiftTargetBlock(timeshift),
-                glucoseUnit = units,
-                dia = when (this) {
-                    is PS   -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
-                    is EPS  -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
-                    is Pure -> this.value.dia
-                },
-                timeZone = TimeZone.getDefault()
-            ),
-            null
         )
 
     override fun toPureNsJson(dateUtil: DateUtil): JSONObject {
@@ -461,6 +470,36 @@ sealed class ProfileSealed(
         return ret
     }
 
+    /**
+     * Convert EffectiveProfile to Concentrated using iCfg.concentration value
+     *
+     * if another concentration is put within the Pump (i.e. U200) iCfg.concentration should be set to 2.0
+     * the EffectiveProfile (set in U100) should be converted to a "Concentrated Profile" to deliver the right rate in International Units
+     *
+     * @return PumpProfile
+     **/
+
+    fun toPump(): PumpProfile =
+        if (this is EffectiveProfile)
+            PP(
+                PureProfile(
+                    jsonObject = JSONObject(),
+                    basalBlocks = basalBlocks.shiftBlock(percentage / 100.0 / iCfg.concentration, timeshift),
+                    isfBlocks = isfBlocks.shiftBlock(100.0 / percentage * iCfg.concentration, timeshift),
+                    icBlocks = icBlocks.shiftBlock(100.0 / percentage * iCfg.concentration, timeshift),
+                    targetBlocks = targetBlocks.shiftTargetBlock(timeshift),
+                    glucoseUnit = units,
+                    dia = when (this) {
+                        is PS  -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
+                        is EPS -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
+                        else   -> error("Conversion allowed only from EffectiveProfile")
+                    },
+                    timeZone = TimeZone.getDefault()
+                ),
+                null
+            )
+        else error("Conversion allowed only from EffectiveProfile")
+
     private fun getValuesList(array: List<Block>, multiplier: Double, format: DecimalFormat, units: String, dateUtil: DateUtil): String =
         StringBuilder().also { sb ->
             var elapsedSec = 0
@@ -491,8 +530,6 @@ sealed class ProfileSealed(
 
     fun isInProgress(dateUtil: DateUtil): Boolean =
         dateUtil.now() in timestamp..timestamp + (duration ?: 0L)
-
-    override fun insulinConcentration() = iCfg.concentration
 
     private fun toMgdl(value: Double, units: GlucoseUnit): Double =
         if (units == GlucoseUnit.MGDL) value else value * GlucoseUnit.MMOLL_TO_MGDL

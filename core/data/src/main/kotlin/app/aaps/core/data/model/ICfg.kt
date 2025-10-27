@@ -1,6 +1,5 @@
 package app.aaps.core.data.model
 
-import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.data.iob.Iob
 import kotlin.math.exp
 import kotlin.math.pow
@@ -12,10 +11,6 @@ import kotlin.math.roundToInt
 data class ICfg(
     /**
      * Insulin name
-     *
-     * @Philoul do we need this?
-     * Within InsulinPlugin, I use insulinLabel to have an explicit name for each insulin (i.e. "Lyumjev U200", "Lyumjev U100"...)
-     * by default I generate an unique name (with template, peak, dia, but it can be quite long... equivalent to profile Name)
      */
     var insulinLabel: String,
     /**
@@ -27,8 +22,7 @@ data class ICfg(
      */
     var insulinPeakTime: Long,
     /**
-     * Insulin concentration (5.0 for U20, 0.5 for U200 insulin)
-     * within my previous PR, concentration value was in the other direction... 2.0 for U200 or 0.2 for U20
+     * Insulin concentration (0.2 for U20, 2.0 for U200 insulin)
      */
     var concentration: Double = 1.0
 ) {

@@ -13,7 +13,6 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.EffectiveProfile
-import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileStore
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -111,6 +110,10 @@ class ProfileFunctionImpl @Inject constructor(
             }
             return sealed
         }
+        /*
+        // Commented out because it's not possible to simply take Pure profile
+        // because we don't know Insulin configuration for it
+
         // In NSClient mode effective profile may not be received if older than 2 days
         // Try to get it from device status
         // Remove this code after switch to api v3
@@ -127,7 +130,7 @@ class ProfileFunctionImpl @Inject constructor(
 
             }
         }
-
+        */
         synchronized(cache) {
             cache.remove(rounded)
         }
