@@ -27,7 +27,6 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.OmnipodEros
 import app.aaps.core.interfaces.pump.Pump
@@ -142,7 +141,6 @@ class OmnipodErosPumpPlugin @Inject constructor(
     private val aapsOmnipodUtil: AapsOmnipodUtil,
     private val rileyLinkUtil: RileyLinkUtil,
     private val omnipodAlertUtil: OmnipodAlertUtil,
-    private val profileFunction: ProfileFunction,
     private val pumpSync: PumpSync,
     private val uiInteraction: UiInteraction,
     private val erosHistoryDatabase: ErosHistoryDatabase,
@@ -709,7 +707,7 @@ class OmnipodErosPumpPlugin @Inject constructor(
             return executeCommand<PumpEnactResult?>(OmnipodCommandType.SUSPEND_DELIVERY) { aapsOmnipodErosManager.suspendDelivery() }
         }
         if (customCommand is CommandResumeDelivery) {
-            return executeCommand<PumpEnactResult?>(OmnipodCommandType.RESUME_DELIVERY) { aapsOmnipodErosManager.setBasalProfile(profileFunction.getProfile(), false) }
+            return executeCommand<PumpEnactResult?>(OmnipodCommandType.RESUME_DELIVERY) { aapsOmnipodErosManager.setBasalProfile(pumpSync.expectedPumpState().profile, false) }
         }
         if (customCommand is CommandDeactivatePod) {
             return executeCommand<PumpEnactResult?>(OmnipodCommandType.DEACTIVATE_POD) { aapsOmnipodErosManager.deactivatePod() }

@@ -18,7 +18,6 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.OmnipodDash
 import app.aaps.core.interfaces.pump.Pump
@@ -109,7 +108,6 @@ class OmnipodDashPumpPlugin @Inject constructor(
     commandQueue: CommandQueue,
     private val omnipodManager: OmnipodDashManager,
     private val podStateManager: OmnipodDashPodStateManager,
-    private val profileFunction: ProfileFunction,
     private val history: DashHistory,
     private val pumpSync: PumpSync,
     private val rxBus: RxBus,
@@ -1169,7 +1167,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
     }
 
     private fun resumeDelivery(): PumpEnactResult {
-        return profileFunction.getProfile()?.let {
+        return pumpSync.expectedPumpState().profile?.let {
             executeProgrammingCommand(
                 pre = observeDeliverySuspended(),
                 historyEntry = history.createRecord(OmnipodCommandType.RESUME_DELIVERY, basalProfileRecord = BasalValuesRecord(it.getBasalValues().toList())),
@@ -1206,7 +1204,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
     }
 
     private fun handleTimeChange(): PumpEnactResult {
-        return profileFunction.getProfile()?.let {
+        return pumpSync.expectedPumpState().profile?.let {
             setNewBasalProfile(it, OmnipodCommandType.SET_TIME)
         } ?: pumpEnactResultProvider.get().success(false).enacted(false).comment("No profile active")
     }

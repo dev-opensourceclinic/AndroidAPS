@@ -8,6 +8,7 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.interfaces.R
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.utils.DateUtil
@@ -137,6 +138,7 @@ interface PumpSync {
 
             fun toStringFull(dateUtil: DateUtil, rh: ResourceHelper): String =
                 rh.gs(R.string.temp_basal_extended_bolus, rate, dateUtil.timeString(timestamp), getPassedDurationToTimeInMinutes(dateUtil.now()), T.msecs(duration).mins())
+
         }
 
         data class Bolus(val timestamp: Long, val amount: Double)
@@ -564,4 +566,16 @@ interface PumpSync {
 
     fun createOrUpdateTotalDailyDose(timestamp: Long, bolusAmount: Double, basalAmount: Double, totalAmount: Double, pumpId: Long?, pumpType: PumpType, pumpSerial: String): Boolean
 
+
+    /**
+     * Check if a Profile is Running at time
+     * INSIGHT Specific
+     *
+     * Search for a running profile to allow synchronization of extended boluses
+     *
+     * @param time  time of the requested verification
+     * @return true if running profile is found
+     **/
+
+    fun isProfileRunning(time: Long): Boolean
 }

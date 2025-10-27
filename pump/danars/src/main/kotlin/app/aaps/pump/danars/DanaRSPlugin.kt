@@ -24,7 +24,6 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.Dana
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
@@ -89,7 +88,6 @@ class DanaRSPlugin @Inject constructor(
     private val rxBus: RxBus,
     private val context: Context,
     private val constraintChecker: ConstraintsChecker,
-    private val profileFunction: ProfileFunction,
     private val danaPump: DanaPump,
     private val pumpSync: PumpSync,
     private val detailedBolusInfoStorage: DetailedBolusInfoStorage,
@@ -600,7 +598,7 @@ class DanaRSPlugin @Inject constructor(
             }
             extended.put("BaseBasalRate", baseBasalRate)
             try {
-                extended.put("ActiveProfile", profileFunction.getProfileName())
+                extended.put("ActiveProfile", profileName)
             } catch (e: Exception) {
                 aapsLogger.error("Unhandled exception", e)
             }

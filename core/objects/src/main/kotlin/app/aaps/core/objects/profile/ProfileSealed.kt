@@ -16,6 +16,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.Profile.ProfileValue
 import app.aaps.core.interfaces.profile.PureProfile
 import app.aaps.core.interfaces.pump.Pump
+import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventNewNotification
@@ -285,7 +286,6 @@ sealed class ProfileSealed(
             else toMgdl(isfBlocks.blockValueBySeconds(MidnightUtils.secondsFromMidnight(timestamp), 100.0 / percentage, timeshift), units)
         }
 
-
     override fun getTargetMgdl(): Double = toMgdl(targetBlocks.targetBlockValueBySeconds(MidnightUtils.secondsFromMidnight(), timeshift), units)
     override fun getTargetLowMgdl(): Double = toMgdl(targetBlocks.lowTargetBlockValueBySeconds(MidnightUtils.secondsFromMidnight(), timeshift), units)
     override fun getTargetLowMgdl(timestamp: Long): Double = toMgdl(targetBlocks.lowTargetBlockValueBySeconds(MidnightUtils.secondsFromMidnight(timestamp), timeshift), units)
@@ -325,6 +325,25 @@ sealed class ProfileSealed(
                 is Pure -> this.value.dia
             },
             timeZone = TimeZone.getDefault()
+        )
+
+    override fun toPump(): Profile =
+        Pure(
+            PureProfile(
+                jsonObject = JSONObject(),
+                basalBlocks = basalBlocks.shiftBlock(percentage / 100.0 / iCfg.concentration, timeshift),
+                isfBlocks = isfBlocks.shiftBlock(100.0 / percentage * iCfg.concentration, timeshift),
+                icBlocks = icBlocks.shiftBlock(100.0 / percentage * iCfg.concentration, timeshift),
+                targetBlocks = targetBlocks.shiftTargetBlock(timeshift),
+                glucoseUnit = units,
+                dia = when (this) {
+                    is PS   -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
+                    is EPS  -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
+                    is Pure -> this.value.dia
+                },
+                timeZone = TimeZone.getDefault()
+            ),
+            null
         )
 
     override fun toPureNsJson(dateUtil: DateUtil): JSONObject {

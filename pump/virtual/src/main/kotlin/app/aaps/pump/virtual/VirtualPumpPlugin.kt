@@ -19,7 +19,6 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
@@ -66,7 +65,6 @@ open class VirtualPumpPlugin @Inject constructor(
     rh: ResourceHelper,
     private val aapsSchedulers: AapsSchedulers,
     preferences: Preferences,
-    private val profileFunction: ProfileFunction,
     commandQueue: CommandQueue,
     private val pumpSync: PumpSync,
     private val config: Config,
@@ -171,7 +169,7 @@ open class VirtualPumpPlugin @Inject constructor(
     override fun lastDataTime(): Long = lastDataTime
 
     override val baseBasalRate: Double
-        get() = profileFunction.getProfile()?.getBasal() ?: 0.0
+        get() = pumpSync.expectedPumpState().profile?.getBasal() ?: 0.0
 
     override val reservoirLevel: Double
         get() =
