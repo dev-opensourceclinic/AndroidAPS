@@ -193,11 +193,12 @@ sealed class ProfileSealed(
                 break
             }
         }
-
-        if (!hardLimits.isInRange(dia, hardLimits.minDia(), hardLimits.maxDia())) {
-            validityCheck.isValid = false
-            validityCheck.reasons.add(rh.gs(R.string.value_out_of_hard_limits, rh.gs(R.string.profile_dia), dia))
-        }
+        // Check DIA only on EffectiveProfile. Pure profile doesn't have it anymore
+        if (this is EffectiveProfile)
+            if (!hardLimits.isInRange(dia, hardLimits.minDia(), hardLimits.maxDia())) {
+                validityCheck.isValid = false
+                validityCheck.reasons.add(rh.gs(R.string.value_out_of_hard_limits, rh.gs(R.string.profile_dia), dia))
+            }
         for (ic in icBlocks)
             if (!hardLimits.isInRange(ic.amount * 100.0 / percentage, hardLimits.minIC(), hardLimits.maxIC())) {
                 validityCheck.isValid = false
