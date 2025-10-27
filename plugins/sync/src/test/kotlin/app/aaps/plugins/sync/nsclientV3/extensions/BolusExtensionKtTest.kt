@@ -28,7 +28,7 @@ internal class BolusExtensionKtTest {
                 pumpType = PumpType.DANA_I,
                 pumpSerial = "bbbb"
             ),
-            icfg = iCfg
+            iCfg = iCfg
         )
 
         var bolus2 = (bolus.toNSBolus().convertToRemoteAndBack() as NSBolus).toBolus()
@@ -48,7 +48,7 @@ internal class BolusExtensionKtTest {
                 pumpType = PumpType.DANA_I,
                 pumpSerial = "bbbb"
             ),
-            icfg = iCfg
+            iCfg = iCfg
         )
 
         bolus2 = (bolus.toNSBolus().convertToRemoteAndBack() as NSBolus).toBolus()

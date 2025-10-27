@@ -354,8 +354,8 @@ class OpenHumansUploaderPlugin @Inject internal constructor(
                 put("amount", it.amount)
                 put("type", it.type.toString())
                 put("isBasalInsulin", it.isBasalInsulin)
-                put("insulinEndTime", it.icfg.insulinEndTime)
-                put("peak", it.icfg.insulinPeakTime)
+                put("insulinEndTime", it.iCfg.insulinEndTime)
+                put("peak", it.iCfg.insulinPeakTime)
             }
             tags.add("Boluses")
         }

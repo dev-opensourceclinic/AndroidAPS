@@ -52,7 +52,7 @@ fun BS.Companion.fromJson(jsonObject: JSONObject): BS? {
         type = type,
         notes = notes,
         isValid = isValid,
-        icfg = ICfg.FAKE
+        iCfg = ICfg.FAKE
     ).also {
         it.ids.nightscoutId = id
         it.ids.pumpId = pumpId

@@ -19,7 +19,7 @@ fun NSBolus.toBolus(): BS =
         notes = notes,
         isBasalInsulin = isBasalInsulin,
         ids = IDs(nightscoutId = identifier, pumpId = pumpId, pumpType = PumpType.fromString(pumpType), pumpSerial = pumpSerial, endId = endId),
-        icfg = ICfg.FAKE
+        iCfg = ICfg.FAKE
     )
 
 fun NSBolus.BolusType?.toBolusType(): BS.Type =

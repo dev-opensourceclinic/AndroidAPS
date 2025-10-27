@@ -50,7 +50,7 @@ class DetailedBolusInfo {
                 type = bolusType,
                 notes = notes,
                 ids = IDs(pumpId = timestamp),
-                icfg = iCfg
+                iCfg = iCfg
             )
         else error("insulin == 0.0")
 

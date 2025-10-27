@@ -231,7 +231,7 @@ class AutotunePrepTest : TestBaseWithProfile() {
                     timestamp = preppedGlucose.crData[i].crEndTime,
                     amount = preppedGlucose.crData[i].crInsulin,
                     type = BS.Type.NORMAL,
-                    icfg = ICfg(insulinLabel = "unused within Autotune",peak = 0, dia = 0.0, concentration = 0.0)
+                    iCfg = ICfg(insulinLabel = "unused within Autotune", peak = 0, dia = 0.0, concentration = 0.0)
                 )
             )
         }
@@ -241,7 +241,7 @@ class AutotunePrepTest : TestBaseWithProfile() {
                     timestamp = startDayTime,
                     amount = 1.0,
                     type = BS.Type.NORMAL,
-                    icfg = ICfg(insulinLabel = "unused within Autotune",peak = 0, dia = 0.0, concentration = 0.0)
+                    iCfg = ICfg(insulinLabel = "unused within Autotune", peak = 0, dia = 0.0, concentration = 0.0)
                 )
             )
         return boluses
