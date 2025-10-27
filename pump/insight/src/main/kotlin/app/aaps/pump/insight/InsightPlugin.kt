@@ -26,7 +26,6 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Insight
 import app.aaps.core.interfaces.pump.Pump
@@ -142,7 +141,6 @@ class InsightPlugin @Inject constructor(
     preferences: Preferences,
     commandQueue: CommandQueue,
     private val rxBus: RxBus,
-    private val profileFunction: ProfileFunction,
     private val context: Context,
     private val dateUtil: DateUtil,
     private val insightDbHelper: InsightDbHelper,
@@ -884,7 +882,7 @@ class InsightPlugin @Inject constructor(
                 status.put("timestamp", dateUtil.toISOString(service.lastConnected))
                 extended.put("Version", version)
                 try {
-                    extended.put("ActiveProfile", profileFunction.getProfileName())
+                    extended.put("ActiveProfile", profileName)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -1358,7 +1356,7 @@ class InsightPlugin @Inject constructor(
                 )
             }
             if (event.bolusType == BolusType.EXTENDED || event.bolusType == BolusType.MULTIWAVE) {
-                if (profileFunction.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
+                if (pumpSync.isProfileRunning(insightBolusID.timestamp)) pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = timestamp,
                     rate = PumpRate(event.extendedAmount),
                     duration = T.mins(event.duration.toLong()).msecs(),
@@ -1408,7 +1406,7 @@ class InsightPlugin @Inject constructor(
                 preferences.put(InsightDoubleNonKey.LastBolusAmount, lastBolusAmount)
             }
             if (event.bolusType == BolusType.EXTENDED || event.bolusType == BolusType.MULTIWAVE) {
-                if (event.duration > 0 && profileFunction.getProfile(insightBolusID.timestamp) != null) pumpSync.syncExtendedBolusWithPumpId(
+                if (event.duration > 0 && pumpSync.isProfileRunning(insightBolusID.timestamp)) pumpSync.syncExtendedBolusWithPumpId(
                     timestamp = insightBolusID.timestamp,
                     rate = PumpRate(event.extendedAmount),
                     duration = timestamp - startTimestamp,

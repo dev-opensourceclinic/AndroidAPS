@@ -289,8 +289,7 @@ open class AutotuneIob @Inject constructor(
                 timestamp = calcDate,
                 amount = tempBolusSize,
                 type = BS.Type.NORMAL,
-                // @Philoul replace this
-                icfg = ICfg.FAKE
+                icfg = ICfg(insulinLabel = "unused within Autotune",peak = 0, dia = 0.0, concentration = 0.0)
             )
             result.add(tempBolusPart)
         }
@@ -321,8 +320,7 @@ open class AutotuneIob @Inject constructor(
                 timestamp = calcDate,
                 amount = tempBolusSize,
                 type = BS.Type.NORMAL,
-                // @Philoul replace this
-                icfg = ICfg.FAKE
+                icfg = ICfg(insulinLabel = "unused within Autotune",peak = 0, dia = 0.0, concentration = 0.0)
             )
             result.add(tempBolusPart)
         }

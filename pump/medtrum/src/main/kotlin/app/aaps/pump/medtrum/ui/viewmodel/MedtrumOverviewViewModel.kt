@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
-import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.queue.CommandQueue
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.utils.DateUtil
@@ -27,7 +27,7 @@ import javax.inject.Inject
 class MedtrumOverviewViewModel @Inject constructor(
     private val aapsLogger: AAPSLogger,
     private val rh: ResourceHelper,
-    private val profileFunction: ProfileFunction,
+    private val pumpSync: PumpSync,
     private val commandQueue: CommandQueue,
     private val dateUtil: DateUtil,
     private val medtrumPlugin: MedtrumPlugin,
@@ -165,7 +165,7 @@ class MedtrumOverviewViewModel @Inject constructor(
 
     fun onClickChangePatch() {
         aapsLogger.debug(LTag.PUMP, "ChangePatch Patch clicked!")
-        val profile = profileFunction.getProfile()
+        val profile = pumpSync.expectedPumpState().profile
         if (profile == null) {
             _eventHandler.postValue(UIEvent(EventType.PROFILE_NOT_SET))
         } else if (medtrumPump.pumpSN == 0L) {

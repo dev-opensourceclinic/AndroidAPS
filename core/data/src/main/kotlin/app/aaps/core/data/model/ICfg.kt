@@ -14,6 +14,8 @@ data class ICfg(
      * Insulin name
      *
      * @Philoul do we need this?
+     * Within InsulinPlugin, I use insulinLabel to have an explicit name for each insulin (i.e. "Lyumjev U200", "Lyumjev U100"...)
+     * by default I generate an unique name (with template, peak, dia, but it can be quite long... equivalent to profile Name)
      */
     var insulinLabel: String,
     /**
@@ -25,21 +27,19 @@ data class ICfg(
      */
     var insulinPeakTime: Long,
     /**
-     * Insulin configuration is based on this template
-     *
-     * @Philoul is this necessary? It should be described enough by peak and dia
-     */
-    var insulinTemplate: InsulinType = InsulinType.UNKNOWN,
-    /**
      * Insulin concentration (5.0 for U20, 0.5 for U200 insulin)
+     * within my previous PR, concentration value was in the other direction... 2.0 for U200 or 0.2 for U20
      */
     var concentration: Double = 1.0
 ) {
 
-    constructor(insulinLabel: String, peak: Int, dia: Double, insulinTemplate: InsulinType, concentration: Double)
-        : this(insulinLabel = insulinLabel, insulinEndTime = (dia * 3600 * 1000).toLong(), insulinPeakTime = (peak * 60000).toLong(), insulinTemplate = insulinTemplate, concentration = concentration)
+    constructor(insulinLabel: String, peak: Int, dia: Double, concentration: Double)
+        : this(insulinLabel = insulinLabel, insulinEndTime = (dia * 3600 * 1000).toLong(), insulinPeakTime = (peak * 60000).toLong(), concentration = concentration)
     /*
-    this is for discussion. Purpose?
+    this is for discussion. Purpose? => This function was linked to "InsulinPlugin" management.
+    Because ICfg are recorded within EPS, PS from DB, list of available insulins recorded within the unique "InsulinPlugin" can miss the one embeded insulin from DB,
+    so this function compare ICfg values (Peak, DIA, concentration) and update if necessary InsulinName (if available within InsulinPlugin with another name)
+    or update the list of insulin within InsulinPlugin (if EPS.iCfg not found within InsulinPlugin list)
         fun isEqual(iCfg: ICfg?): Boolean {
             iCfg?.let { iCfg ->
                 if (insulinEndTime != iCfg.insulinEndTime)
@@ -77,7 +77,7 @@ data class ICfg(
         insulinPeakTime = (minutes * 60000).toLong()
     }
 
-    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, insulinTemplate, concentration)
+    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, concentration)
 
     fun iobCalcForTreatment(bolus: BS, time: Long): Iob {
         assert(insulinEndTime != 0L)

@@ -6,7 +6,6 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -36,7 +35,6 @@ import javax.inject.Provider
 
 class DashInsertCannulaViewModel @Inject constructor(
     private val omnipodManager: OmnipodDashManager,
-    private val profileFunction: ProfileFunction,
     private val pumpSync: PumpSync,
     private val podStateManager: OmnipodDashPodStateManager,
     private val rxBus: RxBus,
@@ -56,7 +54,7 @@ class DashInsertCannulaViewModel @Inject constructor(
     override fun isPodDeactivatable(): Boolean = true // TODO
 
     override fun doExecuteAction(): Single<PumpEnactResult> = Single.create { source ->
-        val profile = profileFunction.getProfile()
+        val profile = pumpSync.expectedPumpState().profile
         if (profile == null) {
             source.onError(IllegalStateException("No profile set"))
         } else {

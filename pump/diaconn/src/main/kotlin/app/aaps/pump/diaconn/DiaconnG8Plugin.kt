@@ -23,7 +23,6 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
-import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
@@ -82,7 +81,6 @@ class DiaconnG8Plugin @Inject constructor(
     private val rxBus: RxBus,
     private val context: Context,
     private val constraintChecker: ConstraintsChecker,
-    private val profileFunction: ProfileFunction,
     private val diaconnG8Pump: DiaconnG8Pump,
     private val pumpSync: PumpSync,
     private val detailedBolusInfoStorage: DetailedBolusInfoStorage,
@@ -513,7 +511,7 @@ class DiaconnG8Plugin @Inject constructor(
             }
             extended.put("BaseBasalRate", baseBasalRate)
             try {
-                extended.put("ActiveProfile", profileFunction.getProfileName())
+                extended.put("ActiveProfile", profileName)
             } catch (e: Exception) {
                 aapsLogger.error("Unhandled exception", e)
             }
