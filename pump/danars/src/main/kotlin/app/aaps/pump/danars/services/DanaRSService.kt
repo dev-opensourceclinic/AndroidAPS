@@ -333,6 +333,7 @@ class DanaRSService : DaggerService() {
         danaPump.bolusProgressLastTimeStamp = dateUtil.now()
         val start = danaRSPacketBolusSetStepBolusStart.get().with(detailedBolusInfo.insulin, preferencesSpeed)
         val bolusStart = System.currentTimeMillis()
+        var connectionBroken = false
         if (detailedBolusInfo.insulin > 0) {
             if (!danaPump.bolusStopped) {
                 sendMessage(start)
@@ -340,11 +341,10 @@ class DanaRSService : DaggerService() {
                 BolusProgressData.bolusEnded = true
                 return false
             }
-            while (!danaPump.bolusStopped && !start.failed && !danaPump.bolusDone) {
+            while (!danaPump.bolusStopped && !start.failed && !danaPump.bolusDone && !connectionBroken) {
                 SystemClock.sleep(100)
                 if (System.currentTimeMillis() - danaPump.bolusProgressLastTimeStamp > 15 * 1000L) { // if i didn't receive status for more than 20 sec expecting broken comm
-                    danaPump.bolusStopped = true
-                    danaPump.bolusStopForced = true
+                    connectionBroken = true
                     aapsLogger.debug(LTag.PUMPCOMM, "Communication stopped")
                     bleComm.disconnect("Communication stopped")
                 }
@@ -374,7 +374,7 @@ class DanaRSService : DaggerService() {
                 rxBus.send(EventPumpStatusChanged(EventPumpStatusChanged.Status.DISCONNECTING))
             }
         })
-        return !start.failed
+        return !start.failed && !connectionBroken
     }
 
     fun bolusStop() {
