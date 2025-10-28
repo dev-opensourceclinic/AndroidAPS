@@ -43,6 +43,7 @@ import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.ui.extensions.runOnUiThread
 import app.aaps.core.ui.locale.LocaleHelper
 import app.aaps.core.utils.JsonHelper
+import app.aaps.database.AppRepository
 import app.aaps.database.persistence.CompatDBHelper
 import app.aaps.di.AppComponent
 import app.aaps.di.DaggerAppComponent
@@ -106,6 +107,8 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
     @Inject lateinit var rh: Provider<ResourceHelper>
     @Inject lateinit var loop: Loop
     @Inject lateinit var profileFunction: ProfileFunction
+    @Inject lateinit var repository: AppRepository
+
     lateinit var appComponent: AppComponent
 
     private var handler = Handler(HandlerThread(this::class.simpleName + "Handler").also { it.start() }.looper)
@@ -381,6 +384,8 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
             ).blockingGet()
             sp.remove("aps_mode")
         }
+
+        // Migrate to database 32 (ICfg)
     }
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {

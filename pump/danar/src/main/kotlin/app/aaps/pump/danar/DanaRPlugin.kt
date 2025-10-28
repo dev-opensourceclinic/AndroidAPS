@@ -17,7 +17,6 @@ import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.ActivePlugin
-import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpEnactResult
@@ -199,19 +198,17 @@ class DanaRPlugin @Inject constructor(
     }
 
     // This is called from APS
-    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
         // Recheck pump status if older than 30 min
         //This should not be needed while using queue because connection should be done before calling this
-        var absoluteRateReq = absoluteRate
         var result = pumpEnactResultProvider.get()
-        absoluteRateReq = constraintChecker.applyBasalConstraints(ConstraintObject(absoluteRateReq, aapsLogger), profile).value()
-        var doTempOff = baseBasalRate - absoluteRateReq == 0.0 && absoluteRateReq >= 0.10
-        val doLowTemp = absoluteRateReq < baseBasalRate || absoluteRateReq < 0.10
-        val doHighTemp = absoluteRateReq > baseBasalRate && !preferences.get(DanaBooleanKey.UseExtended)
-        val doExtendedTemp = absoluteRateReq > baseBasalRate && preferences.get(DanaBooleanKey.UseExtended)
-        var percentRate = (absoluteRateReq / baseBasalRate * 100).toInt()
+        var doTempOff = baseBasalRate - absoluteRate == 0.0 && absoluteRate >= 0.10
+        val doLowTemp = absoluteRate < baseBasalRate || absoluteRate < 0.10
+        val doHighTemp = absoluteRate > baseBasalRate && !preferences.get(DanaBooleanKey.UseExtended)
+        val doExtendedTemp = absoluteRate > baseBasalRate && preferences.get(DanaBooleanKey.UseExtended)
+        var percentRate = (absoluteRate / baseBasalRate * 100).toInt()
         // Any basal less than 0.10u/h will be dumped once per hour, not every 4 minutes. So if it's less than .10u/h, set a zero temp.
-        if (absoluteRateReq < 0.10) percentRate = 0
+        if (absoluteRate < 0.10) percentRate = 0
         percentRate =
             if (percentRate < 100) ceilTo(percentRate.toDouble(), 10.0).toInt() else floorTo(percentRate.toDouble(), 10.0).toInt()
         if (percentRate > pumpDescription.maxTempPercent) {
@@ -260,7 +257,7 @@ class DanaRPlugin @Inject constructor(
             }
             // Convert duration from minutes to hours
             aapsLogger.debug(LTag.PUMP, "setTempBasalAbsolute: Setting temp basal $percentRate% for $durationInMinutes minutes (doLowTemp || doHighTemp)")
-            return setTempBasalPercent(percentRate, durationInMinutes, profile, false, tbrType)
+            return setTempBasalPercent(percentRate, durationInMinutes, false, tbrType)
         }
         if (doExtendedTemp) {
             // Check if some temp is already in progress
@@ -277,8 +274,7 @@ class DanaRPlugin @Inject constructor(
             // Calculate # of halfHours from minutes
             val durationInHalfHours = max(durationInMinutes / 30, 1)
             // We keep current basal running so need to sub current basal
-            var extendedRateToSet = absoluteRateReq - baseBasalRate
-            extendedRateToSet = constraintChecker.applyBasalConstraints(ConstraintObject(extendedRateToSet, aapsLogger), profile).value()
+            var extendedRateToSet = absoluteRate - baseBasalRate
             // needs to be rounded to 0.1
             extendedRateToSet = roundTo(extendedRateToSet, pumpDescription.extendedBolusStep * 2) // *2 because of half hours
 

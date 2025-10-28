@@ -8,8 +8,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.aaps.database.AppDatabase
 import app.aaps.database.entities.TABLE_APS_RESULTS
+import app.aaps.database.entities.TABLE_BOLUSES
+import app.aaps.database.entities.TABLE_EFFECTIVE_PROFILE_SWITCHES
 import app.aaps.database.entities.TABLE_HEART_RATE
 import app.aaps.database.entities.TABLE_PREFERENCE_CHANGES
+import app.aaps.database.entities.TABLE_PROFILE_SWITCHES
 import app.aaps.database.entities.TABLE_RUNNING_MODE
 import app.aaps.database.entities.TABLE_STEPS_COUNT
 import app.aaps.database.entities.TABLE_THERAPY_EVENTS
@@ -205,22 +208,22 @@ open class DatabaseModule {
     internal val migration31to32 = object : Migration(31, 32) {
         override fun migrate(db: SupportSQLiteDatabase) {
             // Migration of boluses table
-            db.execSQL("ALTER TABLE `boluses` ADD COLUMN `insulinPeakTime` INTEGER")
-            db.execSQL("ALTER TABLE `boluses` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
+            db.execSQL("ALTER TABLE `$TABLE_BOLUSES` ADD COLUMN `insulinPeakTime` INTEGER")
+            db.execSQL("ALTER TABLE `$TABLE_BOLUSES` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
             // Copy data from peak to insulinPeakTime
             db.execSQL("UPDATE `boluses` SET `insulinPeakTime` = `peak`")
 
             // Migration of effectiveProfileSwitches table
-            db.execSQL("ALTER TABLE `effectiveProfileSwitches` ADD COLUMN `insulinPeakTime` INTEGER")
-            db.execSQL("ALTER TABLE `effectiveProfileSwitches` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
+            db.execSQL("ALTER TABLE `$TABLE_EFFECTIVE_PROFILE_SWITCHES` ADD COLUMN `insulinPeakTime` INTEGER")
+            db.execSQL("ALTER TABLE `$TABLE_EFFECTIVE_PROFILE_SWITCHES` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
             // Copy data from peak to insulinPeakTime
-            db.execSQL("UPDATE `effectiveProfileSwitches` SET `insulinPeakTime` = `peak`")
+            db.execSQL("UPDATE `$TABLE_EFFECTIVE_PROFILE_SWITCHES` SET `insulinPeakTime` = `peak`")
 
             // Migration of profileSwitches table
-            db.execSQL("ALTER TABLE `profileSwitches` ADD COLUMN `insulinPeakTime` INTEGER")
-            db.execSQL("ALTER TABLE `profileSwitches` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
+            db.execSQL("ALTER TABLE `$TABLE_PROFILE_SWITCHES` ADD COLUMN `insulinPeakTime` INTEGER")
+            db.execSQL("ALTER TABLE `$TABLE_PROFILE_SWITCHES` ADD COLUMN `concentration` REAL DEFAULT 1.0 NOT NULL")
             // Copy data from peak to insulinPeakTime
-            db.execSQL("UPDATE `profileSwitches` SET `insulinPeakTime` = `peak`")
+            db.execSQL("UPDATE `$TABLE_PROFILE_SWITCHES` SET `insulinPeakTime` = `peak`")
 
             // Custom indexes must be dropped on migration to pass room schema checking after upgrade
             dropCustomIndexes(db)

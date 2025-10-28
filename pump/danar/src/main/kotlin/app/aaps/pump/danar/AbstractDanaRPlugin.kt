@@ -13,11 +13,13 @@ import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.Dana
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
@@ -120,7 +122,7 @@ abstract class AbstractDanaRPlugin protected constructor(
     override fun isBusy(): Boolean = false
 
     // Pump interface
-    override fun setNewBasalProfile(profile: Profile): PumpEnactResult {
+    override fun setNewBasalProfile(profile: PumpProfile): PumpEnactResult {
         val result = pumpEnactResultProvider.get()
         if (executionService == null) {
             aapsLogger.error("setNewBasalProfile sExecutionService is null")
@@ -147,7 +149,7 @@ abstract class AbstractDanaRPlugin protected constructor(
         return result
     }
 
-    override fun isThisProfileSet(profile: Profile): Boolean {
+    override fun isThisProfileSet(profile: PumpProfile): Boolean {
         if (!isInitialized()) return true
         if (danaPump.pumpProfiles == null) return true
         val basalValues = if (danaPump.basal48Enable) 48 else 24
@@ -182,10 +184,9 @@ abstract class AbstractDanaRPlugin protected constructor(
         executionService?.bolusStop()
     }
 
-    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
         var percentReq = percent
         val result = pumpEnactResultProvider.get()
-        percentReq = constraintChecker.applyBasalPercentConstraints(ConstraintObject(percentReq, aapsLogger), profile).value()
         if (percentReq < 0) {
             result.isTempCancel(false).enacted(false).success(false).comment(app.aaps.core.ui.R.string.invalid_input)
             aapsLogger.error("setTempBasalPercent: Invalid input")
@@ -329,7 +330,7 @@ abstract class AbstractDanaRPlugin protected constructor(
         pumpDescription.bolusStep = danaPump.bolusStep
     }
 
-    override fun getJSONStatus(profile: Profile, profileName: String, version: String): JSONObject {
+    override fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject {
         val pump = danaPump
         val now = System.currentTimeMillis()
         if (pump.lastConnection + 60 * 60 * 1000L < System.currentTimeMillis()) {

@@ -14,7 +14,7 @@ class PumpRate(private val concentratedBasalUnits: Double) {
     /**
      * Convert basal insulin delivered by pump to U100 units
      * For relative basal rate (i.e. %) no conversion is done
-     * @param concentration Insulin concentration (5.0 for U20, 0.5 for U200 insulin)
+     * @param concentration Insulin concentration (0.2 for U20, 2.0 for U200 insulin)
      * @return Basal insulin recalculated to U100 units used inside core of AAPS
      */
     fun internationalUnits(concentration: Double, isAbsolute: Boolean): Double =

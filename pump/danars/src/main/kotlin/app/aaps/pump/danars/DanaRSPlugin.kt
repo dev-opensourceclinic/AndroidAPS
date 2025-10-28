@@ -23,6 +23,7 @@ import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.Dana
@@ -31,6 +32,7 @@ import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.TemporaryBasalStorage
 import app.aaps.core.interfaces.pump.defs.fillFor
@@ -252,7 +254,7 @@ class DanaRSPlugin @Inject constructor(
 
     override fun isBusy(): Boolean = false
 
-    override fun setNewBasalProfile(profile: Profile): PumpEnactResult {
+    override fun setNewBasalProfile(profile: PumpProfile): PumpEnactResult {
         val result = pumpEnactResultProvider.get()
         if (!isInitialized()) {
             aapsLogger.error("setNewBasalProfile not initialized")
@@ -277,7 +279,7 @@ class DanaRSPlugin @Inject constructor(
         }
     }
 
-    override fun isThisProfileSet(profile: Profile): Boolean {
+    override fun isThisProfileSet(profile: PumpProfile): Boolean {
         if (!isInitialized()) return true
         if (danaPump.pumpProfiles == null) return true
         val basalValues = if (danaPump.basal48Enable) 48 else 24
@@ -346,16 +348,15 @@ class DanaRSPlugin @Inject constructor(
 
     // This is called from APS
     @Synchronized
-    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
-        val absoluteAfterConstrain = constraintChecker.applyBasalConstraints(ConstraintObject(absoluteRate, aapsLogger), profile).value()
-        var doTempOff = baseBasalRate - absoluteAfterConstrain == 0.0
-        val doLowTemp = absoluteAfterConstrain < baseBasalRate
-        val doHighTemp = absoluteAfterConstrain > baseBasalRate
+    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
+        var doTempOff = baseBasalRate - absoluteRate == 0.0
+        val doLowTemp = absoluteRate < baseBasalRate
+        val doHighTemp = absoluteRate > baseBasalRate
 
         var percentRate = 0
         // Any basal less than 0.10u/h will be dumped once per hour, not every 4 minutes. So if it's less than .10u/h, set a zero temp.
-        if (absoluteAfterConstrain >= 0.10) {
-            percentRate = java.lang.Double.valueOf(absoluteAfterConstrain / baseBasalRate * 100).toInt()
+        if (absoluteRate >= 0.10) {
+            percentRate = java.lang.Double.valueOf(absoluteRate / baseBasalRate * 100).toInt()
         } else {
             aapsLogger.debug(LTag.PUMP, "setTempBasalAbsolute: Requested basal < 0.10u/h. Setting 0u/h (doLowTemp || doHighTemp)")
         }
@@ -401,7 +402,7 @@ class DanaRSPlugin @Inject constructor(
             // Convert duration from minutes to hours
             aapsLogger.debug(LTag.PUMP, "setTempBasalAbsolute: Setting temp basal $percentRate% for $durationInMinutes minutes (doLowTemp || doHighTemp)")
             val result = if (percentRate == 0 && durationInMinutes > 30) {
-                setTempBasalPercent(percentRate, durationInMinutes, profile, enforceNew, tbrType)
+                setTempBasalPercent(percentRate, durationInMinutes, enforceNew, tbrType)
             } else {
                 // use special APS temp basal call ... 100+/15min .... 100-/30min
                 setHighTempBasalPercent(percentRate)
@@ -421,10 +422,10 @@ class DanaRSPlugin @Inject constructor(
     }
 
     @Synchronized
-    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
+        var percent = percent
         val result = pumpEnactResultProvider.get()
-        var percentAfterConstraint = constraintChecker.applyBasalPercentConstraints(ConstraintObject(percent, aapsLogger), profile).value()
-        if (percentAfterConstraint < 0) {
+        if (percent < 0) {
             result.isTempCancel = false
             result.enacted = false
             result.success = false
@@ -432,8 +433,8 @@ class DanaRSPlugin @Inject constructor(
             aapsLogger.error("setTempBasalPercent: Invalid input")
             return result
         }
-        if (percentAfterConstraint > pumpDescription.maxTempPercent) percentAfterConstraint = pumpDescription.maxTempPercent
-        if (danaPump.isTempBasalInProgress && danaPump.tempBasalPercent == percentAfterConstraint && danaPump.tempBasalRemainingMin > 4 && !enforceNew) {
+        if (percent > pumpDescription.maxTempPercent) percent = pumpDescription.maxTempPercent
+        if (danaPump.isTempBasalInProgress && danaPump.tempBasalPercent == percent && danaPump.tempBasalRemainingMin > 4 && !enforceNew) {
             result.enacted = false
             result.success = true
             result.isTempCancel = false
@@ -446,12 +447,12 @@ class DanaRSPlugin @Inject constructor(
         }
         temporaryBasalStorage.add(PumpSync.PumpState.TemporaryBasal(dateUtil.now(), T.mins(durationInMinutes.toLong()).msecs(), percent.toDouble(), false, tbrType, 0L, 0L))
         val connectionOK: Boolean = if (durationInMinutes == 15 || durationInMinutes == 30) {
-            danaRSService?.tempBasalShortDuration(percentAfterConstraint, durationInMinutes) == true
+            danaRSService?.tempBasalShortDuration(percent, durationInMinutes) == true
         } else {
             val durationInHours = max(durationInMinutes / 60, 1)
-            danaRSService?.tempBasal(percentAfterConstraint, durationInHours) == true
+            danaRSService?.tempBasal(percent, durationInHours) == true
         }
-        if (connectionOK && danaPump.isTempBasalInProgress && danaPump.tempBasalPercent == percentAfterConstraint) {
+        if (connectionOK && danaPump.isTempBasalInProgress && danaPump.tempBasalPercent == percent) {
             result.enacted = true
             result.success = true
             result.comment = rh.gs(app.aaps.core.ui.R.string.ok)
@@ -566,7 +567,7 @@ class DanaRSPlugin @Inject constructor(
         }
     }
 
-    override fun getJSONStatus(profile: Profile, profileName: String, version: String): JSONObject {
+    override fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject {
         val now = System.currentTimeMillis()
         if (danaPump.lastConnection + 60 * 60 * 1000L < System.currentTimeMillis()) {
             return JSONObject()

@@ -203,7 +203,7 @@ class CommandQueueImplementationTest : TestBaseWithProfile() {
                 iCfg = someICfg
             )
         )
-        Mockito.`when`(profileFunction.getProfile()).thenReturn(validProfile)
+        Mockito.`when`(profileFunction.getProfile()).thenReturn(effectiveProfile)
 
         val bolusConstraint = ConstraintObject(0.0, aapsLogger)
         Mockito.`when`(constraintChecker.applyBolusConstraints(anyObject())).thenReturn(bolusConstraint)
@@ -528,7 +528,7 @@ class CommandQueueImplementationTest : TestBaseWithProfile() {
 
         // when
         testPumpPlugin.isProfileSet = true
-        commandQueue.setProfile(validProfile, false, object : Callback() {
+        commandQueue.setProfile(effectiveProfile, false, object : Callback() {
             override fun run() {
                 assertThat(result.success).isTrue()
                 assertThat(result.enacted).isFalse()
@@ -540,7 +540,7 @@ class CommandQueueImplementationTest : TestBaseWithProfile() {
         assertThat(commandQueue.size()).isEqualTo(0)
         // different should be added
         testPumpPlugin.isProfileSet = false
-        commandQueue.setProfile(validProfile, false, object : Callback() {
+        commandQueue.setProfile(effectiveProfile, false, object : Callback() {
             override fun run() {
                 assertThat(result.success).isTrue()
                 assertThat(result.enacted).isTrue()
@@ -548,7 +548,7 @@ class CommandQueueImplementationTest : TestBaseWithProfile() {
         })
         assertThat(commandQueue.size()).isEqualTo(1)
         // next should be ignored
-        commandQueue.setProfile(validProfile, false, object : Callback() {
+        commandQueue.setProfile(effectiveProfile, false, object : Callback() {
             override fun run() {
                 assertThat(result.success).isTrue()
             }

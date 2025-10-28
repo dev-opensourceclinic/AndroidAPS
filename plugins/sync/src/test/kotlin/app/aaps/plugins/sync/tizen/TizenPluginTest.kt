@@ -41,7 +41,7 @@ internal class TizenPluginTest : TestBaseWithProfile() {
         )
         Mockito.`when`(iobCobCalculator.ads).thenReturn(autosensDataStore)
         Mockito.`when`(autosensDataStore.lastBg()).thenReturn(InMemoryGlucoseValue(1000, 100.0, sourceSensor = SourceSensor.UNKNOWN))
-        Mockito.`when`(profileFunction.getProfile()).thenReturn(validProfile)
+        Mockito.`when`(profileFunction.getProfile()).thenReturn(effectiveProfile)
         Mockito.`when`(profileFunction.getUnits()).thenReturn(GlucoseUnit.MGDL)
         Mockito.`when`(profileFunction.getProfileName()).thenReturn("TestProfile")
         Mockito.`when`(iobCobCalculator.calculateIobFromBolus()).thenReturn(IobTotal(System.currentTimeMillis()))

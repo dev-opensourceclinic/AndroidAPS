@@ -8,7 +8,6 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.interfaces.R
-import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.utils.DateUtil
@@ -76,7 +75,7 @@ interface PumpSync {
      *                  temporaryBasal (and extendedBolus) is null if there is no record in progress based on data in database
      *                  bolus is null when there is no record in database
      */
-    data class PumpState(val temporaryBasal: TemporaryBasal?, val extendedBolus: ExtendedBolus?, val bolus: Bolus?, val profile: Profile?, val serialNumber: String) {
+    data class PumpState(val temporaryBasal: TemporaryBasal?, val extendedBolus: ExtendedBolus?, val bolus: Bolus?, val profile: PumpProfile?, val serialNumber: String) {
 
         data class TemporaryBasal(
             val timestamp: Long,
