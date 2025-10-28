@@ -49,8 +49,8 @@ class UploadChunkTest {
     fun `SMBs should be marked as 'automated' when uploading to Tidepool`() {
         // setup mocked test data
         val boluses = listOf(
-            BS(timestamp = 100, amount = 7.5, type = BS.Type.NORMAL, icfg = iCfg),
-            BS(timestamp = 200, amount = 0.5, type = BS.Type.SMB, icfg = iCfg)
+            BS(timestamp = 100, amount = 7.5, type = BS.Type.NORMAL, iCfg = iCfg),
+            BS(timestamp = 200, amount = 0.5, type = BS.Type.SMB, iCfg = iCfg)
         )
         `when`(persistenceLayer.getBolusesFromTimeToTime(any(), any(), any())).thenReturn(boluses)
         `when`(persistenceLayer.getTherapyEventDataFromToTime(any(), any())).thenReturn(Single.just(listOf()))

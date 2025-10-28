@@ -27,7 +27,7 @@ class ActivityGraph : GraphView {
             timestamp = 0,
             amount = 1.0,
             type = BS.Type.NORMAL,
-            icfg = iCfg
+            iCfg = iCfg
         )
         val activityArray: MutableList<DataPoint> = ArrayList()
         val iobArray: MutableList<DataPoint> = ArrayList()

@@ -162,7 +162,7 @@ class PumpSyncImplementation @Inject constructor(
                 pumpType = pumpType,
                 pumpSerial = pumpSerial
                 ),
-                icfg = profile.iCfg
+                iCfg = profile.iCfg
             )
             persistenceLayer.insertBolusWithTempId(bolus).map { result -> result.inserted.isNotEmpty() }.blockingGet()
         } ?: run {
@@ -184,7 +184,7 @@ class PumpSyncImplementation @Inject constructor(
                 pumpType = pumpType,
                 pumpSerial = pumpSerial
             ),
-            icfg = profile.iCfg
+            iCfg = profile.iCfg
         )
             persistenceLayer.syncPumpBolusWithTempId(bolus, type)
             .map { result -> result.updated.isNotEmpty() }
@@ -207,7 +207,7 @@ class PumpSyncImplementation @Inject constructor(
                 pumpType = pumpType,
                 pumpSerial = pumpSerial
             ),
-            icfg = profile.iCfg
+            iCfg = profile.iCfg
         )
             persistenceLayer.syncPumpBolus(bolus, type)
             .map { result -> result.inserted.isNotEmpty() }

@@ -24,6 +24,7 @@ import app.aaps.core.interfaces.configuration.ConfigBuilder
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
+import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -32,6 +33,7 @@ import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.ui.compose.ComposeUi
 import app.aaps.core.interfaces.ui.compose.ComposeUiProvider
 import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.interfaces.utils.SafeParse
 import app.aaps.core.interfaces.versionChecker.VersionCheckerUtils
 import app.aaps.core.keys.BooleanKey
@@ -40,6 +42,7 @@ import app.aaps.core.keys.LongComposedKey
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.objects.profile.ProfileSealed
 import app.aaps.core.ui.extensions.runOnUiThread
 import app.aaps.core.ui.locale.LocaleHelper
 import app.aaps.core.utils.JsonHelper
@@ -52,6 +55,10 @@ import app.aaps.implementation.plugin.PluginStore
 import app.aaps.implementation.receivers.NetworkChangeReceiver
 import app.aaps.plugins.configuration.keys.ConfigurationBooleanComposedKey
 import app.aaps.plugins.constraints.objectives.keys.ObjectivesLongComposedKey
+import app.aaps.plugins.insulin.InsulinLyumjevPlugin
+import app.aaps.plugins.insulin.InsulinOrefFreePeakPlugin
+import app.aaps.plugins.insulin.InsulinOrefRapidActingPlugin
+import app.aaps.plugins.insulin.InsulinOrefUltraRapidActingPlugin
 import app.aaps.plugins.main.general.themes.ThemeSwitcherPlugin
 import app.aaps.plugins.main.profile.keys.ProfileComposedBooleanKey
 import app.aaps.plugins.main.profile.keys.ProfileComposedDoubleKey
@@ -62,8 +69,8 @@ import app.aaps.receivers.KeepAliveWorker
 import app.aaps.receivers.TimeDateOrTZChangeReceiver
 import app.aaps.ui.activityMonitor.ActivityMonitor
 import app.aaps.ui.widget.Widget
-import com.google.firebase.FirebaseApp
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.remoteConfig
 import dagger.android.AndroidInjector
@@ -108,6 +115,12 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
     @Inject lateinit var loop: Loop
     @Inject lateinit var profileFunction: ProfileFunction
     @Inject lateinit var repository: AppRepository
+    @Inject lateinit var insulinOrefRapidActingPlugin: InsulinOrefRapidActingPlugin
+    @Inject lateinit var insulinOrefUltraRapidActingPlugin: InsulinOrefUltraRapidActingPlugin
+    @Inject lateinit var insulinOrefFreePeakPlugin: InsulinOrefFreePeakPlugin
+    @Inject lateinit var insulinLyumjevPlugin: InsulinLyumjevPlugin
+    @Inject lateinit var hardLimits: HardLimits
+    @Inject lateinit var activePlugin: ActivePlugin
 
     lateinit var appComponent: AppComponent
 
@@ -128,6 +141,9 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
         // Register and initialize plugins
         pluginStore.plugins = plugins
         configBuilder.initialize()
+
+        // Do necessary data migrations (plugins must be initialized already)
+        dataMigrations()
 
         // Do initializations in another thread
         scope.launch { doInit() }
@@ -385,7 +401,66 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
             sp.remove("aps_mode")
         }
 
+        // TODO Migrate insulin configurations
+    }
+
+    @SuppressLint("CheckResult")
+    fun dataMigrations() {
         // Migrate to database 32 (ICfg)
+        // Grab default value first
+        val insulinLabel = when {
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> insulinOrefRapidActingPlugin.friendlyName
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> insulinOrefUltraRapidActingPlugin.friendlyName
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> insulinOrefFreePeakPlugin.friendlyName
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> insulinLyumjevPlugin.friendlyName
+            else                                                                                    -> insulinOrefRapidActingPlugin.friendlyName
+        }
+        val dia =
+            (profileFunction.getProfile() as ProfileSealed.EPS?)?.profileName?.let { profileName ->
+                activePlugin.activeProfileSource.profile?.getSpecificProfile(profileName)?.dia
+            }
+        val insulinEndTime = ((dia ?: hardLimits.maxDia()) * 3600 * 1000).toLong()
+        val insulinPeakTime = (when {
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> insulinOrefRapidActingPlugin.peak
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> insulinOrefUltraRapidActingPlugin.peak
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> insulinOrefFreePeakPlugin.peak
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> insulinLyumjevPlugin.peak
+            else                                                                                    -> insulinOrefRapidActingPlugin.peak
+        } * 60 * 1000).toLong()
+        val concentration = 1.0
+        persistenceLayer.getProfileSwitches().forEach { ps ->
+            if (ps.iCfg.insulinEndTime == -1L) {
+                // record not migrated yet
+                ps.iCfg.insulinLabel = insulinLabel
+                ps.iCfg.insulinEndTime = insulinEndTime
+                ps.iCfg.insulinPeakTime = insulinPeakTime
+                ps.iCfg.concentration = concentration
+                persistenceLayer.insertOrUpdateProfileSwitch(ps, null, null, listValues = null).blockingGet()
+                aapsLogger.debug(LTag.CORE, "Migrating to 32: $ps")
+            }
+        }
+        persistenceLayer.getEffectiveProfileSwitches().forEach { eps ->
+            if (eps.iCfg.insulinEndTime == -1L) {
+                // record not migrated yet
+                eps.iCfg.insulinLabel = insulinLabel
+                eps.iCfg.insulinEndTime = insulinEndTime
+                eps.iCfg.insulinPeakTime = insulinPeakTime
+                eps.iCfg.concentration = concentration
+                persistenceLayer.insertOrUpdateEffectiveProfileSwitch(eps).blockingGet()
+                aapsLogger.debug(LTag.CORE, "Migrating to 32: $eps")
+            }
+        }
+        persistenceLayer.getBoluses().forEach { bolus ->
+            if (bolus.iCfg.insulinEndTime == -1L) {
+                // record not migrated yet
+                bolus.iCfg.insulinLabel = insulinLabel
+                bolus.iCfg.insulinEndTime = insulinEndTime
+                bolus.iCfg.insulinPeakTime = insulinPeakTime
+                bolus.iCfg.concentration = concentration
+                persistenceLayer.insertOrUpdateBolus(bolus, null, null).blockingGet()
+                aapsLogger.debug(LTag.CORE, "Migrating to 32: $bolus")
+            }
+        }
     }
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {

@@ -5,4 +5,4 @@ import app.aaps.core.data.model.BS
 
 fun BS.iobCalc(time: Long): Iob =
     if (!isValid || type == BS.Type.PRIMING) Iob()
-    else icfg.iobCalcForTreatment(this, time)
+    else iCfg.iobCalcForTreatment(this, time)

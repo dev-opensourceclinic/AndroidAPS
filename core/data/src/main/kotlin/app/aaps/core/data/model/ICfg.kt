@@ -94,9 +94,5 @@ data class ICfg(
         return result
     }
 
-    companion object {
-
-        /** Remove this before finishing code. Added to make the code compiled */
-        val FAKE = ICfg(insulinLabel = "Fake", insulinEndTime = 9 * 3600 * 1000, insulinPeakTime = 60 * 60 * 1000)
-    }
+    companion object;
 }

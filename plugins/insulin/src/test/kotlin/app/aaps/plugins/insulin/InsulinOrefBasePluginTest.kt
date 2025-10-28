@@ -85,7 +85,7 @@ class InsulinOrefBasePluginTest {
     fun testIobCalcForTreatment() {
         testPeak = 30
         testUserDefinedDia = 4.0
-        val treatment = BS(timestamp = 0, amount = 10.0, type = BS.Type.NORMAL, icfg = sut.iCfg)
+        val treatment = BS(timestamp = 0, amount = 10.0, type = BS.Type.NORMAL, iCfg = sut.iCfg)
         val time = System.currentTimeMillis()
         // check directly after bolus
         treatment.timestamp = time

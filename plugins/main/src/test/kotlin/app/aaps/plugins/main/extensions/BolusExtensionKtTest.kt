@@ -12,7 +12,7 @@ class BolusExtensionKtTest : TestBaseWithProfile() {
     @Test fun iobCalc() {
         val dia = someICfg.getDia()
 
-        val bolus = BS(timestamp = now - 1, amount = 1.0, type = BS.Type.NORMAL, icfg = someICfg)
+        val bolus = BS(timestamp = now - 1, amount = 1.0, type = BS.Type.NORMAL, iCfg = someICfg)
         // there should be almost full IOB after now
         assertThat(bolus.iobCalc(now).iobContrib).isWithin(0.01).of(1.0)
         // there should be less than 5% after DIA -1

@@ -83,6 +83,13 @@ interface PersistenceLayer {
     fun getBolusByNSId(nsId: String): BS?
 
     /**
+     * Get all boluses
+     *
+     * @return List of all boluses
+     */
+    fun getBoluses(): List<BS>
+
+    /**
      * Get boluses from time
      *
      * @param startTime from
@@ -127,7 +134,7 @@ interface PersistenceLayer {
      * @param source Source for UserEntry logging
      * @return List of inserted/updated records
      */
-    fun insertOrUpdateBolus(bolus: BS, action: Action, source: Sources, note: String? = null): Single<TransactionResult<BS>>
+    fun insertOrUpdateBolus(bolus: BS, action: Action?, source: Sources?, note: String? = null): Single<TransactionResult<BS>>
 
     /**
      * Insert record
@@ -438,6 +445,13 @@ interface PersistenceLayer {
 
     // EPS
     /**
+     * Get all effective profile switches from db
+     *
+     * @return List of effective profile switches
+     */
+    fun getEffectiveProfileSwitches(): List<EPS>
+
+    /**
      *  Get effective profile switch record with lowest timestamp
      *  @return effective profile switch
      */
@@ -505,7 +519,7 @@ interface PersistenceLayer {
      *
      * @param effectiveProfileSwitch record
      */
-    fun insertEffectiveProfileSwitch(effectiveProfileSwitch: EPS): Single<TransactionResult<EPS>>
+    fun insertOrUpdateEffectiveProfileSwitch(effectiveProfileSwitch: EPS): Single<TransactionResult<EPS>>
 
     /**
      * Invalidate record with id
@@ -609,7 +623,7 @@ interface PersistenceLayer {
      * @param listValues Values for UserEntry logging
      * @return List of inserted/updated records
      */
-    fun insertOrUpdateProfileSwitch(profileSwitch: PS, action: Action, source: Sources, note: String? = null, listValues: List<ValueWithUnit>): Single<TransactionResult<PS>>
+    fun insertOrUpdateProfileSwitch(profileSwitch: PS, action: Action?, source: Sources?, note: String? = null, listValues: List<ValueWithUnit>?): Single<TransactionResult<PS>>
 
     /**
      * Invalidate record with id

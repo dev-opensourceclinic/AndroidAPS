@@ -173,7 +173,7 @@ internal class NSClientV3PluginTest : TestBaseWithProfile() {
                 pumpType = PumpType.DANA_I,
                 pumpSerial = "bbbb"
             ),
-            icfg = someICfg
+            iCfg = someICfg
         )
         val dataPair = DataSyncSelector.PairBolus(bolus, 1000)
         // create

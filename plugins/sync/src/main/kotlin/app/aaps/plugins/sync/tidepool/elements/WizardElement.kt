@@ -21,7 +21,7 @@ class WizardElement(carbs: CA, dateUtil: DateUtil, iCfg: ICfg) : BaseElement(car
             amount = 0.0001,
             timestamp = carbs.timestamp,
             type = BS.Type.NORMAL,
-            icfg = iCfg
+            iCfg = iCfg
         )
         bolus = BolusElement(fake, dateUtil) // fake insulin record
     }

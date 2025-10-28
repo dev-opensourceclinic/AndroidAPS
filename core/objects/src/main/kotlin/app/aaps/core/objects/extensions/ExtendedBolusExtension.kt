@@ -60,7 +60,7 @@ fun EB.iobCalc(time: Long, profile: EffectiveProfile): IobTotal {
                     timestamp = calcDate,
                     amount = tempBolusSize,
                     type = BS.Type.NORMAL,
-                    icfg = profile.iCfg
+                    iCfg = profile.iCfg
                 )
                 val aIOB = tempBolusPart.iobCalc(time)
                 result.iob += aIOB.iobContrib
@@ -109,7 +109,7 @@ fun EB.iobCalc(
                     timestamp = calcDate,
                     amount = tempBolusSize,
                     type = BS.Type.NORMAL,
-                    icfg = profile.iCfg
+                    iCfg = profile.iCfg
                 )
                 val aIOB = tempBolusPart.iobCalc(time)
                 result.iob += aIOB.iobContrib

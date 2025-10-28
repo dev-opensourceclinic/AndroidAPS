@@ -146,7 +146,7 @@ class CommandQueueImplementation @Inject constructor(
                                                originalEnd = it.end,
                                                iCfg = it.iCfg
                                            ).also { eps ->
-                                               disposable += persistenceLayer.insertEffectiveProfileSwitch(eps).subscribe()
+                                               disposable += persistenceLayer.insertOrUpdateEffectiveProfileSwitch(eps).subscribe()
                                            }
                                        }
                                    }

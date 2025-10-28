@@ -151,7 +151,7 @@ class NsIncomingDataProcessor @Inject constructor(
                 when (treatment) {
                     is NSBolus                  ->
                         if (preferences.get(BooleanKey.NsClientAcceptInsulin) || config.AAPSCLIENT || doFullSync)
-                            storeDataForDb.addToBoluses(treatment.toBolus())
+                            storeDataForDb.addToBoluses(treatment.toBolus(activePlugin.activeInsulin))
 
                     is NSCarbs                  ->
                         if (preferences.get(BooleanKey.NsClientAcceptCarbs) || config.AAPSCLIENT || doFullSync)
