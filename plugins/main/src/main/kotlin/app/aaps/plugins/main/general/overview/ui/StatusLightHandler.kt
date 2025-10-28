@@ -67,7 +67,7 @@ class StatusLightHandler @Inject constructor(
                 IntKey.OverviewResCritical, IntKey.OverviewResWarning,
                 pump.reservoirLevel,
                 insulinUnit,
-                pump.pumpDescription.maxResorvoirReading.toDouble()
+                pump.pumpDescription.maxReservoirReading.toDouble()
             )
         } else {
             if (cannulaUsage != null) scope.launch { handleUsage(cannulaUsage, insulinUnit) }

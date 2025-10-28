@@ -14,12 +14,13 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.PluginDescription
-import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.actions.CustomAction
@@ -197,7 +198,7 @@ class EopatchPumpPlugin @Inject constructor(
         }
     }
 
-    override fun setNewBasalProfile(profile: Profile): PumpEnactResult {
+    override fun setNewBasalProfile(profile: PumpProfile): PumpEnactResult {
         mLastDataTime = System.currentTimeMillis()
         if (patchConfig.isActivated) {
             if (preferenceManager.patchState.isTempBasalActive) {
@@ -247,7 +248,7 @@ class EopatchPumpPlugin @Inject constructor(
         }
     }
 
-    override fun isThisProfileSet(profile: Profile): Boolean {
+    override fun isThisProfileSet(profile: PumpProfile): Boolean {
         // if (!patchManager.isActivated) {
         //     return true
         // }
@@ -339,7 +340,7 @@ class EopatchPumpPlugin @Inject constructor(
         )
     }
 
-    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
         aapsLogger.info(LTag.PUMP, "setTempBasalAbsolute - absoluteRate: ${absoluteRate.toFloat()}, durationInMinutes: ${durationInMinutes.toLong()}, enforceNew: $enforceNew")
         if (preferenceManager.patchState.isNormalBasalAct) {
             mLastDataTime = System.currentTimeMillis()
@@ -372,7 +373,7 @@ class EopatchPumpPlugin @Inject constructor(
         }
     }
 
-    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
         aapsLogger.info(LTag.PUMP, "setTempBasalPercent - percent: $percent, durationInMinutes: $durationInMinutes, enforceNew: $enforceNew")
         if (preferenceManager.patchState.isNormalBasalAct && percent != 0) {
             mLastDataTime = System.currentTimeMillis()
@@ -500,7 +501,7 @@ class EopatchPumpPlugin @Inject constructor(
         }
     }
 
-    override fun getJSONStatus(profile: Profile, profileName: String, version: String): JSONObject {
+    override fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject {
         val now = System.currentTimeMillis()
         val pumpJson = JSONObject()
         val battery = JSONObject()

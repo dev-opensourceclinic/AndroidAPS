@@ -508,7 +508,8 @@ internal fun NSTreatment.toRemoteTreatment(): RemoteTreatment? =
             originalTimeshift = originalTimeshift,
             originalPercentage = originalPercentage,
             originalDuration = originalDuration,
-            originalEnd = originalEnd
+            originalEnd = originalEnd,
+            iCfg = iCfg.toRemoteICfg()
         )
 
         is NSProfileSwitch          -> RemoteTreatment(
@@ -536,6 +537,7 @@ internal fun NSTreatment.toRemoteTreatment(): RemoteTreatment? =
             durationInMilliseconds = duration,
             timeshift = timeShift,
             percentage = percentage,
+            iCfg = iCfg.toRemoteICfg()
         )
 
         is NSBolusWizard            -> RemoteTreatment(

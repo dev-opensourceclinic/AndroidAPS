@@ -23,6 +23,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.pump.BolusProgressData
@@ -390,7 +391,7 @@ class CommandQueueImplementation @Inject constructor(
         removeAll(CommandType.TEMPBASAL)
         val rateAfterConstraints = constraintChecker.applyBasalConstraints(ConstraintObject(absoluteRate, aapsLogger), profile).value()
         // add new command to queue
-        add(CommandTempBasalAbsolute(injector, rateAfterConstraints, durationInMinutes, enforceNew, profile, tbrType, callback))
+        add(CommandTempBasalAbsolute(injector, rateAfterConstraints, durationInMinutes, enforceNew, tbrType, callback))
         notifyAboutNewCommand()
         return true
     }
@@ -405,7 +406,7 @@ class CommandQueueImplementation @Inject constructor(
         removeAll(CommandType.TEMPBASAL)
         val percentAfterConstraints = constraintChecker.applyBasalPercentConstraints(ConstraintObject(percent, aapsLogger), profile).value()
         // add new command to queue
-        add(CommandTempBasalPercent(injector, percentAfterConstraints, durationInMinutes, enforceNew, profile, tbrType, callback))
+        add(CommandTempBasalPercent(injector, percentAfterConstraints, durationInMinutes, enforceNew, tbrType, callback))
         notifyAboutNewCommand()
         return true
     }
@@ -454,7 +455,7 @@ class CommandQueueImplementation @Inject constructor(
     }
 
     // returns true if command is queued
-    fun setProfile(profile: ProfileSealed, hasNsId: Boolean, callback: Callback?): Boolean {
+    fun setProfile(profile: EffectiveProfile, hasNsId: Boolean, callback: Callback?): Boolean {
         if (isRunning(CommandType.BASAL_PROFILE)) {
             aapsLogger.debug(LTag.PUMPQUEUE, "Command is already executed")
             callback?.result(pumpEnactResultProvider.get().success(true).enacted(false))?.run()
@@ -671,9 +672,9 @@ class CommandQueueImplementation @Inject constructor(
         return HtmlHelper.fromHtml(s)
     }
 
-    override fun isThisProfileSet(requestedProfile: Profile): Boolean {
+    override fun isThisProfileSet(requestedProfile: EffectiveProfile): Boolean {
         val runningProfile = profileFunction.getProfile() ?: return false
-        val result = activePlugin.activePump.isThisProfileSet(requestedProfile) && requestedProfile.isEqual(runningProfile)
+        val result = activePlugin.activePump.isThisProfileSet(requestedProfile.toPump()) && requestedProfile.isEqual(runningProfile)
         if (!result) {
             aapsLogger.debug(LTag.PUMPQUEUE, "Current profile: ${profileFunction.getProfile()}")
             aapsLogger.debug(LTag.PUMPQUEUE, "New profile: $requestedProfile")

@@ -26,12 +26,13 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.PluginDescription
-import app.aaps.core.interfaces.profile.Profile
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.defs.fillFor
@@ -836,7 +837,7 @@ class ComboV2Plugin @Inject constructor(
         // State and status are automatically updated via the associated flows.
     }
 
-    override fun setNewBasalProfile(profile: Profile): PumpEnactResult {
+    override fun setNewBasalProfile(profile: PumpProfile): PumpEnactResult {
         if (!isInitialized()) {
             aapsLogger.error(LTag.PUMP, "Cannot set profile since driver is not initialized")
 
@@ -925,7 +926,7 @@ class ComboV2Plugin @Inject constructor(
         return pumpEnactResult
     }
 
-    override fun isThisProfileSet(profile: Profile): Boolean {
+    override fun isThisProfileSet(profile: PumpProfile): Boolean {
         if (!isInitialized())
             return true
 
@@ -1145,7 +1146,7 @@ class ComboV2Plugin @Inject constructor(
         aapsLogger.debug(LTag.PUMP, "Bolus delivery stopped")
     }
 
-    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
         val pumpEnactResult = pumpEnactResultProvider.get()
         pumpEnactResult.isPercent = false
 
@@ -1196,7 +1197,7 @@ class ComboV2Plugin @Inject constructor(
         return pumpEnactResult
     }
 
-    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult {
         val pumpEnactResult = pumpEnactResultProvider.get()
         pumpEnactResult.isPercent = true
 
@@ -1314,7 +1315,7 @@ class ComboV2Plugin @Inject constructor(
         createFailurePumpEnactResult(R.string.combov2_extended_bolus_not_supported)
 
     @OptIn(ExperimentalTime::class)
-    override fun getJSONStatus(profile: Profile, profileName: String, version: String): JSONObject {
+    override fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject {
         if (!isInitialized())
             return JSONObject()
 

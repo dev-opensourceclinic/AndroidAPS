@@ -70,7 +70,7 @@ class QueueWorkerTest : TestBaseWithProfile() {
         pumpDescription.basalMinimumRate = 0.1
 
         Mockito.`when`(context.getSystemService(Context.POWER_SERVICE)).thenReturn(powerManager)
-        Mockito.`when`(profileFunction.getProfile()).thenReturn(validProfile)
+        Mockito.`when`(profileFunction.getProfile()).thenReturn(effectiveProfile)
 
         val bolusConstraint = ConstraintObject(0.0, aapsLogger)
         Mockito.`when`(constraintChecker.applyBolusConstraints(anyObject())).thenReturn(bolusConstraint)

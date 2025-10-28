@@ -25,6 +25,7 @@ import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.OwnDatabasePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Insight
@@ -32,6 +33,7 @@ import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
+import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.PumpState.TemporaryBasal
@@ -406,7 +408,7 @@ class InsightPlugin @Inject constructor(
         }
     }
 
-    override fun setNewBasalProfile(profile: Profile): PumpEnactResult {
+    override fun setNewBasalProfile(profile: PumpProfile): PumpEnactResult {
         val result = pumpEnactResultProvider.get()
         rxBus.send(EventDismissNotification(Notification.PROFILE_NOT_SET_NOT_INITIALIZED))
         val profileBlocks: MutableList<BasalProfileBlock> = ArrayList()
@@ -459,7 +461,7 @@ class InsightPlugin @Inject constructor(
         return result
     }
 
-    override fun isThisProfileSet(profile: Profile): Boolean {
+    override fun isThisProfileSet(profile: PumpProfile): Boolean {
         if (!isInitialized() || profileBlocks == null) return true
         profileBlocks?.let {
             if (profile.getBasalValues().size != it.size) return false
@@ -607,7 +609,7 @@ class InsightPlugin @Inject constructor(
         }.start()
     }
 
-    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
         val result = pumpEnactResultProvider.get()
         if (activeBasalRate?.activeBasalRate == 0.0) return result
         activeBasalRate?.let { activeBasalRate ->
@@ -636,13 +638,13 @@ class InsightPlugin @Inject constructor(
                             result.comment(cancelTBRResult.comment)
                         }
                     } else {
-                        return setTempBasalPercent(percent.roundToInt(), durationInMinutes, profile, enforceNew, tbrType)
+                        return setTempBasalPercent(percent.roundToInt(), durationInMinutes, enforceNew, tbrType)
                     }
                 } else {
                     result.comment(cancelEBResult.comment)
                 }
             } else {
-                return setTempBasalPercent(percent.roundToInt(), durationInMinutes, profile, enforceNew, tbrType)
+                return setTempBasalPercent(percent.roundToInt(), durationInMinutes, enforceNew, tbrType)
             }
             try {
                 fetchStatus()
@@ -658,7 +660,7 @@ class InsightPlugin @Inject constructor(
         return result
     }
 
-    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
+    override fun setTempBasalPercent(percent: Int, durationInMinutes: Int, enforceNew: Boolean, tbrType: TemporaryBasalType): PumpEnactResult {
         val result = pumpEnactResultProvider.get()
         var percentage = (percent.toDouble() / 10.0).roundToInt() * 10
         if (percentage == 100) return cancelTempBasal(true) else if (percentage > 250) percentage = 250
@@ -867,7 +869,7 @@ class InsightPlugin @Inject constructor(
         }
     }
 
-    override fun getJSONStatus(profile: Profile, profileName: String, version: String): JSONObject {
+    override fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject {
         val now = dateUtil.now()
         if (connectionService == null) return JSONObject()
         val pump = JSONObject()

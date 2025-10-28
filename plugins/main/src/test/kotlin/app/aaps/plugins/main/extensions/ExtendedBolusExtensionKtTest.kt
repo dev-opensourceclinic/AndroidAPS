@@ -49,11 +49,11 @@ class ExtendedBolusExtensionKtTest : TestBaseWithProfile() {
         ).isLessThan(0.05)
         // there should be zero after DIA
         assertThat(
-            bolus.iobCalc(now + T.hours(dia.toLong() + 1).msecs(), validProfile, asResult, SMBDefaults.exercise_mode, SMBDefaults.half_basal_exercise_target, true).iob
+            bolus.iobCalc(now + T.hours(dia.toLong() + 1).msecs(), effectiveProfile, asResult, SMBDefaults.exercise_mode, SMBDefaults.half_basal_exercise_target, true).iob
         ).isEqualTo(0.0)
         // no IOB for invalid record
         bolus.isValid = false
-        assertThat(bolus.iobCalc(now + T.hours(1).msecs(), validProfile, asResult, SMBDefaults.exercise_mode, SMBDefaults.half_basal_exercise_target, true).iob).isEqualTo(0.0)
+        assertThat(bolus.iobCalc(now + T.hours(1).msecs(), effectiveProfile, asResult, SMBDefaults.exercise_mode, SMBDefaults.half_basal_exercise_target, true).iob).isEqualTo(0.0)
     }
 
     @Test fun isInProgress() {

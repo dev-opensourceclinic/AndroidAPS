@@ -155,14 +155,11 @@ class ConstraintsCheckerImplTest : TestBaseWithProfile() {
         )
         danaRSPlugin =
             DanaRSPlugin(
-                aapsLogger, rh, preferences, commandQueue, aapsSchedulers, rxBus, context, constraintChecker, profileFunction,
+                aapsLogger, rh, preferences, commandQueue, aapsSchedulers, rxBus, context, constraintChecker,
                 danaPump, pumpSync, detailedBolusInfoStorage, temporaryBasalStorage,
                 fabricPrivacy, dateUtil, uiInteraction, danaHistoryDatabase, decimalFormatter, pumpEnactResultProvider
             )
-        insightPlugin = InsightPlugin(
-            aapsLogger, rh, preferences, commandQueue, rxBus, profileFunction,
-            context, dateUtil, insightDbHelper, pumpSync, insightDatabase, pumpEnactResultProvider
-        )
+        insightPlugin = InsightPlugin(aapsLogger, rh, preferences, commandQueue, rxBus, context, dateUtil, insightDbHelper, pumpSync, insightDatabase, pumpEnactResultProvider)
         openAPSSMBPlugin =
             OpenAPSSMBPlugin(
                 aapsLogger, rxBus, constraintChecker, rh, profileFunction, profileUtil, config, activePlugin, iobCobCalculator,

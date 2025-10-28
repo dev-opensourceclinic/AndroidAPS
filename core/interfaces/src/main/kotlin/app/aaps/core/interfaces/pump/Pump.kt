@@ -4,6 +4,7 @@ import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.actions.CustomAction
 import app.aaps.core.interfaces.pump.actions.CustomActionType
@@ -86,14 +87,14 @@ interface Pump {
      *
      *  @param profile new profile
      */
-    fun setNewBasalProfile(profile: Profile): PumpEnactResult
+    fun setNewBasalProfile(profile: PumpProfile): PumpEnactResult
 
     /**
      * @param profile profile to check
      *
      * @return true if pump is running the same profile as in param
      */
-    fun isThisProfileSet(profile: Profile): Boolean
+    fun isThisProfileSet(profile: PumpProfile): Boolean
 
     /**
      * @return timestamp of last connection to the pump in milliseconds
@@ -139,7 +140,6 @@ interface Pump {
      *
      * @param absoluteRate          rate in U/h
      * @param durationInMinutes     duration
-     * @param profile               only help for for U/h -> % transformation
      * @param enforceNew            if true drive should force new TBR (ie. stop current,
      *                              and set new even if the same rate is requested
      * @param tbrType               tbrType for storing to DB [NORMAL,EMULATED_PUMP_SUSPEND,PUMP_SUSPEND,SUPERBOLUS]
@@ -148,7 +148,7 @@ interface Pump {
      *                              (if the same TBR rate is requested && enforceNew == false driver can keep
      *                              running TBR. In this case return will be success = true, enacted = false)
      */
-    fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult
+    fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult
 
     /**
      * Request a TRB in %
@@ -157,7 +157,6 @@ interface Pump {
      *
      * @param percent               rate in % (100% is equal to not running TBR, 0% is zero temping)
      * @param durationInMinutes     duration
-     * @param profile               only help for for U/h -> % transformation
      * @param enforceNew            if true drive should force new TBR (ie. stop current,
      *                              and set new even if the same rate is requested
      * @param tbrType               tbrType for storing to DB [NORMAL,EMULATED_PUMP_SUSPEND,PUMP_SUSPEND,SUPERBOLUS]
@@ -166,7 +165,7 @@ interface Pump {
      *                              (if the same TBR rate is requested && enforceNew == false driver can keep
      *                              running TBR. In this case return will be success = true, enacted = false)
      */
-    fun setTempBasalPercent(percent: Int, durationInMinutes: Int, profile: Profile, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult
+    fun setTempBasalPercent(percent: Int, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult
 
     /**
      * Cancel current TBR if a TBR is running
@@ -187,9 +186,10 @@ interface Pump {
      *
      * This info is displayed when user hover over pump pill in NS
      *
+     * @param profile EffectiveProfile (not PumpProfile) because the data is going outside to NS and it's not used inside pump driver
      * @return                      JSON with information
      */
-    fun getJSONStatus(profile: Profile, profileName: String, version: String): JSONObject
+    fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject
 
     /**
      *  Manufacturer type. Usually defined by used plugin

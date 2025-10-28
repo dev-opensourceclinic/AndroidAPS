@@ -59,7 +59,7 @@ class ActionProfileSwitchTest : ActionsTestBase() {
         })
 
         //profile already set
-        `when`(profileFunction.getProfile()).thenReturn(validProfile)
+        `when`(profileFunction.getProfile()).thenReturn(effectiveProfile)
         `when`(profileFunction.getProfileName()).thenReturn("Test")
         sut.inputProfileName = InputProfileName(rh, activePlugin, "Test")
         sut.doAction(object : Callback() {

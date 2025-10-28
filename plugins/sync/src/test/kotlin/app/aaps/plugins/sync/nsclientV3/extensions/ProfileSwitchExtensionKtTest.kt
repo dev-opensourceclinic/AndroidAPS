@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 
-@Suppress("SpellCheckingInspection")
 internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
 
     @Mock lateinit var insulin: Insulin
@@ -33,17 +32,17 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
         var profileSwitch = PS(
             timestamp = 10000,
             isValid = true,
-            basalBlocks = validProfile.basalBlocks,
-            isfBlocks = validProfile.isfBlocks,
-            icBlocks = validProfile.icBlocks,
-            targetBlocks = validProfile.targetBlocks,
-            glucoseUnit = validProfile.units,
+            basalBlocks = effectiveProfile.basalBlocks,
+            isfBlocks = effectiveProfile.isfBlocks,
+            icBlocks = effectiveProfile.icBlocks,
+            targetBlocks = effectiveProfile.targetBlocks,
+            glucoseUnit = effectiveProfile.units,
             profileName = "SomeProfile",
             timeshift = 0,
             percentage = 100,
             duration = 0,
             iCfg = activePlugin.activeInsulin.iCfg.also {
-                it.insulinEndTime = (validProfile.dia * 3600 * 1000).toLong()
+                it.insulinEndTime = (effectiveProfile.dia * 3600 * 1000).toLong()
             },
             ids = IDs(
                 nightscoutId = "nightscoutId",
@@ -60,17 +59,17 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
         profileSwitch = PS(
             timestamp = 10000,
             isValid = true,
-            basalBlocks = validProfile.basalBlocks,
-            isfBlocks = validProfile.isfBlocks,
-            icBlocks = validProfile.icBlocks,
-            targetBlocks = validProfile.targetBlocks,
-            glucoseUnit = validProfile.units,
+            basalBlocks = effectiveProfile.basalBlocks,
+            isfBlocks = effectiveProfile.isfBlocks,
+            icBlocks = effectiveProfile.icBlocks,
+            targetBlocks = effectiveProfile.targetBlocks,
+            glucoseUnit = effectiveProfile.units,
             profileName = "SomeProfile",
             timeshift = -3600000,
             percentage = 150,
             duration = 3600000,
             iCfg = activePlugin.activeInsulin.iCfg.also {
-                it.insulinEndTime = (validProfile.dia * 3600 * 1000).toLong()
+                it.insulinEndTime = (effectiveProfile.dia * 3600 * 1000).toLong()
             },
             ids = IDs(
                 nightscoutId = "nightscoutId",
