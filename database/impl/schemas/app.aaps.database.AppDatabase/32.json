@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 32,
-    "identityHash": "042cafa160954a388df860f57117d359",
+    "identityHash": "065f0255a78cb6c6134afd98e4592364",
     "entities": [
       {
         "tableName": "apsResults",
@@ -174,7 +174,7 @@
       },
       {
         "tableName": "boluses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `version` INTEGER NOT NULL, `dateCreated` INTEGER NOT NULL, `isValid` INTEGER NOT NULL, `referenceId` INTEGER, `timestamp` INTEGER NOT NULL, `utcOffset` INTEGER NOT NULL, `amount` REAL NOT NULL, `type` TEXT NOT NULL, `notes` TEXT, `isBasalInsulin` INTEGER NOT NULL, `nightscoutSystemId` TEXT, `nightscoutId` TEXT, `pumpType` TEXT, `pumpSerial` TEXT, `temporaryId` INTEGER, `pumpId` INTEGER, `startId` INTEGER, `endId` INTEGER, `insulinLabel` TEXT, `insulinEndTime` INTEGER, `insulinPeakTime` INTEGER, `concentration` REAL, FOREIGN KEY(`referenceId`) REFERENCES `boluses`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `version` INTEGER NOT NULL, `dateCreated` INTEGER NOT NULL, `isValid` INTEGER NOT NULL, `referenceId` INTEGER, `timestamp` INTEGER NOT NULL, `utcOffset` INTEGER NOT NULL, `amount` REAL NOT NULL, `type` TEXT NOT NULL, `notes` TEXT, `isBasalInsulin` INTEGER NOT NULL, `nightscoutSystemId` TEXT, `nightscoutId` TEXT, `pumpType` TEXT, `pumpSerial` TEXT, `temporaryId` INTEGER, `pumpId` INTEGER, `startId` INTEGER, `endId` INTEGER, `insulinLabel` TEXT NOT NULL, `insulinEndTime` INTEGER NOT NULL, `insulinPeakTime` INTEGER NOT NULL, `concentration` REAL NOT NULL, FOREIGN KEY(`referenceId`) REFERENCES `boluses`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -283,22 +283,26 @@
           {
             "fieldPath": "insulinConfiguration.insulinLabel",
             "columnName": "insulinLabel",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "insulinConfiguration.insulinEndTime",
             "columnName": "insulinEndTime",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "insulinConfiguration.insulinPeakTime",
             "columnName": "insulinPeakTime",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "insulinConfiguration.concentration",
             "columnName": "concentration",
-            "affinity": "REAL"
+            "affinity": "REAL",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -318,24 +322,6 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
-            "name": "index_boluses_isValid",
-            "unique": false,
-            "columnNames": [
-              "isValid"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_isValid` ON `${TABLE_NAME}` (`isValid`)"
-          },
-          {
-            "name": "index_boluses_temporaryId",
-            "unique": false,
-            "columnNames": [
-              "temporaryId"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_temporaryId` ON `${TABLE_NAME}` (`temporaryId`)"
-          },
-          {
             "name": "index_boluses_pumpId",
             "unique": false,
             "columnNames": [
@@ -343,24 +329,6 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_pumpId` ON `${TABLE_NAME}` (`pumpId`)"
-          },
-          {
-            "name": "index_boluses_pumpSerial",
-            "unique": false,
-            "columnNames": [
-              "pumpSerial"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_pumpSerial` ON `${TABLE_NAME}` (`pumpSerial`)"
-          },
-          {
-            "name": "index_boluses_pumpType",
-            "unique": false,
-            "columnNames": [
-              "pumpType"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_pumpType` ON `${TABLE_NAME}` (`pumpType`)"
           },
           {
             "name": "index_boluses_referenceId",
@@ -379,6 +347,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_timestamp` ON `${TABLE_NAME}` (`timestamp`)"
+          },
+          {
+            "name": "index_boluses_nightscoutId",
+            "unique": false,
+            "columnNames": [
+              "nightscoutId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_boluses_nightscoutId` ON `${TABLE_NAME}` (`nightscoutId`)"
           }
         ],
         "foreignKeys": [
@@ -1094,13 +1071,13 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_effectiveProfileSwitches_timestamp` ON `${TABLE_NAME}` (`timestamp`)"
           },
           {
-            "name": "index_effectiveProfileSwitches_isValid",
+            "name": "index_effectiveProfileSwitches_nightscoutId",
             "unique": false,
             "columnNames": [
-              "isValid"
+              "nightscoutId"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_effectiveProfileSwitches_isValid` ON `${TABLE_NAME}` (`isValid`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_effectiveProfileSwitches_nightscoutId` ON `${TABLE_NAME}` (`nightscoutId`)"
           }
         ],
         "foreignKeys": [
@@ -1668,6 +1645,15 @@
         },
         "indices": [
           {
+            "name": "index_profileSwitches_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_profileSwitches_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
             "name": "index_profileSwitches_referenceId",
             "unique": false,
             "columnNames": [
@@ -1684,24 +1670,6 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_profileSwitches_timestamp` ON `${TABLE_NAME}` (`timestamp`)"
-          },
-          {
-            "name": "index_profileSwitches_isValid",
-            "unique": false,
-            "columnNames": [
-              "isValid"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_profileSwitches_isValid` ON `${TABLE_NAME}` (`isValid`)"
-          },
-          {
-            "name": "index_profileSwitches_id",
-            "unique": false,
-            "columnNames": [
-              "id"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_profileSwitches_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
             "name": "index_profileSwitches_nightscoutId",
@@ -3478,7 +3446,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '042cafa160954a388df860f57117d359')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '065f0255a78cb6c6134afd98e4592364')"
     ]
   }
 }

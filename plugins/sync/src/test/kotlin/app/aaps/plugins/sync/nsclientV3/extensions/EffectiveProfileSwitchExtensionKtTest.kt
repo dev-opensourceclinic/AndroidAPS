@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 
-@Suppress("SpellCheckingInspection")
 internal class EffectiveProfileSwitchExtensionKtTest : TestBaseWithProfile() {
 
     @Mock lateinit var insulin: Insulin

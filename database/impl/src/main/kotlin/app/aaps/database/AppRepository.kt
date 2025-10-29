@@ -388,6 +388,10 @@ class AppRepository @Inject internal constructor(
     fun getLastEffectiveProfileSwitchId(): Long? =
         database.effectiveProfileSwitchDao.getLastId()
 
+    fun getAllEffectiveProfileSwitches(): Single<List<EffectiveProfileSwitch>> =
+        database.effectiveProfileSwitchDao.getAllEffectiveProfileSwitches()
+            .subscribeOn(Schedulers.io())
+
     // THERAPY EVENT
     /*
        * returns a Pair of the next entity to sync and the ID of the "update".
@@ -497,6 +501,10 @@ class AppRepository @Inject internal constructor(
 
     fun getOldestBolus(): Maybe<Bolus> =
         database.bolusDao.getOldestBolusRecord()
+            .subscribeOn(Schedulers.io())
+
+    fun getBoluses(): Single<List<Bolus>> =
+        database.bolusDao.getAllBoluses()
             .subscribeOn(Schedulers.io())
 
     fun getBolusesDataFromTime(timestamp: Long, ascending: Boolean): Single<List<Bolus>> =

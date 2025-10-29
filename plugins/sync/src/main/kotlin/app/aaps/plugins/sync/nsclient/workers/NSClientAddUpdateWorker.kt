@@ -72,7 +72,7 @@ class NSClientAddUpdateWorker(
                 latestDateInReceivedData = mills
 
             if (insulin > 0 && (preferences.get(BooleanKey.NsClientAcceptInsulin) || config.AAPSCLIENT)) {
-                BS.fromJson(json)?.let { bolus ->
+                BS.fromJson(json, activePlugin.activeInsulin)?.let { bolus ->
                     storeDataForDb.addToBoluses(bolus)
                 } ?: aapsLogger.error("Error parsing bolus json $json")
             }

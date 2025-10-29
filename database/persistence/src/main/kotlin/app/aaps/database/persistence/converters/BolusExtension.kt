@@ -1,7 +1,6 @@
 package app.aaps.database.persistence.converters
 
 import app.aaps.core.data.model.BS
-import app.aaps.core.data.model.ICfg
 import app.aaps.database.entities.Bolus
 
 fun Bolus.fromDb(): BS =
@@ -17,7 +16,7 @@ fun Bolus.fromDb(): BS =
         type = this.type.fromDb(),
         notes = this.notes,
         isBasalInsulin = this.isBasalInsulin,
-        iCfg = this.insulinConfiguration?.fromDb() ?: ICfg.FAKE,
+        iCfg = this.insulinConfiguration.fromDb(),
         ids = this.interfaceIDs.fromDb()
     )
 
