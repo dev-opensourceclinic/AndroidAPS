@@ -2,7 +2,6 @@ package app.aaps.pump.equil
 
 import android.content.Context
 import android.os.SystemClock
-import android.text.format.DateFormat
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
@@ -15,13 +14,11 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.PluginDescription
-import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpProfile
-import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.pump.PumpSync.TemporaryBasalType
 import app.aaps.core.interfaces.pump.defs.fillFor
 import app.aaps.core.interfaces.queue.Callback
@@ -33,8 +30,6 @@ import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventDismissNotification
 import app.aaps.core.interfaces.rx.events.EventPreferenceChange
-import app.aaps.core.interfaces.utils.DateUtil
-import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.ui.toast.ToastUtils
@@ -64,8 +59,6 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import org.joda.time.DateTime
 import org.joda.time.Duration
-import org.json.JSONException
-import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -80,10 +73,7 @@ class EquilPumpPlugin @Inject constructor(
     private val rxBus: RxBus,
     private val context: Context,
     private val fabricPrivacy: FabricPrivacy,
-    private val dateUtil: DateUtil,
-    private val pumpSync: PumpSync,
     private val equilManager: EquilManager,
-    private val decimalFormatter: DecimalFormatter,
     private val pumpEnactResultProvider: Provider<PumpEnactResult>
 ) : PumpPluginBase(
     pluginDescription = PluginDescription()
@@ -253,13 +243,9 @@ class EquilPumpPlugin @Inject constructor(
         )
     }
 
-    override fun lastDataTime(): Long {
-        aapsLogger.debug(
-            LTag.PUMPCOMM,
-            "lastDataTime: ${dateUtil.dateAndTimeAndSecondsString(equilManager.equilState?.lastDataTime ?: 0L)}"
-        )
-        return equilManager.equilState?.lastDataTime ?: 0L
-    }
+    override val lastDataTime: Long get() = equilManager.equilState?.lastDataTime ?: 0L
+    override val lastBolusTime: Long? get() = null
+    override val lastBolusAmount: Double? get() = null
 
     override val baseBasalRate: Double
         get() = if (isSuspended()) 0.0 else equilManager.equilState?.basalSchedule?.rateAt(
@@ -357,95 +343,9 @@ class EquilPumpPlugin @Inject constructor(
         return pumpEnactResult
     }
 
-    override fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject {
-        if (!isConnected()) return JSONObject().put(
-            "status",
-            JSONObject().put("status", "no active Pod")
-        )
-
-        val json = JSONObject()
-        val battery = JSONObject()
-        val status = JSONObject()
-        val extended = JSONObject()
-        return try {
-            battery.put("percent", batteryLevel)
-            status.put("status", if (isSuspended()) "suspended" else "normal")
-            status.put("timestamp", dateUtil.toISOString(lastDataTime()))
-            extended.put("Version", version)
-            pumpSync.expectedPumpState().bolus?.let { bolus ->
-                extended.put("LastBolus", dateUtil.dateAndTimeString(bolus.timestamp))
-                extended.put("LastBolusAmount", bolus.amount)
-            }
-            pumpSync.expectedPumpState().temporaryBasal?.let { temporaryBasal ->
-                extended.put(
-                    "TempBasalAbsoluteRate",
-                    temporaryBasal.convertedToAbsolute(dateUtil.now(), profile)
-                )
-                extended.put("TempBasalStart", dateUtil.dateAndTimeString(temporaryBasal.timestamp))
-                extended.put("TempBasalRemaining", temporaryBasal.plannedRemainingMinutes)
-            }
-            pumpSync.expectedPumpState().extendedBolus?.let { extendedBolus ->
-                extended.put("ExtendedBolusAbsoluteRate", extendedBolus.rate)
-                extended.put(
-                    "ExtendedBolusStart",
-                    dateUtil.dateAndTimeString(extendedBolus.timestamp)
-                )
-                extended.put("ExtendedBolusRemaining", extendedBolus.plannedRemainingMinutes)
-            }
-            extended.put("BaseBasalRate", baseBasalRate)
-            extended.put("ActiveProfile", profileName)
-            json.put("battery", battery)
-            json.put("status", status)
-            json.put("extended", extended)
-            json.put("reservoir", reservoirLevel)
-            json.put("clock", dateUtil.toISOString(dateUtil.now()))
-            json
-        } catch (e: JSONException) {
-            json.put("status", JSONObject().put("status", "error" + e.message))
-            aapsLogger.error("Unhandled exception", e)
-            json
-        }
-    }
-
     override fun manufacturer(): ManufacturerType = ManufacturerType.Equil
     override fun model(): PumpType = PumpType.EQUIL
     override fun serialNumber(): String = equilManager.equilState?.serialNumber ?: ""
-
-    override fun shortStatus(veryShort: Boolean): String {
-        if (!equilManager.isActivationCompleted()) {
-            return rh.gs(R.string.equil_init_insulin_error)
-        }
-        var ret = ""
-        if (lastDataTime() != 0L) {
-            val agoMsec = System.currentTimeMillis() - lastDataTime()
-            val agoMin = (agoMsec / 60.0 / 1000.0).toInt()
-            ret += rh.gs(R.string.equil_common_short_status_last_connection, agoMin) + "\n"
-        }
-        if (equilManager.equilState?.bolusRecord != null) {
-            ret += rh.gs(
-                R.string.equil_common_short_status_last_bolus,
-                decimalFormatter.to2Decimal(equilManager.equilState?.bolusRecord?.amount!!),
-                DateFormat.format(
-                    "HH:mm", equilManager.equilState?.bolusRecord?.startTime!!
-                )
-            ) + "\n"
-        }
-        val (temporaryBasal, extendedBolus, _, profile) = pumpSync.expectedPumpState()
-        if (temporaryBasal != null && profile != null) {
-            ret += rh.gs(
-                R.string.equil_common_short_status_temp_basal,
-                temporaryBasal.toStringFull(dateUtil, rh) + "\n"
-            )
-        }
-        if (extendedBolus != null) {
-            ret += rh.gs(
-                R.string.equil_common_short_status_extended_bolus,
-                extendedBolus.toStringFull(dateUtil, rh) + "\n"
-            )
-        }
-        ret += rh.gs(R.string.equil_common_short_status_reservoir, reservoirLevel)
-        return ret.trim { it <= ' ' }
-    }
 
     override fun executeCustomCommand(customCommand: CustomCommand): PumpEnactResult? {
         aapsLogger.debug(LTag.PUMPCOMM, "executeCustomCommand $customCommand")
