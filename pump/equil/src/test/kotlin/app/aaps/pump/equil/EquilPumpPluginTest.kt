@@ -1,6 +1,5 @@
 package app.aaps.pump.equil
 
-import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.queue.CommandQueue
 import app.aaps.pump.equil.manager.EquilManager
 import app.aaps.shared.tests.TestBaseWithProfile
@@ -14,7 +13,6 @@ import org.mockito.Mockito
 class EquilPumpPluginTest : TestBaseWithProfile() {
 
     @Mock lateinit var commandQueue: CommandQueue
-    @Mock lateinit var pumpSync: PumpSync
     @Mock lateinit var equilManager: EquilManager
 
     private lateinit var equilPumpPlugin: EquilPumpPlugin
@@ -26,7 +24,7 @@ class EquilPumpPluginTest : TestBaseWithProfile() {
         equilPumpPlugin =
             EquilPumpPlugin(
                 aapsLogger, rh, preferences, commandQueue, aapsSchedulers, rxBus, context,
-                fabricPrivacy, dateUtil, pumpSync, equilManager, decimalFormatter, pumpEnactResultProvider
+                fabricPrivacy, equilManager, pumpEnactResultProvider
             )
     }
 

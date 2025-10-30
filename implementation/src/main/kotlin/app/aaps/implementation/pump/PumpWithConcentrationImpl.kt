@@ -37,8 +37,7 @@ class PumpWithConcentrationImpl @Inject constructor(
         get() = (activePlugin as PluginStore).activePumpInternal
 
     override fun selectedActivePump(): Pump = activePumpInternal
-    private val concentration: Double
-        get() = if (config.enableInsulinConcentration()) profileFunction.getProfile()?.insulinConcentration() ?: 1.0 else 1.0
+    private val concentration: Double get() = if (config.enableInsulinConcentration()) profileFunction.getProfile()?.insulinConcentration() ?: 1.0 else 1.0
 
     override fun isInitialized(): Boolean = activePumpInternal.isInitialized()
     override fun isSuspended(): Boolean = activePumpInternal.isSuspended()
@@ -48,16 +47,18 @@ class PumpWithConcentrationImpl @Inject constructor(
     override fun isHandshakeInProgress(): Boolean = activePumpInternal.isHandshakeInProgress()
     override fun waitForDisconnectionInSeconds(): Int = activePumpInternal.waitForDisconnectionInSeconds()
     override fun getPumpStatus(reason: String) = activePumpInternal.getPumpStatus(reason)
-    override fun lastDataTime(): Long = activePumpInternal.lastDataTime()
+    override val lastDataTime: Long get() = activePumpInternal.lastDataTime
+    override val lastBolusTime: Long? get() = activePumpInternal.lastBolusTime
+    override val lastBolusAmount: Double? get() = activePumpInternal.lastBolusAmount
     override val reservoirLevel: Double get() = activePumpInternal.reservoirLevel
     override val batteryLevel: Int get() = activePumpInternal.batteryLevel
     override fun cancelTempBasal(enforceNew: Boolean): PumpEnactResult = activePumpInternal.cancelTempBasal(enforceNew)
     override fun cancelExtendedBolus(): PumpEnactResult = activePumpInternal.cancelExtendedBolus()
-    override fun getJSONStatus(profile: EffectiveProfile, profileName: String, version: String): JSONObject = activePumpInternal.getJSONStatus(profile, profileName, version)
+    override fun updateExtendedJsonStatus(extendedStatus: JSONObject) = activePumpInternal.updateExtendedJsonStatus(extendedStatus)
     override fun manufacturer(): ManufacturerType = activePumpInternal.manufacturer()
     override fun model(): PumpType = activePumpInternal.model()
     override fun serialNumber(): String = activePumpInternal.serialNumber()
-    override fun shortStatus(veryShort: Boolean): String = activePumpInternal.shortStatus(veryShort)
+    override fun pumpSpecificShortStatus(veryShort: Boolean): String = activePumpInternal.pumpSpecificShortStatus(veryShort)
     override val isFakingTempsByExtendedBoluses: Boolean get() = activePumpInternal.isFakingTempsByExtendedBoluses
     override fun loadTDDs(): PumpEnactResult = activePumpInternal.loadTDDs()
     override fun canHandleDST(): Boolean = activePumpInternal.canHandleDST()
@@ -81,18 +82,14 @@ class PumpWithConcentrationImpl @Inject constructor(
     override fun isThisProfileSet(profile: PumpProfile): Boolean = error("Must no be called directly. Use: isThisProfileSet(profile: EffectiveProfile)")
     override fun isThisProfileSet(profile: EffectiveProfile): Boolean = activePumpInternal.isThisProfileSet(profile.toPump())
 
-    override val baseBasalRate: Double
-        get() = activePumpInternal.baseBasalRate * concentration
+    override val baseBasalRate: Double get() = activePumpInternal.baseBasalRate * concentration
 
     override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult = activePumpInternal.deliverTreatment(detailedBolusInfo.copy().also { it.insulin /= concentration } )
 
     override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult =
         profileFunction.getProfile()?.let { profile ->
             constraintsChecker.applyBasalConstraints(ConstraintObject(absoluteRate, aapsLogger), profile).value().let { absoluteAfterConstrains ->
-                if (config.enableInsulinConcentration())
-                    activePumpInternal.setTempBasalAbsolute(absoluteAfterConstrains / concentration, durationInMinutes, enforceNew, tbrType)
-                else
-                    activePumpInternal.setTempBasalAbsolute(absoluteAfterConstrains, durationInMinutes, enforceNew, tbrType)
+                activePumpInternal.setTempBasalAbsolute(absoluteAfterConstrains / concentration, durationInMinutes, enforceNew, tbrType)
             }
         } ?: error("No profile running")
 
