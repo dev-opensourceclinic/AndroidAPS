@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class RemoteICfg(
     @SerializedName("insulinLabel") val insulinLabel: String,
-    @SerializedName("insulinLabel") val insulinEndTime: Long,
-    @SerializedName("insulinLabel") val insulinPeakTime: Long,
-    @SerializedName("insulinLabel") val concentration: Double
+    @SerializedName("insulinEndTime") val insulinEndTime: Long,
+    @SerializedName("insulinPeakTime") val insulinPeakTime: Long,
+    @SerializedName("concentration") val concentration: Double
 )
