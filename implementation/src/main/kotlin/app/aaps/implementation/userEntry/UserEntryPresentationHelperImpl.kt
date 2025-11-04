@@ -52,6 +52,7 @@ class UserEntryPresentationHelperImpl @Inject constructor(
         Sources.LoopDialog          -> R.drawable.ic_loop_closed
         Sources.TempBasalDialog     -> R.drawable.ic_actions_start_temp_basal
         Sources.CalibrationDialog   -> R.drawable.ic_calibration
+        Sources.ConcentrationDialog -> R.drawable.ic_insulin
         Sources.FillDialog          -> R.drawable.ic_cp_pump_cannula
         Sources.SiteRotationDialog  -> app.aaps.core.ui.R.drawable.ic_site_rotation
         Sources.BgCheck             -> R.drawable.ic_cp_bgcheck
@@ -117,6 +118,7 @@ class UserEntryPresentationHelperImpl @Inject constructor(
         Sources.BgFragment          -> R.drawable.ic_aaps
         Sources.Ottai               -> R.drawable.ic_ottai
         Sources.SyaiTag             -> R.drawable.ic_syai_tag
+        Sources.Insulin             -> R.drawable.ic_insulin
     }
 
     override fun actionToColoredString(action: Action): Spanned = when (action) {
@@ -130,34 +132,35 @@ class UserEntryPresentationHelperImpl @Inject constructor(
         list.joinToString(separator = "  ", transform = this::toPresentationString)
 
     private fun toPresentationString(valueWithUnit: ValueWithUnit?): String = when (valueWithUnit) {
-        is ValueWithUnit.Gram         -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
-        is ValueWithUnit.Hour         -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
-        is ValueWithUnit.Minute       -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
-        is ValueWithUnit.Percent      -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
-        is ValueWithUnit.Insulin      -> decimalFormatter.to2Decimal(valueWithUnit.value) + translator.translate(valueWithUnit)
-        is ValueWithUnit.UnitPerHour  -> decimalFormatter.to2Decimal(valueWithUnit.value) + translator.translate(valueWithUnit)
-        is ValueWithUnit.SimpleInt    -> valueWithUnit.value.toString()
-        is ValueWithUnit.SimpleString -> valueWithUnit.value
-        is ValueWithUnit.TEMeterType  -> translator.translate(valueWithUnit.value)
-        is ValueWithUnit.TETTReason   -> translator.translate(valueWithUnit.value)
-        is ValueWithUnit.RMMode       -> translator.translate(valueWithUnit.value)
-        is ValueWithUnit.TEType       -> translator.translate(valueWithUnit.value)
-        is ValueWithUnit.TELocation   -> translator.translate(valueWithUnit.value)
-        is ValueWithUnit.TEArrow      -> translator.translate(valueWithUnit.value)
-        is ValueWithUnit.Timestamp    -> dateUtil.dateAndTimeAndSecondsString(valueWithUnit.value)
+        is ValueWithUnit.Gram                 -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
+        is ValueWithUnit.Hour                 -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
+        is ValueWithUnit.Minute               -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
+        is ValueWithUnit.Percent              -> "${valueWithUnit.value}${translator.translate(valueWithUnit)}"
+        is ValueWithUnit.Insulin              -> decimalFormatter.to2Decimal(valueWithUnit.value) + translator.translate(valueWithUnit)
+        is ValueWithUnit.InsulinConcentration -> "${rh.gs(app.aaps.core.ui.R.string.ins_concentration_confirmed, valueWithUnit.value)}"
+        is ValueWithUnit.UnitPerHour          -> decimalFormatter.to2Decimal(valueWithUnit.value) + translator.translate(valueWithUnit)
+        is ValueWithUnit.SimpleInt            -> valueWithUnit.value.toString()
+        is ValueWithUnit.SimpleString         -> valueWithUnit.value
+        is ValueWithUnit.TEMeterType          -> translator.translate(valueWithUnit.value)
+        is ValueWithUnit.TETTReason           -> translator.translate(valueWithUnit.value)
+        is ValueWithUnit.RMMode               -> translator.translate(valueWithUnit.value)
+        is ValueWithUnit.TEType               -> translator.translate(valueWithUnit.value)
+        is ValueWithUnit.TELocation           -> translator.translate(valueWithUnit.value)
+        is ValueWithUnit.TEArrow              -> translator.translate(valueWithUnit.value)
+        is ValueWithUnit.Timestamp            -> dateUtil.dateAndTimeAndSecondsString(valueWithUnit.value)
 
-        is ValueWithUnit.Mgdl         -> {
+        is ValueWithUnit.Mgdl                 -> {
             if (profileUtil.units == GlucoseUnit.MGDL) decimalFormatter.to0Decimal(valueWithUnit.value) + rh.gs(app.aaps.core.ui.R.string.mgdl)
             else decimalFormatter.to1Decimal(valueWithUnit.value * Constants.MGDL_TO_MMOLL) + rh.gs(app.aaps.core.ui.R.string.mmol)
         }
 
-        is ValueWithUnit.Mmoll        -> {
+        is ValueWithUnit.Mmoll                -> {
             if (profileUtil.units == GlucoseUnit.MMOL) decimalFormatter.to1Decimal(valueWithUnit.value) + rh.gs(app.aaps.core.ui.R.string.mmol)
             else decimalFormatter.to0Decimal(valueWithUnit.value * Constants.MMOLL_TO_MGDL) + rh.gs(app.aaps.core.ui.R.string.mgdl)
         }
 
-        ValueWithUnit.UNKNOWN         -> ""
-        null                          -> ""
+        ValueWithUnit.UNKNOWN                 -> ""
+        null                                  -> ""
     }
 
     override fun userEntriesToCsv(userEntries: List<UE>): String {
@@ -207,29 +210,30 @@ class UserEntryPresentationHelperImpl @Inject constructor(
 
         for (valueWithUnit in fullValueWithUnitList.filterNotNull()) {
             when (valueWithUnit) {
-                is ValueWithUnit.Gram         -> gram = valueWithUnit.value.toString()
-                is ValueWithUnit.Hour         -> hour = valueWithUnit.value.toString()
-                is ValueWithUnit.Minute       -> minute = valueWithUnit.value.toString()
-                is ValueWithUnit.Percent      -> percent = valueWithUnit.value.toString()
-                is ValueWithUnit.Insulin      -> insulin = decimalFormatter.to2Decimal(valueWithUnit.value)
-                is ValueWithUnit.UnitPerHour  -> unitPerHour = decimalFormatter.to2Decimal(valueWithUnit.value)
-                is ValueWithUnit.SimpleInt    -> noUnit = noUnit.addWithSeparator(valueWithUnit.value)
-                is ValueWithUnit.SimpleString -> simpleString = simpleString.addWithSeparator(valueWithUnit.value)
-                is ValueWithUnit.TEMeterType  -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
-                is ValueWithUnit.TETTReason   -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
-                is ValueWithUnit.RMMode       -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
-                is ValueWithUnit.TEType       -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
-                is ValueWithUnit.TELocation   -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
-                is ValueWithUnit.TEArrow      -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
-                is ValueWithUnit.Timestamp    -> timestamp = dateUtil.dateAndTimeAndSecondsString(valueWithUnit.value)
+                is ValueWithUnit.Gram                 -> gram = valueWithUnit.value.toString()
+                is ValueWithUnit.Hour                 -> hour = valueWithUnit.value.toString()
+                is ValueWithUnit.Minute               -> minute = valueWithUnit.value.toString()
+                is ValueWithUnit.Percent              -> percent = valueWithUnit.value.toString()
+                is ValueWithUnit.Insulin              -> insulin = decimalFormatter.to2Decimal(valueWithUnit.value)
+                is ValueWithUnit.InsulinConcentration -> simpleString = simpleString.addWithSeparator(rh.gs(app.aaps.core.ui.R.string.ins_concentration_confirmed, valueWithUnit.value))
+                is ValueWithUnit.UnitPerHour          -> unitPerHour = decimalFormatter.to2Decimal(valueWithUnit.value)
+                is ValueWithUnit.SimpleInt            -> noUnit = noUnit.addWithSeparator(valueWithUnit.value)
+                is ValueWithUnit.SimpleString         -> simpleString = simpleString.addWithSeparator(valueWithUnit.value)
+                is ValueWithUnit.TEMeterType          -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
+                is ValueWithUnit.TETTReason           -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
+                is ValueWithUnit.RMMode               -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
+                is ValueWithUnit.TEType               -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
+                is ValueWithUnit.TELocation           -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
+                is ValueWithUnit.TEArrow              -> therapyEvent = therapyEvent.addWithSeparator(translator.translate(valueWithUnit.value))
+                is ValueWithUnit.Timestamp            -> timestamp = dateUtil.dateAndTimeAndSecondsString(valueWithUnit.value)
 
-                is ValueWithUnit.Mgdl         ->
+                is ValueWithUnit.Mgdl                 ->
                     bg = profileUtil.fromMgdlToStringInUnits(valueWithUnit.value)
 
-                is ValueWithUnit.Mmoll        ->
+                is ValueWithUnit.Mmoll                ->
                     bg = profileUtil.fromMgdlToStringInUnits(valueWithUnit.value * Constants.MMOLL_TO_MGDL)
 
-                ValueWithUnit.UNKNOWN         -> Unit
+                ValueWithUnit.UNKNOWN                 -> Unit
             }
         }
 

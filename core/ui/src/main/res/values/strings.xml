@@ -184,6 +184,7 @@
     <string name="extended_bolus_medium">%1$.2f U/h %2$s/%3$s\'</string>
     <string name="nav_export">Export settings</string>
     <string name="location_permission_not_granted">Location permission not granted. Allow in android settings.</string>
+    <string name="ins_concentration_confirmed">Insulin U%1$d confirmed</string>
 
     <!--    Protection-->
     <string name="wrongpassword">Wrong password</string>
@@ -431,6 +432,11 @@
     <string name="ue_csv_header" translatable="false">"%1$s;%2$s;%3$s;%4$s;%5$s;%6$s;%7$s;%8$s;%9$s;%10$s;%11$s;%12$s;%13$s;%14$s;%15$s;%16$s;%17$s"</string>
     <string name="uel_loop_change">LOOP CHANGED</string>
     <string name="uel_loop_removed">LOOP REMOVED</string>
+    <string name="uel_new_insulin">NEW INSULIN</string>
+    <string name="uel_change_pump_insulin">CHANGE PUMP INSULIN</string>
+    <string name="uel_store_insulin">STORE INSULIN</string>
+    <string name="uel_change_insulin_concentration">CHANGE INSULIN CONCENTRATION</string>
+    <string name="uel_insulin_removed">INSULIN REMOVED</string>
     <string name="uel_other">OTHER</string>
 
     <!-- HardLimits -->
