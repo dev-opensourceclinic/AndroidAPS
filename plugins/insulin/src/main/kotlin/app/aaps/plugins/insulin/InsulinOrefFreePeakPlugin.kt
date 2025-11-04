@@ -39,7 +39,7 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
 
     override val id get(): InsulinType = InsulinType.OREF_FREE_PEAK
 
-    override val friendlyName get(): String = rh.gs(R.string.free_peak_oref)
+    override val friendlyName get(): String = rh.gs(app.aaps.core.interfaces.R.string.free_peak_oref)
 
     override fun configuration(): JSONObject =
         JSONObject()
@@ -51,7 +51,7 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
     }
 
     override fun commentStandardText(): String {
-        return rh.gs(R.string.insulin_peak_time) + ": " + peak
+        return rh.gs(app.aaps.core.interfaces.R.string.insulin_peak_time) + ": " + peak
     }
 
     override val peak: Int
@@ -60,7 +60,7 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
     init {
         pluginDescription
             .pluginIcon(app.aaps.core.objects.R.drawable.ic_insulin)
-            .pluginName(R.string.free_peak_oref)
+            .pluginName(app.aaps.core.interfaces.R.string.free_peak_oref)
             .preferencesId(PluginDescription.PREFERENCE_SCREEN)
             .description(R.string.description_insulin_free_peak)
     }
@@ -73,7 +73,7 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
             key = "insulin_free_peak_settings"
             title = rh.gs(R.string.insulin_oref_peak)
             initialExpandedChildrenCount = 0
-            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.InsulinOrefPeak, title = R.string.insulin_peak_time))
+            addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.InsulinOrefPeak, title = app.aaps.core.interfaces.R.string.insulin_peak_time))
         }
     }
 }
