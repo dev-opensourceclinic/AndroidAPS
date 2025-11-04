@@ -1,4 +1,4 @@
-package app.aaps.core.data.insulin
+package app.aaps.core.interfaces.insulin
 
 enum class InsulinType(val value: Int) {
     UNKNOWN(-1),

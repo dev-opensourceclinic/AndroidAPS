@@ -1,6 +1,5 @@
 package app.aaps.core.interfaces.insulin
 
-import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.data.model.ICfg
 import app.aaps.core.interfaces.configuration.ConfigExportImport
 

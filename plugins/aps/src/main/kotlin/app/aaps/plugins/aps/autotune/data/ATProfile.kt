@@ -1,6 +1,6 @@
 package app.aaps.plugins.aps.autotune.data
 
-import app.aaps.core.data.insulin.InsulinType
+import app.aaps.core.interfaces.insulin.InsulinType
 import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.data.Block
 import app.aaps.core.data.time.T
