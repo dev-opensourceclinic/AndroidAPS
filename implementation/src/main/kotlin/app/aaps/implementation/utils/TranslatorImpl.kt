@@ -107,6 +107,12 @@ class TranslatorImpl @Inject internal constructor(
         Action.PLUGIN_DISABLED                 -> rh.gs(app.aaps.core.ui.R.string.uel_plugin_disabled)
         Action.LOOP_CHANGE                     -> rh.gs(app.aaps.core.ui.R.string.uel_loop_change)
         Action.LOOP_REMOVED                    -> rh.gs(app.aaps.core.ui.R.string.uel_loop_removed)
+        Action.NEW_INSULIN                     -> rh.gs(app.aaps.core.ui.R.string.uel_new_insulin)
+        Action.STORE_INSULIN                   -> rh.gs(app.aaps.core.ui.R.string.uel_store_insulin)
+        Action.INSULIN_REMOVED                 -> rh.gs(app.aaps.core.ui.R.string.uel_insulin_removed)
+        Action.CHANGE_PUMP_INSULIN             -> rh.gs(app.aaps.core.ui.R.string.uel_change_pump_insulin)
+        Action.CHANGE_INSULIN_CONCENTRATION    -> rh.gs(app.aaps.core.ui.R.string.uel_change_insulin_concentration)
+
         Action.UNKNOWN                         -> rh.gs(app.aaps.core.ui.R.string.unknown)
     }
 

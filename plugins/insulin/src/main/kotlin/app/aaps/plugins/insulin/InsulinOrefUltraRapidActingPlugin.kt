@@ -1,7 +1,7 @@
 package app.aaps.plugins.insulin
 
-import app.aaps.core.data.insulin.InsulinType
 import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.insulin.InsulinType
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
@@ -27,18 +27,18 @@ class InsulinOrefUltraRapidActingPlugin @Inject constructor(
 ) : InsulinOrefBasePlugin(rh, profileFunction, rxBus, aapsLogger, config, hardLimits, uiInteraction) {
 
     override val id get(): InsulinType = InsulinType.OREF_ULTRA_RAPID_ACTING
-    override val friendlyName get(): String = rh.gs(R.string.ultra_rapid_oref)
+    override val friendlyName get(): String = rh.gs(app.aaps.core.interfaces.R.string.ultra_rapid_oref)
 
     override fun configuration(): JSONObject = JSONObject()
     override fun applyConfiguration(configuration: JSONObject) {}
 
-    override fun commentStandardText(): String = rh.gs(R.string.ultra_fast_acting_insulin_comment)
+    override fun commentStandardText(): String = rh.gs(app.aaps.core.interfaces.R.string.ultra_fast_acting_insulin_comment)
 
     override val peak = 55
 
     init {
         pluginDescription
-            .pluginName(R.string.ultra_rapid_oref)
+            .pluginName(app.aaps.core.interfaces.R.string.ultra_rapid_oref)
             .description(R.string.description_insulin_ultra_rapid)
     }
 }

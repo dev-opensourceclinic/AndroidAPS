@@ -7,7 +7,7 @@ import android.view.View
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
-import app.aaps.core.data.insulin.InsulinType
+import app.aaps.core.interfaces.insulin.InsulinType
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Action

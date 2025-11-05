@@ -96,6 +96,11 @@ fun UserEntry.Action.fromDb(): Action =
         UserEntry.Action.PLUGIN_ENABLED                  -> Action.PLUGIN_ENABLED
         UserEntry.Action.PLUGIN_DISABLED                 -> Action.PLUGIN_DISABLED
         UserEntry.Action.UNKNOWN                         -> Action.UNKNOWN
+        UserEntry.Action.NEW_INSULIN                     -> Action.NEW_INSULIN
+        UserEntry.Action.STORE_INSULIN                   -> Action.STORE_INSULIN
+        UserEntry.Action.INSULIN_REMOVED                 -> Action.INSULIN_REMOVED
+        UserEntry.Action.CHANGE_PUMP_INSULIN             -> Action.CHANGE_PUMP_INSULIN
+        UserEntry.Action.CHANGE_INSULIN_CONCENTRATION    -> Action.CHANGE_INSULIN_CONCENTRATION
     }
 
 fun Action.toDb(): UserEntry.Action =
@@ -191,5 +196,10 @@ fun Action.toDb(): UserEntry.Action =
         Action.PLUGIN_ENABLED                  -> UserEntry.Action.PLUGIN_ENABLED
         Action.PLUGIN_DISABLED                 -> UserEntry.Action.PLUGIN_DISABLED
         Action.UNKNOWN                         -> UserEntry.Action.UNKNOWN
+        Action.NEW_INSULIN                     -> UserEntry.Action.NEW_INSULIN
+        Action.STORE_INSULIN                   -> UserEntry.Action.STORE_INSULIN
+        Action.INSULIN_REMOVED                 -> UserEntry.Action.INSULIN_REMOVED
+        Action.CHANGE_PUMP_INSULIN             -> UserEntry.Action.CHANGE_PUMP_INSULIN
+        Action.CHANGE_INSULIN_CONCENTRATION    -> UserEntry.Action.CHANGE_INSULIN_CONCENTRATION
     }
 

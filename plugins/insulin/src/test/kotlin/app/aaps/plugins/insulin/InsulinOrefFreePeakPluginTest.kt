@@ -1,6 +1,6 @@
 package app.aaps.plugins.insulin
 
-import app.aaps.core.data.insulin.InsulinType
+import app.aaps.core.interfaces.insulin.InsulinType
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.keys.IntKey
 import app.aaps.shared.tests.TestBaseWithProfile
