@@ -359,7 +359,7 @@ sealed class ProfileSealed(
     override fun toPureNsJson(dateUtil: DateUtil): JSONObject {
         val o = JSONObject()
         o.put("units", units.asText)
-        o.put("dia", dia)
+        if (this is EffectiveProfile) o.put("dia", dia)
         o.put("timezone", dateUtil.timeZoneByOffset(utcOffset).id ?: "UTC")
         // SENS
         val sens = JSONArray()
