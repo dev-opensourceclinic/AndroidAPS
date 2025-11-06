@@ -2,6 +2,7 @@ package app.aaps.plugins.insulin
 
 import app.aaps.core.interfaces.insulin.InsulinType
 import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.interfaces.R
 import app.aaps.core.keys.IntKey
 import app.aaps.shared.tests.TestBaseWithProfile
 import com.google.common.truth.Truth.assertThat
