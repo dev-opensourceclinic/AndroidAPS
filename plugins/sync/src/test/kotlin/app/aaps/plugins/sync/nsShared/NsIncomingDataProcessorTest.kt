@@ -2,6 +2,7 @@ package app.aaps.plugins.sync.nsShared
 
 import app.aaps.core.data.model.TrendArrow
 import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.nsclient.StoreDataForDb
 import app.aaps.core.interfaces.profile.ProfileSource
 import app.aaps.core.interfaces.source.NSClientSource
@@ -18,6 +19,7 @@ import app.aaps.core.nssdk.localmodel.treatment.NSBolus
 import app.aaps.core.nssdk.localmodel.treatment.NSCarbs
 import app.aaps.core.nssdk.localmodel.treatment.NSEffectiveProfileSwitch
 import app.aaps.core.nssdk.localmodel.treatment.NSExtendedBolus
+import app.aaps.core.nssdk.localmodel.treatment.NSICfg
 import app.aaps.core.nssdk.localmodel.treatment.NSOfflineEvent
 import app.aaps.core.nssdk.localmodel.treatment.NSProfileSwitch
 import app.aaps.core.nssdk.localmodel.treatment.NSTemporaryBasal
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.never
@@ -47,6 +50,9 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
     @Mock lateinit var storeDataForDb: StoreDataForDb
     @Mock lateinit var profileSource: ProfileSource
     @Mock lateinit var uiInteraction: UiInteraction
+    @Mock lateinit var insulin: Insulin
+
+    private val nsiCfg = NSICfg(insulinLabel = "Fake", insulinEndTime = 9 * 3600 * 1000, insulinPeakTime = 60 * 60 * 1000, concentration = 1.0)
 
     @BeforeEach
     fun setUp() {
@@ -56,6 +62,7 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
         whenever(preferences.get(BooleanKey.NsClientAcceptInsulin)).thenReturn(true)
         // Default NSClient to be enabled
         whenever(nsClientSource.isEnabled()).thenReturn(true)
+        Mockito.`when`(activePlugin.activeInsulin).thenReturn(insulin)
 
 
         processor = NsIncomingDataProcessor(
@@ -201,7 +208,8 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
                 pumpType = null,
                 pumpSerial = null,
                 type = NSBolus.BolusType.NORMAL,
-                isBasalInsulin = false
+                isBasalInsulin = false,
+                iCfg = nsiCfg
             )
         )
 
@@ -464,7 +472,8 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
                 endId = null,
                 pumpType = null,
                 pumpSerial = null,
-                profileJson = validProfile.toPureNsJson(dateUtil)
+                profileJson = effectiveProfile.toPureNsJson(dateUtil),
+                iCfg = nsiCfg
             )
         )
 
@@ -496,7 +505,8 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
                 endId = null,
                 pumpType = null,
                 pumpSerial = null,
-                profileJson = validProfile.toPureNsJson(dateUtil)
+                profileJson = effectiveProfile.toPureNsJson(dateUtil),
+                iCfg = nsiCfg
             )
         )
 
@@ -526,7 +536,8 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
                 endId = null,
                 pumpType = null,
                 pumpSerial = null,
-                profileJson = JSONObject()
+                profileJson = JSONObject(),
+                iCfg = nsiCfg
             )
         )
 
@@ -556,7 +567,8 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
                 endId = null,
                 pumpType = null,
                 pumpSerial = null,
-                profileJson = validProfile.toPureNsJson(dateUtil)
+                profileJson = effectiveProfile.toPureNsJson(dateUtil),
+                iCfg = nsiCfg
             )
         )
 
@@ -588,7 +600,8 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
                 endId = null,
                 pumpType = null,
                 pumpSerial = null,
-                profileJson = validProfile.toPureNsJson(dateUtil)
+                profileJson = effectiveProfile.toPureNsJson(dateUtil),
+                iCfg = nsiCfg
             )
         )
 
@@ -618,7 +631,8 @@ class NsIncomingDataProcessorTest : TestBaseWithProfile() {
                 endId = null,
                 pumpType = null,
                 pumpSerial = null,
-                profileJson = JSONObject()
+                profileJson = JSONObject(),
+                iCfg = nsiCfg
             )
         )
 
