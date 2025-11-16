@@ -24,7 +24,7 @@ class TestPumpPlugin(val rh: ResourceHelper) : PumpWithConcentration {
     override fun isConnected() = connected
     override fun isConnecting() = false
     override fun isHandshakeInProgress() = false
-    val lastData = 0L
+    var lastData = 0L
 
     val baseBasal = 0.0
     override var pumpDescription = PumpDescription()

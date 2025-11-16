@@ -7,16 +7,9 @@ import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.objects.extensions.iobCalc
 import app.aaps.shared.tests.TestBaseWithProfile
 import com.google.common.truth.Truth.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 
 class TemporaryBasalExtensionKtTest : TestBaseWithProfile() {
-
-    @BeforeEach
-    fun setup() {
-        Mockito.`when`(dateUtil.now()).thenReturn(now)
-    }
 
     @Test
     fun iobCalc() {
