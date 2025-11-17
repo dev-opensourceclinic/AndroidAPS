@@ -1,6 +1,8 @@
 package app.aaps.plugins.sync.di
 
 import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.work.WorkManager
 import app.aaps.core.interfaces.nsclient.NSSettingsStatus
 import app.aaps.core.interfaces.nsclient.ProcessedDeviceStatusData
@@ -11,6 +13,9 @@ import app.aaps.plugins.sync.garmin.LoopHub
 import app.aaps.plugins.sync.garmin.LoopHubImpl
 import app.aaps.plugins.sync.nsShared.NSClientFragment
 import app.aaps.plugins.sync.nsShared.StoreDataForDbImpl
+import app.aaps.plugins.sync.nsShared.viewmodel.NSClientViewModel
+import app.aaps.plugins.sync.nsShared.viewmodel.ViewModelFactory
+import app.aaps.plugins.sync.nsShared.viewmodel.ViewModelKey
 import app.aaps.plugins.sync.nsclient.data.NSSettingsStatusImpl
 import app.aaps.plugins.sync.nsclient.data.ProcessedDeviceStatusDataImpl
 import app.aaps.plugins.sync.nsclient.services.NSClientService
@@ -42,6 +47,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.Reusable
 import dagger.android.ContributesAndroidInjector
+import dagger.multibindings.IntoMap
+import javax.inject.Provider
 
 @Module(
     includes = [
@@ -86,6 +93,14 @@ abstract class SyncModule {
         @Reusable
         @Provides
         fun providesWorkManager(context: Context) = WorkManager.getInstance(context)
+
+        @Provides
+        @SyncPluginQualifier
+        fun providesViewModelFactory(
+            @SyncPluginQualifier viewModels: MutableMap<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
+        ): ViewModelProvider.Factory {
+            return ViewModelFactory(viewModels)
+        }
     }
 
     @Module
@@ -97,6 +112,13 @@ abstract class SyncModule {
         @Binds fun bindStoreDataForDb(storeDataForDbImpl: StoreDataForDbImpl): StoreDataForDb
         @Binds fun bindXDripBroadcastInterface(xDripBroadcastImpl: XdripPlugin): XDripBroadcast
         @Binds fun bindLoopHub(loopHub: LoopHubImpl): LoopHub
+
+        // ViewModels
+        @Binds
+        @IntoMap
+        @SyncPluginQualifier
+        @ViewModelKey(NSClientViewModel::class)
+        fun bindsNSClientViewModel(viewModel: NSClientViewModel): ViewModel
     }
 
 }

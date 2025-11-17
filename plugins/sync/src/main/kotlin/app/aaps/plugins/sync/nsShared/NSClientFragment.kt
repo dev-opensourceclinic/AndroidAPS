@@ -2,8 +2,6 @@ package app.aaps.plugins.sync.nsShared
 
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -14,6 +12,7 @@ import androidx.core.text.toSpanned
 import androidx.core.view.MenuCompat
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import app.aaps.core.data.ue.Action
@@ -38,16 +37,14 @@ import app.aaps.core.utils.HtmlHelper
 import app.aaps.plugins.sync.R
 import app.aaps.plugins.sync.databinding.NsClientFragmentBinding
 import app.aaps.plugins.sync.databinding.NsClientLogItemBinding
-import app.aaps.plugins.sync.nsShared.events.EventNSClientUpdateGuiData
-import app.aaps.plugins.sync.nsShared.events.EventNSClientUpdateGuiQueue
-import app.aaps.plugins.sync.nsShared.events.EventNSClientUpdateGuiStatus
+import app.aaps.plugins.sync.di.SyncPluginQualifier
+import app.aaps.plugins.sync.nsShared.viewmodel.NSClientViewModel
 import app.aaps.plugins.sync.nsclientV3.keys.NsclientBooleanKey
 import dagger.android.support.DaggerFragment
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import io.reactivex.rxjava3.kotlin.subscribeBy
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
@@ -62,6 +59,12 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var config: Config
     @Inject lateinit var persistenceLayer: PersistenceLayer
+
+    @Inject
+    @SyncPluginQualifier
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private lateinit var viewModel: NSClientViewModel
 
     companion object {
 
@@ -79,7 +82,6 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
 
     private var _binding: NsClientFragmentBinding? = null
     private lateinit var logAdapter: RecyclerViewAdapter
-    private var handler = Handler(HandlerThread(this::class.simpleName + "Handler").also { it.start() }.looper)
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
@@ -100,15 +102,41 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.paused.isChecked = preferences.get(NsclientBooleanKey.NsPaused)
-        binding.paused.setOnCheckedChangeListener { _, isChecked ->
-            uel.log(action = if (isChecked) Action.NS_PAUSED else Action.NS_RESUME, source = Sources.NSClient)
-            nsClientPlugin?.pause(isChecked)
-        }
+        // Initialize ViewModel
+        viewModel = ViewModelProvider(this, viewModelFactory)[NSClientViewModel::class.java]
 
-        logAdapter = RecyclerViewAdapter(nsClientPlugin?.listLog ?: emptyList())
+        // Set up RecyclerView
+        logAdapter = RecyclerViewAdapter(emptyList())
         binding.recyclerview.layoutManager = FixedLinearLayoutManager(context)
         binding.recyclerview.adapter = logAdapter
+
+        // Set up pause checkbox
+        binding.paused.setOnCheckedChangeListener { _, isChecked ->
+            uel.log(action = if (isChecked) Action.NS_PAUSED else Action.NS_RESUME, source = Sources.NSClient)
+            viewModel.setPaused(isChecked)
+        }
+
+        // Observe LiveData
+        viewModel.isPaused.observe(viewLifecycleOwner) { isPaused ->
+            binding.paused.isChecked = isPaused
+        }
+
+        viewModel.url.observe(viewLifecycleOwner) { url ->
+            binding.url.text = url
+        }
+
+        viewModel.status.observe(viewLifecycleOwner) { status ->
+            binding.status.text = status
+        }
+
+        viewModel.queue.observe(viewLifecycleOwner) { queue ->
+            binding.queue.text = queue
+        }
+
+        viewModel.logList.observe(viewLifecycleOwner) { logs ->
+            logAdapter = RecyclerViewAdapter(logs)
+            binding.recyclerview.swapAdapter(logAdapter, true)
+        }
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
@@ -122,14 +150,7 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     override fun onMenuItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             ID_MENU_CLEAR_LOG -> {
-                nsClientPlugin?.listLog?.let {
-                    synchronized(it) {
-                        val size = it.size
-                        binding.recyclerview.adapter?.notifyItemRangeRemoved(0, size)
-                        it.clear()
-                        updateLog()
-                    }
-                }
+                viewModel.clearLogs()
                 true
             }
 
@@ -139,7 +160,7 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
             }
 
             ID_MENU_SEND_NOW  -> {
-                handler.post { nsClientPlugin?.resend("GUI") }
+                viewModel.resendData("GUI")
                 true
             }
 
@@ -163,18 +184,12 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
                                                     HtmlHelper.fromHtml("<b>" + rh.gs(app.aaps.core.ui.R.string.cleared_entries) + "</b><br>" + result).toSpanned()
                                                 )
                                             aapsLogger.info(LTag.CORE, "Cleaned up databases with result: $result")
-                                            handler.post {
-                                                nsClientPlugin?.resetToFullSync()
-                                                nsClientPlugin?.resend("FULL_SYNC")
-                                            }
+                                            viewModel.resetToFullSync()
                                         }
                                     )
                                 uel.log(action = Action.CLEANUP_DATABASES, source = Sources.NSClient)
                             }, {
-                                handler.post {
-                                    nsClientPlugin?.resetToFullSync()
-                                    nsClientPlugin?.resend("FULL_SYNC")
-                                }
+                                viewModel.resetToFullSync()
                             })
                         }
                     )
@@ -195,50 +210,14 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     @Synchronized
     override fun onResume() {
         super.onResume()
-        disposable += rxBus
-            .toObservable(EventNSClientUpdateGuiData::class.java)
-            .observeOn(aapsSchedulers.main)
-            .subscribe(
-                {
-                    _binding?.recyclerview?.swapAdapter(RecyclerViewAdapter(nsClientPlugin?.listLog ?: arrayListOf()), true)
-                }, fabricPrivacy::logException
-            )
-        disposable += rxBus
-            .toObservable(EventNSClientUpdateGuiQueue::class.java)
-            .observeOn(aapsSchedulers.main)
-            .subscribe({ updateQueue() }, fabricPrivacy::logException)
-        disposable += rxBus
-            .toObservable(EventNSClientUpdateGuiStatus::class.java)
-            .debounce(3L, TimeUnit.SECONDS)
-            .observeOn(aapsSchedulers.main)
-            .subscribe({ updateStatus() }, fabricPrivacy::logException)
-        updateStatus()
-        updateQueue()
-        updateLog()
+        // ViewModel handles RxBus subscriptions, just refresh data
+        viewModel.updateAllData()
     }
 
     @Synchronized
     override fun onPause() {
         super.onPause()
         disposable.clear()
-        handler.removeCallbacksAndMessages(null)
-    }
-
-    private fun updateQueue() {
-        val size = nsClientPlugin?.dataSyncSelector?.queueSize() ?: 0L
-        _binding?.queue?.text = if (size >= 0) size.toString() else rh.gs(app.aaps.core.ui.R.string.value_unavailable_short)
-    }
-
-    private fun updateStatus() {
-        if (_binding == null) return
-        binding.paused.isChecked = preferences.get(NsclientBooleanKey.NsPaused)
-        binding.url.text = nsClientPlugin?.address
-        binding.status.text = nsClientPlugin?.status
-    }
-
-    private fun updateLog() {
-        _binding?.recyclerview?.recycledViewPool?.clear()
-        _binding?.recyclerview?.swapAdapter(RecyclerViewAdapter(nsClientPlugin?.listLog ?: arrayListOf()), true)
     }
 
     private inner class RecyclerViewAdapter(private var logList: List<EventNSClientNewLog>) : RecyclerView.Adapter<RecyclerViewAdapter.NsClientLogViewHolder>() {
