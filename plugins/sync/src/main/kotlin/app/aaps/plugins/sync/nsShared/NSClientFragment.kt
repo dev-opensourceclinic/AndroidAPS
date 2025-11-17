@@ -75,13 +75,15 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     private val disposable = CompositeDisposable()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        // Initialize ViewModel
+        // Initialize ViewModel BEFORE creating the view
         viewModel = ViewModelProvider(this, viewModelFactory)[NSClientViewModel::class.java]
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            // IMPORTANT: Set lifecycle owner so Compose can observe LiveData
+            setViewTreeLifecycleOwner(viewLifecycleOwner)
             setContent {
                 MaterialTheme {
                     NSClientScreen(
@@ -94,11 +96,6 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
                 }
             }
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // Data is observed through Compose, no need for manual observation here
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
