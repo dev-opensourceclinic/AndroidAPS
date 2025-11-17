@@ -248,6 +248,7 @@ class AutotunePlugin @Inject constructor(
                     value = ValueWithUnit.SimpleString(tunedP.profileName)
                 )
                 updateButtonVisibility = View.GONE
+                val iCfg = activePlugin.activeInsulin.iCfg      // use Current running iCfg, changing iCfg with Automation not allowed
                 tunedP.profileStore(circadian)?.let { profileStore ->
                     if (profileFunction.createProfileSwitch(
                             profileStore = profileStore,
@@ -259,7 +260,8 @@ class AutotunePlugin @Inject constructor(
                             action = Action.PROFILE_SWITCH,
                             source = Sources.Automation,
                             note = rh.gs(app.aaps.core.ui.R.string.autotune),
-                            listValues = listOf(ValueWithUnit.SimpleString(tunedP.profileName))
+                            listValues = listOf(ValueWithUnit.SimpleString(tunedP.profileName)),
+                            iCfg = iCfg
                         )
                     ) log("Profile Switch succeed ${tunedP.profileName}")
                     rxBus.send(EventLocalProfileChanged())

@@ -2,6 +2,7 @@ package app.aaps.implementation.profile
 
 import androidx.annotation.VisibleForTesting
 import app.aaps.core.data.model.GlucoseUnit
+import app.aaps.core.data.model.ICfg
 import app.aaps.core.data.model.PS
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Action
@@ -149,7 +150,7 @@ class ProfileFunctionImpl @Inject constructor(
         if (preferences.get(StringKey.GeneralUnits) == GlucoseUnit.MGDL.asText) GlucoseUnit.MGDL
         else GlucoseUnit.MMOL
 
-    override fun buildProfileSwitch(profileStore: ProfileStore, profileName: String, durationInMinutes: Int, percentage: Int, timeShiftInHours: Int, timestamp: Long): PS? {
+    override fun buildProfileSwitch(profileStore: ProfileStore, profileName: String, durationInMinutes: Int, percentage: Int, timeShiftInHours: Int, timestamp: Long, iCfg: ICfg): PS? {
         val pureProfile = profileStore.getSpecificProfile(profileName) ?: return null
         return PS(
             timestamp = timestamp,
@@ -162,17 +163,15 @@ class ProfileFunctionImpl @Inject constructor(
             timeshift = T.hours(timeShiftInHours.toLong()).msecs(),
             percentage = percentage,
             duration = T.mins(durationInMinutes.toLong()).msecs(),
-            iCfg = activePlugin.activeInsulin.iCfg.also {
-                it.insulinEndTime = (pureProfile.dia * 3600 * 1000).toLong()
-            }
+            iCfg = iCfg
         )
     }
 
     override fun createProfileSwitch(
         profileStore: ProfileStore, profileName: String, durationInMinutes: Int, percentage: Int, timeShiftInHours: Int, timestamp: Long,
-        action: Action, source: Sources, note: String?, listValues: List<ValueWithUnit>
+        action: Action, source: Sources, note: String?, listValues: List<ValueWithUnit>, iCfg: ICfg
     ): Boolean {
-        val ps = buildProfileSwitch(profileStore, profileName, durationInMinutes, percentage, timeShiftInHours, timestamp) ?: return false
+        val ps = buildProfileSwitch(profileStore, profileName, durationInMinutes, percentage, timeShiftInHours, timestamp, iCfg) ?: return false
         disposable += persistenceLayer.insertOrUpdateProfileSwitch(ps, action, source, note, listValues).subscribe()
         return true
     }
@@ -183,7 +182,7 @@ class ProfileFunctionImpl @Inject constructor(
     ): Boolean {
         val profile = persistenceLayer.getPermanentProfileSwitchActiveAt(dateUtil.now()) ?: return false
         val profileStore = activePlugin.activeProfileSource.profile ?: return false
-        val ps = buildProfileSwitch(profileStore, profile.profileName, durationInMinutes, percentage, timeShiftInHours, dateUtil.now()) ?: return false
+        val ps = buildProfileSwitch(profileStore, profile.profileName, durationInMinutes, percentage, timeShiftInHours, dateUtil.now(), profile.iCfg) ?: return false
         val validity = ProfileSealed.PS(ps, activePlugin).isValid(
             rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch),
             activePlugin.activePump,

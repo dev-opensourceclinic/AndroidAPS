@@ -29,22 +29,21 @@ data class ICfg(
 
     constructor(insulinLabel: String, peak: Int, dia: Double, concentration: Double)
         : this(insulinLabel = insulinLabel, insulinEndTime = (dia * 3600 * 1000).toLong(), insulinPeakTime = (peak * 60000).toLong(), concentration = concentration)
-    /*
-    this is for discussion. Purpose? => This function was linked to "InsulinPlugin" management.
-    Because ICfg are recorded within EPS, PS from DB, list of available insulins recorded within the unique "InsulinPlugin" can miss the one embeded insulin from DB,
-    so this function compare ICfg values (Peak, DIA, concentration) and update if necessary InsulinName (if available within InsulinPlugin with another name)
-    or update the list of insulin within InsulinPlugin (if EPS.iCfg not found within InsulinPlugin list)
-        fun isEqual(iCfg: ICfg?): Boolean {
-            iCfg?.let { iCfg ->
-                if (insulinEndTime != iCfg.insulinEndTime)
-                    return false
-                if (insulinPeakTime != iCfg.insulinPeakTime)
-                    return false
-                return true
-            }
-            return false
-        }
+    /**
+    * Used in InsulinPlugin (insulin editor)
     */
+    fun isEqual(iCfg: ICfg?): Boolean {
+        iCfg?.let { iCfg ->
+            if (insulinEndTime != iCfg.insulinEndTime)
+                return false
+            if (insulinPeakTime != iCfg.insulinPeakTime)
+                return false
+            if (concentration != iCfg.concentration)
+                return false
+            return true
+        }
+        return false
+    }
     /**
      * DIA (insulinEndTime) in hours rounded to 1 decimal place
      */
@@ -71,7 +70,23 @@ data class ICfg(
         insulinPeakTime = (minutes * 60000).toLong()
     }
 
-    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, concentration)
+    /**
+     * insulinTemplate is only used in InsulinPlugin (insulin editor)
+     */
+    var insulinTemplate: Int = 0
+
+    /**
+     * insulinTemplate is only used in InsulinPlugin (insulin editor)
+     */
+    var isNew: Boolean = false
+
+    /**
+     * deepClone is only used in InsulinPlugin (insulin editor)
+     */
+    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, concentration).also {
+        it.insulinTemplate = insulinTemplate
+        it.isNew = isNew
+    }
 
     fun iobCalcForTreatment(bolus: BS, time: Long): Iob {
         assert(insulinEndTime != 0L)

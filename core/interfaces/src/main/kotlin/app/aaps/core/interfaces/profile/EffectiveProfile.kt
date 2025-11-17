@@ -9,7 +9,7 @@ import app.aaps.core.interfaces.pump.PumpProfile
 interface EffectiveProfile : Profile {
 
     /** Applied insulin configuration */
-    val iCfg: ICfg
+    override val iCfg: ICfg
 
 
     /**

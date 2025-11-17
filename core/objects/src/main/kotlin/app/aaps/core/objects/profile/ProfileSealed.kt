@@ -28,6 +28,7 @@ import app.aaps.core.objects.extensions.lowTargetBlockValueBySeconds
 import app.aaps.core.objects.extensions.shiftBlock
 import app.aaps.core.objects.extensions.shiftTargetBlock
 import app.aaps.core.objects.extensions.targetBlockValueBySeconds
+import app.aaps.core.objects.extensions.toJson
 import app.aaps.core.ui.R
 import app.aaps.core.utils.MidnightUtils
 import org.json.JSONArray
@@ -122,7 +123,9 @@ sealed class ProfileSealed(
         100,
         value.timeZone.rawOffset.toLong(),
         activePlugin?.activeAPS
-    )
+    ) {
+        override val iCfg = null
+    }
 
     /**
      * This class represents concentrated Profile synchronised within the pump.
@@ -146,7 +149,9 @@ sealed class ProfileSealed(
         100,
         value.timeZone.rawOffset.toLong(),
         null
-    ), PumpProfile
+    ), PumpProfile {
+        override val iCfg: ICfg? = null
+    }
 
     override fun isValid(from: String, pump: Pump, config: Config, rh: ResourceHelper, rxBus: RxBus, hardLimits: HardLimits, sendNotifications: Boolean): Profile.ValidityCheck {
         val validityCheck = Profile.ValidityCheck()
@@ -193,12 +198,13 @@ sealed class ProfileSealed(
                 break
             }
         }
-        // Check DIA only on EffectiveProfile. Pure profile doesn't have it anymore
-        if (this is EffectiveProfile)
-            if (!hardLimits.isInRange(dia, hardLimits.minDia(), hardLimits.maxDia())) {
+        iCfg?.let {
+            // Todo, add check for peak and concentration, (or delegate iCfg validity check to insulinPlugin which will have this function)
+            if (!hardLimits.isInRange(it.getDia(), hardLimits.minDia(), hardLimits.maxDia())) {
                 validityCheck.isValid = false
-                validityCheck.reasons.add(rh.gs(R.string.value_out_of_hard_limits, rh.gs(R.string.profile_dia), dia))
+                validityCheck.reasons.add(rh.gs(R.string.value_out_of_hard_limits, rh.gs(R.string.profile_dia), it.getDia()))
             }
+        }
         for (ic in icBlocks)
             if (!hardLimits.isInRange(ic.amount * 100.0 / percentage, hardLimits.minIC(), hardLimits.maxIC())) {
                 validityCheck.isValid = false
@@ -263,8 +269,6 @@ sealed class ProfileSealed(
             is Pure -> value.glucoseUnit
             is PP -> value.glucoseUnit
         }
-    override val dia: Double
-        get() = if (this is EffectiveProfile) iCfg.insulinEndTime / 1000.0 / 60.0 / 60.0 else error("Requesting DIA on wrong profile")
 
     override val timeshift: Int
         get() = ts
@@ -278,7 +282,9 @@ sealed class ProfileSealed(
             if (getTargetLowMgdlTimeFromMidnight(seconds) != profile.getTargetLowMgdlTimeFromMidnight(seconds)) return false
             if (getTargetHighMgdlTimeFromMidnight(seconds) != profile.getTargetHighMgdlTimeFromMidnight(seconds)) return false
         }
-        if (dia != profile.dia) return false
+        iCfg?.let { // if EffectiveProfile including iCfg, check iCfg
+            if (!it.isEqual(profile.iCfg)) return false
+        }
         return !((profile is EPS) && profileName != profile.value.originalProfileName) // handle profile name change too
     }
 
@@ -347,19 +353,14 @@ sealed class ProfileSealed(
             icBlocks = icBlocks.shiftBlock(100.0 / percentage, timeshift),
             targetBlocks = targetBlocks.shiftTargetBlock(timeshift),
             glucoseUnit = units,
-            dia = when (this) {
-                is PS   -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
-                is EPS  -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
-                is Pure -> this.value.dia
-                is PP -> error("Dia not available in PumpProfile")
-            },
+            iCfg = iCfg,
             timeZone = TimeZone.getDefault()
         )
 
     override fun toPureNsJson(dateUtil: DateUtil): JSONObject {
         val o = JSONObject()
         o.put("units", units.asText)
-        if (this is EffectiveProfile) o.put("dia", dia)
+        iCfg?.let { o.put("iCfg", it.toJson()) }
         o.put("timezone", dateUtil.timeZoneByOffset(utcOffset).id ?: "UTC")
         // SENS
         val sens = JSONArray()
@@ -490,11 +491,6 @@ sealed class ProfileSealed(
                     icBlocks = icBlocks.shiftBlock(100.0 / percentage * iCfg.concentration, timeshift),
                     targetBlocks = targetBlocks.shiftTargetBlock(timeshift),
                     glucoseUnit = units,
-                    dia = when (this) {
-                        is PS  -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
-                        is EPS -> this.value.iCfg.insulinEndTime / 3600.0 / 1000.0
-                        else   -> error("Conversion allowed only from EffectiveProfile")
-                    },
                     timeZone = TimeZone.getDefault()
                 ),
                 null

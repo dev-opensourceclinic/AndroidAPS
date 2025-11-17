@@ -62,7 +62,7 @@ fun TB.iobCalc(time: Long, profile: EffectiveProfile): IobTotal {
     var netBasalAmount = 0.0
     if (realDuration > 0) {
         var netBasalRate: Double
-        val dia = profile.dia
+        val dia = profile.iCfg.getDia()
         val diaAgo = time - dia * 60 * 60 * 1000
         val aboutFiveMinIntervals = ceil(realDuration / 5.0).toInt()
         val tempBolusSpacing = realDuration / aboutFiveMinIntervals.toDouble()
@@ -120,7 +120,7 @@ fun TB.iobCalc(
     }
     if (realDuration > 0) {
         var netBasalRate: Double
-        val dia = profile.dia
+        val dia = profile.iCfg.getDia()
         val diaAgo = time - dia * 60 * 60 * 1000
         val aboutFiveMinIntervals = ceil(realDuration / 5.0).toInt()
         val tempBolusSpacing = realDuration / aboutFiveMinIntervals.toDouble()
