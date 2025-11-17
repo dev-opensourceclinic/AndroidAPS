@@ -13,7 +13,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.whenever
 
 internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
 
@@ -23,8 +23,8 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
 
     @BeforeEach
     fun mock() {
-        Mockito.`when`(insulin.iCfg).thenReturn(insulinConfiguration)
-        Mockito.`when`(activePlugin.activeInsulin).thenReturn(insulin)
+        whenever(insulin.iCfg).thenReturn(insulinConfiguration)
+        whenever(activePlugin.activeInsulin).thenReturn(insulin)
     }
 
     @Test

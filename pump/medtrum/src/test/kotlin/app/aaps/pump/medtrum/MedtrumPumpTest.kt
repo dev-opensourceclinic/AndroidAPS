@@ -13,9 +13,12 @@ import app.aaps.pump.medtrum.comm.enums.ModelType
 import com.google.common.truth.Truth.assertThat
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -141,13 +144,13 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
 
-        val temporaryBasalInfo: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(temporaryBasalInfo.duration).thenReturn(duration)
+        val temporaryBasalInfo: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(temporaryBasalInfo.duration).thenReturn(duration)
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -156,13 +159,13 @@ class MedtrumPumpTest : MedtrumTestBase() {
                 serialNumber = "someSerialNumber"
             )
         )
-        Mockito.`when`(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(temporaryBasalInfo)
+        whenever(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(temporaryBasalInfo)
 
         // Call
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
+        verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = basalStartTime,
             rate = PumpRate(basalRate),
             duration = duration,
@@ -193,10 +196,10 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime) // Ensure it's the same as input startTime
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime) // Ensure it's the same as input startTime
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -210,7 +213,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync, Mockito.never()).syncTemporaryBasalWithPumpId(
+        verify(pumpSync, never()).syncTemporaryBasalWithPumpId(
             anyOrNull(),
             anyOrNull(),
             anyOrNull(),
@@ -242,12 +245,12 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
 
         val temporaryBasalInfo: PumpSync.PumpState.TemporaryBasal? = null
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -256,13 +259,13 @@ class MedtrumPumpTest : MedtrumTestBase() {
                 serialNumber = "someSerialNumber"
             )
         )
-        Mockito.`when`(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(temporaryBasalInfo)
+        whenever(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(temporaryBasalInfo)
 
         // Call
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
+        verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = basalStartTime,
             rate = PumpRate(basalRate),
             duration = T.mins(4800L).msecs(),
@@ -295,13 +298,13 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
 
-        val temporaryBasalInfo: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(temporaryBasalInfo.duration).thenReturn(duration)
+        val temporaryBasalInfo: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(temporaryBasalInfo.duration).thenReturn(duration)
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -310,14 +313,14 @@ class MedtrumPumpTest : MedtrumTestBase() {
                 serialNumber = "someSerialNumber"
             )
         )
-        Mockito.`when`(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(temporaryBasalInfo)
+        whenever(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(temporaryBasalInfo)
 
         // Call
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
         val adjustedBasalRate = (basalRate / medtrumPump.baseBasalRate) * 100
-        Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
+        verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = basalStartTime,
             rate = PumpRate(adjustedBasalRate),
             duration = duration,
@@ -348,10 +351,10 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -360,13 +363,13 @@ class MedtrumPumpTest : MedtrumTestBase() {
                 serialNumber = "someSerialNumber"
             )
         )
-        Mockito.`when`(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(null)
+        whenever(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(null)
 
         // Call
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
+        verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = basalStartTime,
             rate = PumpRate(basalRate),
             duration = T.mins(4800L).msecs(),
@@ -395,10 +398,10 @@ class MedtrumPumpTest : MedtrumTestBase() {
         val receivedTime = 1500L
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime) // Ensure it's the same as input startTime
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime) // Ensure it's the same as input startTime
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -412,7 +415,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync, Mockito.never()).syncTemporaryBasalWithPumpId(
+        verify(pumpSync, never()).syncTemporaryBasalWithPumpId(
             anyOrNull(),
             anyOrNull(),
             anyOrNull(),
@@ -443,12 +446,12 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime + T.mins(10).msecs()) // Ensure it's different
-        Mockito.`when`(expectedTemporaryBasal.timestamp).thenReturn(basalStartTime + T.mins(10).msecs())  // Newer Fake TBR
-        Mockito.`when`(expectedTemporaryBasal.duration).thenReturn(T.mins(4800L).msecs()) // Fake TBR duration
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime + T.mins(10).msecs()) // Ensure it's different
+        whenever(expectedTemporaryBasal.timestamp).thenReturn(basalStartTime + T.mins(10).msecs())  // Newer Fake TBR
+        whenever(expectedTemporaryBasal.duration).thenReturn(T.mins(4800L).msecs()) // Fake TBR duration
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -457,13 +460,13 @@ class MedtrumPumpTest : MedtrumTestBase() {
                 serialNumber = "someSerialNumber"
             )
         )
-        Mockito.`when`(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(null)
+        whenever(temporaryBasalStorage.findTemporaryBasal(basalStartTime, basalRate)).thenReturn(null)
 
         // Call
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
+        verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = basalStartTime,
             rate = PumpRate(basalRate),
             duration = T.mins(4800L).msecs(),
@@ -494,7 +497,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = null,
                 extendedBolus = null,
@@ -508,7 +511,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
+        verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = dateUtil.now(),
             rate = PumpRate(basalRate),
             duration = T.mins(4800L).msecs(),
@@ -539,10 +542,10 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.pumpId).thenReturn(basalStartTime - 10) // Ensure it's different
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -556,7 +559,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync).syncStopTemporaryBasalWithPumpId(
+        verify(pumpSync).syncStopTemporaryBasalWithPumpId(
             timestamp = basalStartTime + 250,
             endPumpId = basalStartTime + 250,
             pumpType = PumpType.MEDTRUM_300U,
@@ -583,7 +586,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = null,
                 extendedBolus = null,
@@ -597,7 +600,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.handleBasalStatusUpdate(basalType, basalRate, basalSequence, basalPatchId, basalStartTime, receivedTime)
 
         // Expected values
-        Mockito.verify(pumpSync, Mockito.never()).syncStopTemporaryBasalWithPumpId(
+        verify(pumpSync, never()).syncStopTemporaryBasalWithPumpId(
             anyOrNull(),
             anyOrNull(),
             anyOrNull(),
@@ -653,10 +656,10 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.duration).thenReturn(T.mins(30L).msecs())
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.duration).thenReturn(T.mins(30L).msecs())
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -670,7 +673,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.setFakeTBRIfNotSet()
 
         // Expected values
-        Mockito.verify(pumpSync).syncTemporaryBasalWithPumpId(
+        verify(pumpSync).syncTemporaryBasalWithPumpId(
             timestamp = dateUtil.now(),
             rate = PumpRate(0.0),
             duration = T.mins(4800L).msecs(),
@@ -687,10 +690,10 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.deviceType = ModelType.MD8301.value
 
         // Mocks
-        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock(PumpSync.PumpState.TemporaryBasal::class.java)
-        Mockito.`when`(expectedTemporaryBasal.duration).thenReturn(T.mins(4800L).msecs())
+        val expectedTemporaryBasal: PumpSync.PumpState.TemporaryBasal = mock()
+        whenever(expectedTemporaryBasal.duration).thenReturn(T.mins(4800L).msecs())
 
-        Mockito.`when`(pumpSync.expectedPumpState()).thenReturn(
+        whenever(pumpSync.expectedPumpState()).thenReturn(
             PumpSync.PumpState(
                 temporaryBasal = expectedTemporaryBasal,
                 extendedBolus = null,
@@ -704,7 +707,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.setFakeTBRIfNotSet()
 
         // Expected values
-        Mockito.verify(pumpSync, Mockito.never()).syncTemporaryBasalWithPumpId(
+        verify(pumpSync, never()).syncTemporaryBasalWithPumpId(
             anyOrNull(),
             anyOrNull(),
             anyOrNull(),
@@ -729,7 +732,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
         medtrumPump.handleNewPatch(newPatchId, newSequenceNumber, newStartTime)
 
         // Expected values
-        Mockito.verify(pumpSync, Mockito.times(1)).insertTherapyEventIfNewWithTimestamp(
+        verify(pumpSync, times(1)).insertTherapyEventIfNewWithTimestamp(
             newStartTime,
             TE.Type.CANNULA_CHANGE,
             null,
@@ -738,7 +741,7 @@ class MedtrumPumpTest : MedtrumTestBase() {
             medtrumPump.pumpSN.toString(radix = 16)
         )
 
-        Mockito.verify(pumpSync, Mockito.times(1)).insertTherapyEventIfNewWithTimestamp(
+        verify(pumpSync, times(1)).insertTherapyEventIfNewWithTimestamp(
             newStartTime,
             TE.Type.INSULIN_CHANGE,
             null,

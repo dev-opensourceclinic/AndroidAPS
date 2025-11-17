@@ -10,15 +10,10 @@ import app.aaps.core.objects.extensions.isInProgress
 import app.aaps.core.objects.extensions.toTemporaryBasal
 import app.aaps.shared.tests.TestBaseWithProfile
 import com.google.common.truth.Truth.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.whenever
 
 class ExtendedBolusExtensionKtTest : TestBaseWithProfile() {
-
-    @BeforeEach fun setup() {
-        Mockito.`when`(dateUtil.now()).thenReturn(now)
-    }
 
     @Test fun iobCalc() {
         val dia = effectiveProfile.dia
@@ -58,9 +53,9 @@ class ExtendedBolusExtensionKtTest : TestBaseWithProfile() {
 
     @Test fun isInProgress() {
         val bolus = EB(timestamp = now - 1, amount = 1.0, duration = T.hours(1).msecs())
-        Mockito.`when`(dateUtil.now()).thenReturn(now)
+        whenever(dateUtil.now()).thenReturn(now)
         assertThat(bolus.isInProgress(dateUtil)).isTrue()
-        Mockito.`when`(dateUtil.now()).thenReturn(now + T.hours(2).msecs())
+        whenever(dateUtil.now()).thenReturn(now + T.hours(2).msecs())
         assertThat(bolus.isInProgress(dateUtil)).isFalse()
     }
 

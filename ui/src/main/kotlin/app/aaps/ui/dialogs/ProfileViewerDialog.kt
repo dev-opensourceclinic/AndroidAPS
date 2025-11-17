@@ -9,7 +9,9 @@ import android.view.Window
 import android.view.WindowManager
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
+import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.EffectiveProfile
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileUtil
@@ -109,6 +111,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
                 profileName = customProfileName
                 date = ""
                 binding.dateLayout.visibility = View.GONE
+                binding.insulin.visibility = View.GONE
             }
 
             UiInteraction.Mode.PROFILE_COMPARE -> {
@@ -118,6 +121,7 @@ class ProfileViewerDialog : DaggerDialogFragment() {
                 binding.headerIcon.setImageResource(R.drawable.ic_compare_profiles)
                 date = ""
                 binding.dateLayout.visibility = View.GONE
+                binding.insulin.visibility = View.GONE
             }
 
             UiInteraction.Mode.DB_PROFILE      -> {
@@ -135,7 +139,6 @@ class ProfileViewerDialog : DaggerDialogFragment() {
             profile?.let { profile1 ->
                 profile2?.let { profile2 ->
                     binding.units.text = profileFunction.getUnits().asText
-                    binding.dia.text = HtmlHelper.fromHtml(formatColors("", profile1.dia, profile2.dia, DecimalFormat("0.00"), rh.gs(app.aaps.core.interfaces.R.string.shorthour)))
                     val profileNames = profileName!!.split("\n").toTypedArray()
                     binding.activeProfile.text = HtmlHelper.fromHtml(formatColors(profileNames[0], profileNames[1]))
                     binding.date.text = date
@@ -157,7 +160,12 @@ class ProfileViewerDialog : DaggerDialogFragment() {
         else
             profile?.let {
                 binding.units.text = it.units.asText
-                binding.dia.text = rh.gs(app.aaps.core.ui.R.string.format_hours, it.dia)
+                if (it is EffectiveProfile) {
+                    binding.insulinName.text = it.iCfg.insulinLabel
+                    binding.concentration.text = rh.gs(app.aaps.core.ui.R.string.format_concentration, it.iCfg.concentration * 100)
+                    binding.peak.text = rh.gs(app.aaps.core.ui.R.string.format_mins, it.iCfg.getPeak())
+                    binding.dia.text = rh.gs(app.aaps.core.ui.R.string.format_hours, it.iCfg.getDia())
+                }
                 binding.activeProfile.text = profileName
                 binding.date.text = date
                 binding.ic.text = it.getIcList(rh, dateUtil)

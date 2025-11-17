@@ -8,7 +8,7 @@ import app.aaps.plugins.automation.elements.Comparator
 import com.google.common.truth.Truth.assertThat
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 import org.skyscreamer.jsonassert.JSONAssert
 import java.util.Optional
 
@@ -16,7 +16,7 @@ class TriggerInsulinAgeTest : TriggerTestBase() {
 
     @Test fun shouldRunTest() {
         val insulinChangeEvent = TE(glucoseUnit = GlucoseUnit.MGDL, timestamp = now - T.hours(6).msecs(), type = TE.Type.INSULIN_CHANGE)
-        `when`(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.INSULIN_CHANGE)).thenReturn(insulinChangeEvent)
+        whenever(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.INSULIN_CHANGE)).thenReturn(insulinChangeEvent)
         var t: TriggerInsulinAge = TriggerInsulinAge(injector).setValue(1.0).comparator(Comparator.Compare.IS_EQUAL)
         assertThat(t.shouldRun()).isFalse()
         t = TriggerInsulinAge(injector).setValue(6.0).comparator(Comparator.Compare.IS_EQUAL)
@@ -36,7 +36,7 @@ class TriggerInsulinAgeTest : TriggerTestBase() {
     }
 
     @Test fun shouldRunNotAvailable() {
-        `when`(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.INSULIN_CHANGE)).thenReturn(null)
+        whenever(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.INSULIN_CHANGE)).thenReturn(null)
         var t = TriggerInsulinAge(injector).apply { comparator.value = Comparator.Compare.IS_NOT_AVAILABLE }
         assertThat(t.shouldRun()).isTrue()
         t = TriggerInsulinAge(injector).setValue(6.0).comparator(Comparator.Compare.IS_EQUAL)
@@ -47,7 +47,7 @@ class TriggerInsulinAgeTest : TriggerTestBase() {
         val t: TriggerInsulinAge = TriggerInsulinAge(injector).setValue(6.0).comparator(Comparator.Compare.IS_EQUAL)
         val pumpDescription = PumpDescription()
         pumpDescription.isPatchPump = true
-        `when`(pumpPluginWithConcentration.pumpDescription).thenReturn(pumpDescription)
+        whenever(pumpPluginWithConcentration.pumpDescription).thenReturn(pumpDescription)
         assertThat(t.shouldRun()).isFalse()
     }
 

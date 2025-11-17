@@ -7,7 +7,7 @@ import app.aaps.plugins.automation.elements.Comparator
 import com.google.common.truth.Truth.assertThat
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 import org.skyscreamer.jsonassert.JSONAssert
 import java.util.Optional
 
@@ -15,7 +15,7 @@ class TriggerPumpBatteryAgeTest : TriggerTestBase() {
 
     @Test fun shouldRunTest() {
         val pumpBatteryChangeEvent = TE(glucoseUnit = GlucoseUnit.MGDL, timestamp = now - T.hours(6).msecs(), type = TE.Type.PUMP_BATTERY_CHANGE)
-        `when`(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.PUMP_BATTERY_CHANGE)).thenReturn(pumpBatteryChangeEvent)
+        whenever(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.PUMP_BATTERY_CHANGE)).thenReturn(pumpBatteryChangeEvent)
         var t: TriggerPumpBatteryAge = TriggerPumpBatteryAge(injector).setValue(1.0).comparator(Comparator.Compare.IS_EQUAL)
         assertThat(t.shouldRun()).isFalse()
         t = TriggerPumpBatteryAge(injector).setValue(6.0).comparator(Comparator.Compare.IS_EQUAL)
@@ -35,7 +35,7 @@ class TriggerPumpBatteryAgeTest : TriggerTestBase() {
     }
 
     @Test fun shouldRunNotAvailable() {
-        `when`(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.PUMP_BATTERY_CHANGE)).thenReturn(null)
+        whenever(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.PUMP_BATTERY_CHANGE)).thenReturn(null)
         var t = TriggerPumpBatteryAge(injector).apply { comparator.value = Comparator.Compare.IS_NOT_AVAILABLE }
         assertThat(t.shouldRun()).isTrue()
         t = TriggerPumpBatteryAge(injector).setValue(6.0).comparator(Comparator.Compare.IS_EQUAL)
@@ -44,17 +44,17 @@ class TriggerPumpBatteryAgeTest : TriggerTestBase() {
 
     @Test fun shouldRunBatteryAgeSupport() {
         val pumpBatteryChangeEvent = TE(glucoseUnit = GlucoseUnit.MGDL, timestamp = now - T.hours(6).msecs(), type = TE.Type.PUMP_BATTERY_CHANGE)
-        `when`(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.PUMP_BATTERY_CHANGE)).thenReturn(pumpBatteryChangeEvent)
+        whenever(persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.PUMP_BATTERY_CHANGE)).thenReturn(pumpBatteryChangeEvent)
         val t: TriggerPumpBatteryAge = TriggerPumpBatteryAge(injector).setValue(6.0).comparator(Comparator.Compare.IS_EQUAL)
 
-        `when`(pumpPluginWithConcentration.isBatteryChangeLoggingEnabled()).thenReturn(false)
+        whenever(pumpPluginWithConcentration.isBatteryChangeLoggingEnabled()).thenReturn(false)
         pumpDescription.isBatteryReplaceable = false
         assertThat(t.shouldRun()).isFalse()
 
-        `when`(pumpPluginWithConcentration.isBatteryChangeLoggingEnabled()).thenReturn(true)
+        whenever(pumpPluginWithConcentration.isBatteryChangeLoggingEnabled()).thenReturn(true)
         assertThat(t.shouldRun()).isTrue()
 
-        `when`(pumpPluginWithConcentration.isBatteryChangeLoggingEnabled()).thenReturn(false)
+        whenever(pumpPluginWithConcentration.isBatteryChangeLoggingEnabled()).thenReturn(false)
         pumpDescription.isBatteryReplaceable = true
         assertThat(t.shouldRun()).isTrue()
     }

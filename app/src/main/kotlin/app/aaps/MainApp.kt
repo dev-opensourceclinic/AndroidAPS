@@ -22,6 +22,7 @@ import app.aaps.core.interfaces.aps.Loop
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.configuration.ConfigBuilder
 import app.aaps.core.interfaces.db.PersistenceLayer
+import app.aaps.core.interfaces.insulin.InsulinType
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.ActivePlugin
@@ -55,10 +56,6 @@ import app.aaps.implementation.plugin.PluginStore
 import app.aaps.implementation.receivers.NetworkChangeReceiver
 import app.aaps.plugins.configuration.keys.ConfigurationBooleanComposedKey
 import app.aaps.plugins.constraints.objectives.keys.ObjectivesLongComposedKey
-import app.aaps.plugins.insulin.InsulinLyumjevPlugin
-import app.aaps.plugins.insulin.InsulinOrefFreePeakPlugin
-import app.aaps.plugins.insulin.InsulinOrefRapidActingPlugin
-import app.aaps.plugins.insulin.InsulinOrefUltraRapidActingPlugin
 import app.aaps.plugins.main.general.themes.ThemeSwitcherPlugin
 import app.aaps.plugins.main.profile.keys.ProfileComposedBooleanKey
 import app.aaps.plugins.main.profile.keys.ProfileComposedDoubleKey
@@ -116,10 +113,6 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
     @Inject lateinit var loop: Loop
     @Inject lateinit var profileFunction: ProfileFunction
     @Inject lateinit var repository: AppRepository
-    @Inject lateinit var insulinOrefRapidActingPlugin: InsulinOrefRapidActingPlugin
-    @Inject lateinit var insulinOrefUltraRapidActingPlugin: InsulinOrefUltraRapidActingPlugin
-    @Inject lateinit var insulinOrefFreePeakPlugin: InsulinOrefFreePeakPlugin
-    @Inject lateinit var insulinLyumjevPlugin: InsulinLyumjevPlugin
     @Inject lateinit var hardLimits: HardLimits
     @Inject lateinit var activePlugin: ActivePlugin
 
@@ -411,25 +404,26 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
     fun dataMigrations() {
         // Migrate to database 32 (ICfg)
         // Grab default value first
-        val insulinLabel = when {
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> insulinOrefRapidActingPlugin.friendlyName
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> insulinOrefUltraRapidActingPlugin.friendlyName
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> insulinOrefFreePeakPlugin.friendlyName
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> insulinLyumjevPlugin.friendlyName
-            else                                                                                    -> insulinOrefRapidActingPlugin.friendlyName
-        }
+        val insulinLabel = rh.get().gs(
+            when {
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> InsulinType.OREF_RAPID_ACTING.label
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> InsulinType.OREF_ULTRA_RAPID_ACTING.label
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> InsulinType.OREF_FREE_PEAK.label
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> InsulinType.OREF_LYUMJEV.label
+                else                                                                                    -> InsulinType.OREF_RAPID_ACTING.label
+            })
         val dia =
             (profileFunction.getProfile() as ProfileSealed.EPS?)?.profileName?.let { profileName ->
                 activePlugin.activeProfileSource.profile?.getSpecificProfile(profileName)?.dia
             }
         val insulinEndTime = ((dia ?: hardLimits.maxDia()) * 3600 * 1000).toLong()
-        val insulinPeakTime = (when {
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> insulinOrefRapidActingPlugin.peak
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> insulinOrefUltraRapidActingPlugin.peak
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> insulinOrefFreePeakPlugin.peak
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> insulinLyumjevPlugin.peak
-            else                                                                                    -> insulinOrefRapidActingPlugin.peak
-        } * 60 * 1000).toLong()
+        val insulinPeakTime = when {
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> InsulinType.OREF_ULTRA_RAPID_ACTING.insulinPeakTime
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> (preferences.get(IntKey.InsulinOrefPeak) * 60 * 1000).toLong()
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> InsulinType.OREF_LYUMJEV.insulinPeakTime
+            else                                                                                    -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
+        }
         val concentration = 1.0
         persistenceLayer.getProfileSwitches().forEach { ps ->
             if (ps.iCfg.insulinEndTime == -1L) {

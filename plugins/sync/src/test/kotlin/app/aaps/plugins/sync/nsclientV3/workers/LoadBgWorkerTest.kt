@@ -1,6 +1,5 @@
 package app.aaps.plugins.sync.nsclientV3.workers
 
-import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkContinuation
@@ -33,7 +32,8 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.whenever
 import kotlin.test.assertIs
 import kotlin.time.Duration.Companion.seconds
 
@@ -72,7 +72,7 @@ internal class LoadBgWorkerTest : TestBaseWithProfile() {
 
     @BeforeEach
     fun setUp() {
-        Mockito.`when`(nsClientSource.isEnabled()).thenReturn(true)
+        whenever(nsClientSource.isEnabled()).thenReturn(true)
         dataWorkerStorage = DataWorkerStorage(context)
         receiverDelegate = ReceiverDelegate(rxBus, rh, preferences, receiverStatusStore, aapsSchedulers, fabricPrivacy)
         nsClientV3Plugin = NSClientV3Plugin(
@@ -94,8 +94,8 @@ internal class LoadBgWorkerTest : TestBaseWithProfile() {
     @Test
     fun notEnabledNSClientSource() = runTest(timeout = 30.seconds) {
         sut = TestListenableWorkerBuilder<LoadBgWorker>(context).build()
-        Mockito.`when`(nsClientSource.isEnabled()).thenReturn(false)
-        Mockito.`when`(preferences.get(BooleanKey.NsClientAcceptCgmData)).thenReturn(false)
+        whenever(nsClientSource.isEnabled()).thenReturn(false)
+        whenever(preferences.get(BooleanKey.NsClientAcceptCgmData)).thenReturn(false)
 
         val result = sut.doWorkAndLog()
         assertIs<ListenableWorker.Result.Success>(result)
@@ -104,13 +104,13 @@ internal class LoadBgWorkerTest : TestBaseWithProfile() {
 
     @Test
     fun testThereAreNewerDataFirstLoadEmptyReturn() = runTest(timeout = 30.seconds) {
-        Mockito.`when`(workManager.beginUniqueWork(anyString(), anyObject<ExistingWorkPolicy>(), anyObject<OneTimeWorkRequest>())).thenReturn(workContinuation)
-        Mockito.`when`(workContinuation.then(any<OneTimeWorkRequest>())).thenReturn(workContinuation)
+        whenever(workManager.beginUniqueWork(anyString(), anyOrNull(), anyOrNull<OneTimeWorkRequest>())).thenReturn(workContinuation)
+        whenever(workContinuation.then(any<OneTimeWorkRequest>())).thenReturn(workContinuation)
         nsClientV3Plugin.nsAndroidClient = nsAndroidClient
         nsClientV3Plugin.lastLoadedSrvModified.collections.entries = 0L // first load
         nsClientV3Plugin.firstLoadContinueTimestamp.collections.entries = now - 1000
         sut = TestListenableWorkerBuilder<LoadBgWorker>(context).build()
-        Mockito.`when`(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, emptyList()))
+        whenever(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, emptyList()))
 
         val result = sut.doWorkAndLog()
         assertThat(nsClientV3Plugin.lastLoadedSrvModified.collections.entries).isEqualTo(now - 1000)
@@ -127,19 +127,19 @@ internal class LoadBgWorkerTest : TestBaseWithProfile() {
             value = 99.0,
             trendArrow = TrendArrow.DOUBLE_UP,
             noise = 1.0,
-            sourceSensor = SourceSensor.DEXCOM_G4_WIXEL,
+            sourceSensor = SourceSensor.DEXCOM_G6_NATIVE,
             ids = IDs(
                 nightscoutId = "nightscoutId"
             )
         )
 
-        Mockito.`when`(workManager.beginUniqueWork(anyString(), anyObject<ExistingWorkPolicy>(), anyObject<OneTimeWorkRequest>())).thenReturn(workContinuation)
-        Mockito.`when`(workContinuation.then(any<OneTimeWorkRequest>())).thenReturn(workContinuation)
+        whenever(workManager.beginUniqueWork(anyString(), anyOrNull(), anyOrNull<OneTimeWorkRequest>())).thenReturn(workContinuation)
+        whenever(workContinuation.then(any<OneTimeWorkRequest>())).thenReturn(workContinuation)
         nsClientV3Plugin.nsAndroidClient = nsAndroidClient
         nsClientV3Plugin.lastLoadedSrvModified.collections.entries = 0L // first load
         nsClientV3Plugin.firstLoadContinueTimestamp.collections.entries = now - 1000
         sut = TestListenableWorkerBuilder<LoadBgWorker>(context).build()
-        Mockito.`when`(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, listOf(glucoseValue.toNSSvgV3())))
+        whenever(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, listOf(glucoseValue.toNSSvgV3())))
 
         val result = sut.doWorkAndLog()
         assertIs<ListenableWorker.Result.Success>(result)
@@ -147,13 +147,13 @@ internal class LoadBgWorkerTest : TestBaseWithProfile() {
 
     @Test
     fun testNoLoadNeeded() = runTest(timeout = 30.seconds) {
-        Mockito.`when`(workManager.beginUniqueWork(anyString(), anyObject<ExistingWorkPolicy>(), anyObject<OneTimeWorkRequest>())).thenReturn(workContinuation)
-        Mockito.`when`(workContinuation.then(any<OneTimeWorkRequest>())).thenReturn(workContinuation)
+        whenever(workManager.beginUniqueWork(anyString(), anyOrNull(), anyOrNull<OneTimeWorkRequest>())).thenReturn(workContinuation)
+        whenever(workContinuation.then(any<OneTimeWorkRequest>())).thenReturn(workContinuation)
         nsClientV3Plugin.nsAndroidClient = nsAndroidClient
         nsClientV3Plugin.firstLoadContinueTimestamp.collections.entries = now - 1000
         nsClientV3Plugin.newestDataOnServer?.collections?.entries = now - 2000
         sut = TestListenableWorkerBuilder<LoadBgWorker>(context).build()
-        Mockito.`when`(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, emptyList()))
+        whenever(nsAndroidClient.getSgvsNewerThan(anyLong(), anyInt())).thenReturn(NSAndroidClient.ReadResponse(200, 0, emptyList()))
 
         val result = sut.doWorkAndLog()
         assertThat(nsClientV3Plugin.lastLoadedSrvModified.collections.entries).isEqualTo(now - 1000)
