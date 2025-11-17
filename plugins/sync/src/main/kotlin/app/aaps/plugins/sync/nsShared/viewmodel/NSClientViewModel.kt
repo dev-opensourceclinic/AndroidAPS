@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.ActivePlugin
@@ -11,6 +12,7 @@ import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventNSClientNewLog
+import app.aaps.core.interfaces.rx.events.EventNSClientRestart
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.plugins.sync.nsShared.events.EventNSClientUpdateGuiData
@@ -21,6 +23,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -31,7 +34,8 @@ class NSClientViewModel @Inject constructor(
     private val fabricPrivacy: FabricPrivacy,
     private val aapsSchedulers: AapsSchedulers,
     private val aapsLogger: AAPSLogger,
-    private val activePlugin: ActivePlugin
+    private val activePlugin: ActivePlugin,
+    private val persistenceLayer: PersistenceLayer
 ) : ViewModel() {
 
     private val disposable = CompositeDisposable()
@@ -54,6 +58,11 @@ class NSClientViewModel @Inject constructor(
 
     private val _logList = MutableLiveData<List<EventNSClientNewLog>>()
     val logList: LiveData<List<EventNSClientNewLog>> = _logList
+
+    // Event for showing full sync result dialog
+    data class FullSyncResult(val success: Boolean, val message: String)
+    private val _fullSyncResult = MutableLiveData<FullSyncResult?>()
+    val fullSyncResult: LiveData<FullSyncResult?> = _fullSyncResult
 
     init {
         aapsLogger.debug(LTag.CORE, "NSClientViewModel initialized")
@@ -135,6 +144,46 @@ class NSClientViewModel @Inject constructor(
             nsClientPlugin?.resetToFullSync()
             nsClientPlugin?.resend("FULL_SYNC")
         }
+    }
+
+    fun restartNSClient() {
+        rxBus.send(EventNSClientRestart())
+    }
+
+    fun performFullSync(cleanupDatabase: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                var result = ""
+                if (cleanupDatabase) {
+                    result = persistenceLayer.cleanupDatabase(93, deleteTrackedChanges = true)
+                    aapsLogger.info(LTag.CORE, "Cleaned up databases with result: $result")
+                }
+
+                nsClientPlugin?.resetToFullSync()
+                nsClientPlugin?.resend("FULL_SYNC")
+
+                withContext(Dispatchers.Main) {
+                    if (result.isNotEmpty()) {
+                        _fullSyncResult.value = FullSyncResult(
+                            success = true,
+                            message = result
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                aapsLogger.error("Error during full sync", e)
+                withContext(Dispatchers.Main) {
+                    _fullSyncResult.value = FullSyncResult(
+                        success = false,
+                        message = e.message ?: "Unknown error"
+                    )
+                }
+            }
+        }
+    }
+
+    fun clearFullSyncResult() {
+        _fullSyncResult.value = null
     }
 
     override fun onCleared() {
