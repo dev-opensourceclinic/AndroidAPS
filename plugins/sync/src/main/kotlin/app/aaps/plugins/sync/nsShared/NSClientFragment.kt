@@ -1,6 +1,5 @@
 package app.aaps.plugins.sync.nsShared
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -8,13 +7,14 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.text.toSpanned
 import androidx.core.view.MenuCompat
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import app.aaps.core.data.ue.Action
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.interfaces.configuration.Config
@@ -28,18 +28,14 @@ import app.aaps.core.interfaces.plugin.PluginFragment
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
-import app.aaps.core.interfaces.rx.events.EventNSClientNewLog
 import app.aaps.core.interfaces.rx.events.EventNSClientRestart
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
-import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.ui.dialogs.OKDialog
 import app.aaps.core.utils.HtmlHelper
 import app.aaps.plugins.sync.R
-import app.aaps.plugins.sync.databinding.NsClientFragmentBinding
-import app.aaps.plugins.sync.databinding.NsClientLogItemBinding
 import app.aaps.plugins.sync.di.SyncPluginQualifier
+import app.aaps.plugins.sync.nsShared.ui.NSClientScreen
 import app.aaps.plugins.sync.nsShared.viewmodel.NSClientViewModel
-import app.aaps.plugins.sync.nsclientV3.keys.NsclientBooleanKey
 import dagger.android.support.DaggerFragment
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -49,7 +45,6 @@ import javax.inject.Inject
 
 class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
 
-    @Inject lateinit var preferences: Preferences
     @Inject lateinit var rh: ResourceHelper
     @Inject lateinit var rxBus: RxBus
     @Inject lateinit var fabricPrivacy: FabricPrivacy
@@ -67,7 +62,6 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     private lateinit var viewModel: NSClientViewModel
 
     companion object {
-
         const val ID_MENU_CLEAR_LOG = 507
         const val ID_MENU_RESTART = 508
         const val ID_MENU_SEND_NOW = 509
@@ -80,63 +74,31 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
 
     private val disposable = CompositeDisposable()
 
-    private var _binding: NsClientFragmentBinding? = null
-    private lateinit var logAdapter: RecyclerViewAdapter
-
-    // This property is only valid between onCreateView and onDestroyView.
-    private val binding get() = _binding!!
-
-    // https://stackoverflow.com/questions/31759171/recyclerview-and-java-lang-indexoutofboundsexception-inconsistency-detected-in
-    class FixedLinearLayoutManager(context: Context?, @RecyclerView.Orientation orientation: Int = RecyclerView.VERTICAL, reverseLayout: Boolean = false) :
-        LinearLayoutManager(context, orientation, reverseLayout) {
-
-        override fun supportsPredictiveItemAnimations(): Boolean = false
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        NsClientFragmentBinding.inflate(inflater, container, false).also {
-            _binding = it
-            requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
-        }.root
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Initialize ViewModel
         viewModel = ViewModelProvider(this, viewModelFactory)[NSClientViewModel::class.java]
 
-        // Set up RecyclerView
-        logAdapter = RecyclerViewAdapter(emptyList())
-        binding.recyclerview.layoutManager = FixedLinearLayoutManager(context)
-        binding.recyclerview.adapter = logAdapter
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        // Set up pause checkbox
-        binding.paused.setOnCheckedChangeListener { _, isChecked ->
-            uel.log(action = if (isChecked) Action.NS_PAUSED else Action.NS_RESUME, source = Sources.NSClient)
-            viewModel.setPaused(isChecked)
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                MaterialTheme {
+                    NSClientScreen(
+                        viewModel = viewModel,
+                        onPausedChanged = { isChecked ->
+                            uel.log(action = if (isChecked) Action.NS_PAUSED else Action.NS_RESUME, source = Sources.NSClient)
+                            viewModel.setPaused(isChecked)
+                        }
+                    )
+                }
+            }
         }
+    }
 
-        // Observe LiveData
-        viewModel.isPaused.observe(viewLifecycleOwner) { isPaused ->
-            binding.paused.isChecked = isPaused
-        }
-
-        viewModel.url.observe(viewLifecycleOwner) { url ->
-            binding.url.text = url
-        }
-
-        viewModel.status.observe(viewLifecycleOwner) { status ->
-            binding.status.text = status
-        }
-
-        viewModel.queue.observe(viewLifecycleOwner) { queue ->
-            binding.queue.text = queue
-        }
-
-        viewModel.logList.observe(viewLifecycleOwner) { logs ->
-            logAdapter = RecyclerViewAdapter(logs)
-            binding.recyclerview.swapAdapter(logAdapter, true)
-        }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // Data is observed through Compose, no need for manual observation here
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
@@ -201,13 +163,6 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
         }
 
     @Synchronized
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding.recyclerview.adapter = null // avoid leaks
-        _binding = null
-    }
-
-    @Synchronized
     override fun onResume() {
         super.onResume()
         // ViewModel handles RxBus subscriptions, just refresh data
@@ -218,22 +173,5 @@ class NSClientFragment : DaggerFragment(), MenuProvider, PluginFragment {
     override fun onPause() {
         super.onPause()
         disposable.clear()
-    }
-
-    private inner class RecyclerViewAdapter(private var logList: List<EventNSClientNewLog>) : RecyclerView.Adapter<RecyclerViewAdapter.NsClientLogViewHolder>() {
-
-        override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): NsClientLogViewHolder =
-            NsClientLogViewHolder(LayoutInflater.from(viewGroup.context).inflate(R.layout.ns_client_log_item, viewGroup, false))
-
-        override fun onBindViewHolder(holder: NsClientLogViewHolder, position: Int) {
-            holder.binding.logText.text = HtmlHelper.fromHtml(logList[position].toPreparedHtml().toString())
-        }
-
-        override fun getItemCount() = logList.size
-
-        inner class NsClientLogViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-
-            val binding = NsClientLogItemBinding.bind(view)
-        }
     }
 }
