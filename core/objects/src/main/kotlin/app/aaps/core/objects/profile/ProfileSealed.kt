@@ -200,9 +200,9 @@ sealed class ProfileSealed(
         }
         iCfg?.let {
             // Todo, add check for peak and concentration, (or delegate iCfg validity check to insulinPlugin which will have this function)
-            if (!hardLimits.isInRange(it.getDia(), hardLimits.minDia(), hardLimits.maxDia())) {
+            if (!hardLimits.isInRange(it.dia, hardLimits.minDia(), hardLimits.maxDia())) {
                 validityCheck.isValid = false
-                validityCheck.reasons.add(rh.gs(R.string.value_out_of_hard_limits, rh.gs(R.string.profile_dia), it.getDia()))
+                validityCheck.reasons.add(rh.gs(R.string.value_out_of_hard_limits, rh.gs(R.string.profile_dia), it.dia))
             }
         }
         for (ic in icBlocks)

@@ -47,12 +47,14 @@ data class ICfg(
     /**
      * DIA (insulinEndTime) in hours rounded to 1 decimal place
      */
-    fun getDia(): Double = (insulinEndTime / 3600.0 / 100.0).roundToInt() / 10.0
+    val dia: Double
+        get() = (insulinEndTime / 3600.0 / 100.0).roundToInt() / 10.0
 
     /**
      * Peak time in minutes
      */
-    fun getPeak(): Int = (insulinPeakTime / 60000).toInt()
+    val peak: Int
+        get() = (insulinPeakTime / 60000).toInt()
 
     /**
      * Set insulinEndTime aka DIA
@@ -95,8 +97,8 @@ data class ICfg(
         if (bolus.amount != 0.0) {
             val bolusTime = bolus.timestamp
             val t = (time - bolusTime) / 1000.0 / 60.0
-            val td = getDia() * 60 //getDIA() always >= MIN_DIA
-            val tp = getPeak().toDouble()
+            val td = dia * 60 // always >= MIN_DIA
+            val tp = peak.toDouble()
             // force the IOB to 0 if over DIA hours have passed
             if (t < td) {
                 val tau = tp * (1 - tp / td) / (1 - 2 * tp / td)

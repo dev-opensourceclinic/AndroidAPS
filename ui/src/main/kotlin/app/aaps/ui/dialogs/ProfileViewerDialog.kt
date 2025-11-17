@@ -163,8 +163,8 @@ class ProfileViewerDialog : DaggerDialogFragment() {
                 if (it is EffectiveProfile) {
                     binding.insulinName.text = it.iCfg.insulinLabel
                     binding.concentration.text = rh.gs(app.aaps.core.ui.R.string.format_concentration, it.iCfg.concentration * 100)
-                    binding.peak.text = rh.gs(app.aaps.core.ui.R.string.format_mins, it.iCfg.getPeak())
-                    binding.dia.text = rh.gs(app.aaps.core.ui.R.string.format_hours, it.iCfg.getDia())
+                    binding.peak.text = rh.gs(app.aaps.core.ui.R.string.format_mins, it.iCfg.peak)
+                    binding.dia.text = rh.gs(app.aaps.core.ui.R.string.format_hours, it.iCfg.dia)
                 }
                 binding.activeProfile.text = profileName
                 binding.date.text = date

@@ -414,7 +414,7 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
             })
         val dia =
             (profileFunction.getProfile() as ProfileSealed.EPS?)?.profileName?.let { profileName ->
-                activePlugin.activeProfileSource.profile?.getSpecificProfile(profileName)?.iCfg?.getDia()
+                activePlugin.activeProfileSource.profile?.getSpecificProfile(profileName)?.iCfg?.dia
             }
         val insulinEndTime = ((dia ?: hardLimits.maxDia()) * 3600 * 1000).toLong()
         val insulinPeakTime = when {
