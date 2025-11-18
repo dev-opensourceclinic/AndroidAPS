@@ -13,7 +13,7 @@ class TemporaryBasalExtensionKtTest : TestBaseWithProfile() {
 
     @Test
     fun iobCalc() {
-        val dia = effectiveProfile.dia
+        val dia = effectiveProfile.iCfg.dia
 
         val temporaryBasal = TB(timestamp = now - 1, rate = 200.0, isAbsolute = false, duration = T.hours(1).msecs(), type = TB.Type.NORMAL)
         // there should zero IOB after now

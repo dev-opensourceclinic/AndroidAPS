@@ -16,7 +16,7 @@ import org.mockito.kotlin.whenever
 class ExtendedBolusExtensionKtTest : TestBaseWithProfile() {
 
     @Test fun iobCalc() {
-        val dia = effectiveProfile.dia
+        val dia = effectiveProfile.iCfg.dia
         val bolus = EB(timestamp = now - 1, amount = 1.0, duration = T.hours(1).msecs())
         // there should zero IOB after now
         assertThat(bolus.iobCalc(now, effectiveProfile).iob).isWithin(0.01).of(0.0)
