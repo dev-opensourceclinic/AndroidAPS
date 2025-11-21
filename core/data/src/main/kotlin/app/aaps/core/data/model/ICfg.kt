@@ -29,31 +29,34 @@ data class ICfg(
 
     constructor(insulinLabel: String, peak: Int, dia: Double, concentration: Double)
         : this(insulinLabel = insulinLabel, insulinEndTime = (dia * 3600 * 1000).toLong(), insulinPeakTime = (peak * 60000).toLong(), concentration = concentration)
-    /*
-    this is for discussion. Purpose? => This function was linked to "InsulinPlugin" management.
-    Because ICfg are recorded within EPS, PS from DB, list of available insulins recorded within the unique "InsulinPlugin" can miss the one embeded insulin from DB,
-    so this function compare ICfg values (Peak, DIA, concentration) and update if necessary InsulinName (if available within InsulinPlugin with another name)
-    or update the list of insulin within InsulinPlugin (if EPS.iCfg not found within InsulinPlugin list)
-        fun isEqual(iCfg: ICfg?): Boolean {
-            iCfg?.let { iCfg ->
-                if (insulinEndTime != iCfg.insulinEndTime)
-                    return false
-                if (insulinPeakTime != iCfg.insulinPeakTime)
-                    return false
-                return true
-            }
-            return false
+
+    /**
+     * Used in InsulinPlugin (insulin editor)
+     */
+    fun isEqual(iCfg: ICfg?): Boolean {
+        iCfg?.let { iCfg ->
+            if (insulinEndTime != iCfg.insulinEndTime)
+                return false
+            if (insulinPeakTime != iCfg.insulinPeakTime)
+                return false
+            if (concentration != iCfg.concentration)
+                return false
+            return true
         }
-    */
+        return false
+    }
+
     /**
      * DIA (insulinEndTime) in hours rounded to 1 decimal place
      */
-    fun getDia(): Double = (insulinEndTime / 3600.0 / 100.0).roundToInt() / 10.0
+    val dia: Double
+        get() = (insulinEndTime / 3600.0 / 100.0).roundToInt() / 10.0
 
     /**
      * Peak time in minutes
      */
-    fun getPeak(): Int = (insulinPeakTime / 60000).toInt()
+    val peak: Int
+        get() = (insulinPeakTime / 60000).toInt()
 
     /**
      * Set insulinEndTime aka DIA
@@ -71,7 +74,23 @@ data class ICfg(
         insulinPeakTime = (minutes * 60000).toLong()
     }
 
-    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, concentration)
+    /**
+     * insulinTemplate is only used in InsulinPlugin (insulin editor)
+     */
+    var insulinTemplate: Int = 0
+
+    /**
+     * insulinTemplate is only used in InsulinPlugin (insulin editor)
+     */
+    var isNew: Boolean = false
+
+    /**
+     * deepClone is only used in InsulinPlugin (insulin editor)
+     */
+    fun deepClone(): ICfg = ICfg(insulinLabel, insulinEndTime, insulinPeakTime, concentration).also {
+        it.insulinTemplate = insulinTemplate
+        it.isNew = isNew
+    }
 
     fun iobCalcForTreatment(bolus: BS, time: Long): Iob {
         assert(insulinEndTime != 0L)
@@ -80,8 +99,8 @@ data class ICfg(
         if (bolus.amount != 0.0) {
             val bolusTime = bolus.timestamp
             val t = (time - bolusTime) / 1000.0 / 60.0
-            val td = getDia() * 60 //getDIA() always >= MIN_DIA
-            val tp = getPeak().toDouble()
+            val td = dia * 60 //getDIA() always >= MIN_DIA
+            val tp = peak.toDouble()
             // force the IOB to 0 if over DIA hours have passed
             if (t < td) {
                 val tau = tp * (1 - tp / td) / (1 - 2 * tp / td)
