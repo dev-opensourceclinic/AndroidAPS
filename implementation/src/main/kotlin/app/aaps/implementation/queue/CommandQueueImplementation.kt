@@ -674,7 +674,7 @@ class CommandQueueImplementation @Inject constructor(
 
     override fun isThisProfileSet(requestedProfile: EffectiveProfile): Boolean {
         val runningProfile = profileFunction.getProfile() ?: return false
-        val result = activePlugin.activePump.isThisProfileSet(requestedProfile.toPump()) && requestedProfile.isEqual(runningProfile)
+        val result = activePlugin.activePump.isThisProfileSet(requestedProfile) && requestedProfile.isEqual(runningProfile)
         if (!result) {
             aapsLogger.debug(LTag.PUMPQUEUE, "Current profile: ${profileFunction.getProfile()}")
             aapsLogger.debug(LTag.PUMPQUEUE, "New profile: $requestedProfile")
