@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class BolusExtensionKtTest : TestBaseWithProfile() {
 
     @Test fun iobCalc() {
-        val dia = someICfg.getDia()
+        val dia = someICfg.dia
 
         val bolus = BS(timestamp = now - 1, amount = 1.0, type = BS.Type.NORMAL, iCfg = someICfg)
         // there should be almost full IOB after now

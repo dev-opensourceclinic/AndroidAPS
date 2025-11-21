@@ -20,7 +20,7 @@ class ActivityGraph : GraphView {
 
     fun show(iCfg: ICfg, diaSample: Double? = null) {
         removeAllSeries()
-        val dia = diaSample ?: iCfg.getDia()
+        val dia = diaSample ?: iCfg.dia
         mSecondScale = null
         val hours = floor(dia + 1).toLong()
         val bolus = BS(
