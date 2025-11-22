@@ -273,6 +273,7 @@ class AutotuneFragment : DaggerFragment() {
                                     value = ValueWithUnit.SimpleString(tunedP.profileName)
                                 )
                                 val now = dateUtil.now()
+                                val iCfg = activePlugin.activeInsulin.iCfg
                                 profileFunction.createProfileSwitch(
                                     profileStore = it,
                                     profileName = tunedP.profileName,
@@ -283,7 +284,8 @@ class AutotuneFragment : DaggerFragment() {
                                     action = Action.PROFILE_SWITCH,
                                     source = Sources.Autotune,
                                     note = "Autotune AutoSwitch",
-                                    listValues = listOf(ValueWithUnit.SimpleString(autotunePlugin.tunedProfile!!.profileName))
+                                    listValues = listOf(ValueWithUnit.SimpleString(autotunePlugin.tunedProfile!!.profileName)),
+                                    iCfg = iCfg
                                 )
                                 rxBus.send(EventLocalProfileChanged())
                                 updateGui()

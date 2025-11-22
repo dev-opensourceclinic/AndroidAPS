@@ -65,7 +65,7 @@ abstract class InsulinOrefBasePlugin(
     open val userDefinedDia: Double
         get() {
             val profile = profileFunction.getProfile()
-            return profile?.dia ?: hardLimits.minDia()
+            return profile?.iCfg?.dia ?: hardLimits.minDia()
         }
 
     override val iCfg: ICfg

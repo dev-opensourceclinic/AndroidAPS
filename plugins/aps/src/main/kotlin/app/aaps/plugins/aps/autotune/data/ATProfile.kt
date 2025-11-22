@@ -182,7 +182,6 @@ class ATProfile @Inject constructor(
     fun data(circadian: Boolean = false): PureProfile? {
         val json: JSONObject = profile.toPureNsJson(dateUtil)
         try {
-            json.put("dia", dia)
             if (circadian) {
                 json.put("sens", jsonArray(pumpProfile.isfBlocks, avgISF / pumpProfileAvgISF))
                 json.put("carbratio", jsonArray(pumpProfile.icBlocks, avgIC / pumpProfileAvgIC))

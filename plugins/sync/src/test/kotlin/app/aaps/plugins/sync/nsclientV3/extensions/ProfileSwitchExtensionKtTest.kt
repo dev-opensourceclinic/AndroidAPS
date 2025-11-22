@@ -42,7 +42,7 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
             percentage = 100,
             duration = 0,
             iCfg = activePlugin.activeInsulin.iCfg.also {
-                it.insulinEndTime = (effectiveProfile.dia * 3600 * 1000).toLong()
+                it.insulinEndTime = (effectiveProfile.iCfg.dia * 3600 * 1000).toLong()
             },
             ids = IDs(
                 nightscoutId = "nightscoutId",
@@ -69,7 +69,7 @@ internal class ProfileSwitchExtensionKtTest : TestBaseWithProfile() {
             percentage = 150,
             duration = 3600000,
             iCfg = activePlugin.activeInsulin.iCfg.also {
-                it.insulinEndTime = (effectiveProfile.dia * 3600 * 1000).toLong()
+                it.insulinEndTime = (effectiveProfile.iCfg.dia * 3600 * 1000).toLong()
             },
             ids = IDs(
                 nightscoutId = "nightscoutId",
