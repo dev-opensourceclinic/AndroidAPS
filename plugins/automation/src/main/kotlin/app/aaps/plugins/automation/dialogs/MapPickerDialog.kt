@@ -1,21 +1,49 @@
 package app.aaps.plugins.automation.dialogs
 
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.plugins.automation.R
-import app.aaps.plugins.automation.databinding.AutomationDialogMapPickerBinding
 import app.aaps.plugins.automation.events.EventPlaceSelected
 import app.aaps.plugins.automation.services.LastLocationDataContainer
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import javax.inject.Inject
@@ -25,106 +53,39 @@ class MapPickerDialog : BaseDialog() {
     @Inject lateinit var rxBus: RxBus
     @Inject lateinit var locationDataContainer: LastLocationDataContainer
 
-    private var _binding: AutomationDialogMapPickerBinding? = null
-    private val binding get() = _binding!!
-
     private var selectedLat: Double? = null
     private var selectedLon: Double? = null
-    private var marker: Marker? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         onCreateViewGeneral()
-        _binding = AutomationDialogMapPickerBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Configure osmdroid
-        Configuration.getInstance().userAgentValue = "AndroidAPS/1.0"
-
-        // Setup map
-        binding.map.setTileSource(TileSourceFactory.MAPNIK)
-        binding.map.setMultiTouchControls(true)
-        binding.map.controller.setZoom(15.0)
-
-        // Set initial location - use current location if available, otherwise default
-        val initialLocation = locationDataContainer.lastLocation?.let {
-            GeoPoint(it.latitude, it.longitude)
-        } ?: GeoPoint(51.5074, -0.1278) // Default to London
-
-        binding.map.controller.setCenter(initialLocation)
-
-        // Add current location marker if available
-        locationDataContainer.lastLocation?.let { location ->
-            addCurrentLocationMarker(GeoPoint(location.latitude, location.longitude))
-        }
-
-        // Add tap listener
-        val mapEventsReceiver = object : MapEventsReceiver {
-            override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
-                selectLocation(p.latitude, p.longitude)
-                return true
-            }
-
-            override fun longPressHelper(p: GeoPoint): Boolean {
-                return false
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                MaterialTheme {
+                    MapPickerContent(
+                        initialLocation = locationDataContainer.lastLocation?.let {
+                            GeoPoint(it.latitude, it.longitude)
+                        },
+                        onLocationSelected = { lat, lon ->
+                            selectedLat = lat
+                            selectedLon = lon
+                            aapsLogger.debug(LTag.AUTOMATION, "Location selected: $lat, $lon")
+                        },
+                        onOkClick = {
+                            if (submit()) {
+                                dismiss()
+                            }
+                        },
+                        onCancelClick = {
+                            dismiss()
+                        }
+                    )
+                }
             }
         }
-
-        val eventsOverlay = MapEventsOverlay(mapEventsReceiver)
-        binding.map.overlays.add(0, eventsOverlay)
-    }
-
-    private fun addCurrentLocationMarker(point: GeoPoint) {
-        val currentMarker = Marker(binding.map)
-        currentMarker.position = point
-        currentMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        currentMarker.title = "Current Location"
-        context?.let { ctx ->
-            currentMarker.icon = ContextCompat.getDrawable(ctx, R.drawable.ic_my_location)
-        }
-        binding.map.overlays.add(currentMarker)
-    }
-
-    private fun selectLocation(lat: Double, lon: Double) {
-        selectedLat = lat
-        selectedLon = lon
-
-        // Update text
-        binding.selectedLocation.text = getString(R.string.selected_coords, lat, lon)
-
-        // Update or create marker
-        if (marker == null) {
-            marker = Marker(binding.map)
-            marker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            binding.map.overlays.add(marker)
-        }
-        marker?.position = GeoPoint(lat, lon)
-        marker?.title = "Selected Location"
-
-        binding.map.invalidate()
-
-        aapsLogger.debug(LTag.AUTOMATION, "Location selected: $lat, $lon")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        binding.map.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        binding.map.onPause()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun submit(): Boolean {
@@ -138,4 +99,162 @@ class MapPickerDialog : BaseDialog() {
         rxBus.send(EventPlaceSelected(lat, lon, "$lat, $lon"))
         return true
     }
+}
+
+@Composable
+private fun MapPickerContent(
+    initialLocation: GeoPoint?,
+    onLocationSelected: (Double, Double) -> Unit,
+    onOkClick: () -> Unit,
+    onCancelClick: () -> Unit
+) {
+    var selectedCoords by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Title
+            Text(
+                text = stringResource(R.string.pick_from_map),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Map
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+            ) {
+                OsmdroidMapView(
+                    initialLocation = initialLocation,
+                    onLocationSelected = { lat, lon ->
+                        selectedCoords = lat to lon
+                        onLocationSelected(lat, lon)
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Selected coordinates text
+            Text(
+                text = selectedCoords?.let { (lat, lon) ->
+                    stringResource(R.string.selected_coords, lat, lon)
+                } ?: stringResource(R.string.tap_to_select_location),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedButton(
+                    onClick = onCancelClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(app.aaps.core.ui.R.string.cancel))
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Button(
+                    onClick = onOkClick,
+                    modifier = Modifier.weight(1f),
+                    enabled = selectedCoords != null
+                ) {
+                    Text(stringResource(app.aaps.core.ui.R.string.ok))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OsmdroidMapView(
+    initialLocation: GeoPoint?,
+    onLocationSelected: (Double, Double) -> Unit
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var mapView by remember { mutableStateOf<MapView?>(null) }
+    var selectedMarker by remember { mutableStateOf<Marker?>(null) }
+
+    // Handle lifecycle events for MapView
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> mapView?.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView?.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { context ->
+            // Configure osmdroid
+            Configuration.getInstance().userAgentValue = "AndroidAPS/1.0"
+
+            MapView(context).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                controller.setZoom(15.0)
+
+                // Set initial location - use current location if available, otherwise default to London
+                val startPoint = initialLocation ?: GeoPoint(51.5074, -0.1278)
+                controller.setCenter(startPoint)
+
+                // Add current location marker if available
+                initialLocation?.let { point ->
+                    val currentMarker = Marker(this)
+                    currentMarker.position = point
+                    currentMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    currentMarker.title = "Current Location"
+                    currentMarker.icon = ContextCompat.getDrawable(context, R.drawable.ic_my_location)
+                    overlays.add(currentMarker)
+                }
+
+                // Add tap listener
+                val mapEventsReceiver = object : MapEventsReceiver {
+                    override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
+                        // Update or create selected marker
+                        if (selectedMarker == null) {
+                            selectedMarker = Marker(this@apply).apply {
+                                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                this@apply.overlays.add(this)
+                            }
+                        }
+                        selectedMarker?.position = p
+                        selectedMarker?.title = "Selected Location"
+                        invalidate()
+
+                        onLocationSelected(p.latitude, p.longitude)
+                        return true
+                    }
+
+                    override fun longPressHelper(p: GeoPoint): Boolean = false
+                }
+
+                val eventsOverlay = MapEventsOverlay(mapEventsReceiver)
+                overlays.add(0, eventsOverlay)
+
+                mapView = this
+            }
+        },
+        update = { view ->
+            mapView = view
+        }
+    )
 }

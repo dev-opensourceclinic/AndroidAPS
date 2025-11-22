@@ -5,10 +5,19 @@ plugins {
     id("android-module-dependencies")
     id("test-module-dependencies")
     id("jacoco-module-dependencies")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "app.aaps.plugins.automation"
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.3"
+    }
 }
 
 dependencies {
@@ -31,6 +40,15 @@ dependencies {
     api(libs.kotlin.reflect)
     // OpenStreetMap for map picker
     api(libs.org.osmdroid)
+
+    // Compose dependencies
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
 
     ksp(libs.com.google.dagger.compiler)
     ksp(libs.com.google.dagger.android.processor)
