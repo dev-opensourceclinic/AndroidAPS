@@ -187,11 +187,13 @@ private fun MapPickerContent(
     var selectedCoords by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
             // Title
             Text(
@@ -201,11 +203,11 @@ private fun MapPickerContent(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Map
+            // Map - takes up available space
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
+                    .weight(1f)
             ) {
                 OsmdroidMapView(
                     initialLocation = initialLocation,
@@ -228,9 +230,9 @@ private fun MapPickerContent(
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Buttons
+            // Buttons - always at bottom
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
