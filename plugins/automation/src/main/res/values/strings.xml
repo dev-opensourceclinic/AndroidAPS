@@ -159,5 +159,9 @@
     <string name="osm_attribution">Data © OpenStreetMap contributors</string>
     <string name="search_location_button">Search location</string>
     <string name="search_error">Error searching for location</string>
+    <string name="pick_from_map">Pick from map</string>
+    <string name="pick_location_from_map">Pick Location from Map</string>
+    <string name="tap_to_select_location">Tap on the map to select a location</string>
+    <string name="selected_coords">Selected: %1$.6f, %2$.6f</string>
 
 </resources>

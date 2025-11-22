@@ -31,6 +31,8 @@ dependencies {
     api(libs.kotlin.reflect)
     // OkHttp for Nominatim API
     api(libs.com.squareup.okhttp3.okhttp)
+    // OpenStreetMap for map picker
+    api(libs.org.osmdroid)
 
     ksp(libs.com.google.dagger.compiler)
     ksp(libs.com.google.dagger.android.processor)

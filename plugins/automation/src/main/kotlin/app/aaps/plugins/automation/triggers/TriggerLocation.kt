@@ -8,6 +8,7 @@ import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.utils.JsonHelper
 import app.aaps.plugins.automation.R
+import app.aaps.plugins.automation.dialogs.MapPickerDialog
 import app.aaps.plugins.automation.dialogs.PlaceSearchDialog
 import app.aaps.plugins.automation.elements.InputButton
 import app.aaps.plugins.automation.elements.InputDouble
@@ -70,6 +71,26 @@ class TriggerLocation(injector: HasAndroidInjector) : Trigger(injector) {
         // Show the place search dialog
         activity.supportFragmentManager.let {
             PlaceSearchDialog().show(it, "PlaceSearchDialog")
+        }
+    }
+
+    private val mapAction = Runnable {
+        val activity = scanForActivity(context) ?: return@Runnable
+
+        // Subscribe to place selection events before showing the dialog
+        placeSelectedDisposable?.dispose()
+        placeSelectedDisposable = rxBus
+            .toObservable(EventPlaceSelected::class.java)
+            .observeOn(aapsSchedulers.main)
+            .subscribe({ event ->
+                latitude.setValue(event.latitude)
+                longitude.setValue(event.longitude)
+                aapsLogger.debug(LTag.AUTOMATION, "Location picked from map: ${event.latitude}, ${event.longitude}")
+            }, fabricPrivacy::logException)
+
+        // Show the map picker dialog
+        activity.supportFragmentManager.let {
+            MapPickerDialog().show(it, "MapPickerDialog")
         }
     }
 
@@ -138,6 +159,7 @@ class TriggerLocation(injector: HasAndroidInjector) : Trigger(injector) {
             .add(LabelWithElement(rh, rh.gs(app.aaps.core.ui.R.string.name_short), "", name))
             .maybeAdd(InputButton(rh.gs(R.string.currentlocation), buttonAction), locationDataContainer.lastLocation != null)
             .add(InputButton(rh.gs(R.string.search_location_button), searchAction))
+            .add(InputButton(rh.gs(R.string.pick_from_map), mapAction))
             .add(LabelWithElement(rh, rh.gs(R.string.distance_short), "", distance))
             .add(LabelWithElement(rh, rh.gs(R.string.location_mode), "", modeSelected))
             .build(root)
