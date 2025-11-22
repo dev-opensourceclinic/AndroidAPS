@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -187,12 +189,12 @@ private fun MapPickerContent(
     var selectedCoords by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(16.dp)
         ) {
             // Title
@@ -203,11 +205,11 @@ private fun MapPickerContent(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Map - takes up available space
+            // Map - fixed aspect ratio for stable layout
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .aspectRatio(1f)
             ) {
                 OsmdroidMapView(
                     initialLocation = initialLocation,
@@ -266,8 +268,9 @@ private fun OsmdroidMapView(
     onLocationSelected: (Double, Double) -> Unit
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnLocationSelected by rememberUpdatedState(onLocationSelected)
     var mapView by remember { mutableStateOf<MapView?>(null) }
-    var selectedMarker by remember { mutableStateOf<Marker?>(null) }
+    var selectedMarker: Marker? = remember { null }
 
     // Handle lifecycle events for MapView
     DisposableEffect(lifecycleOwner) {
@@ -324,7 +327,7 @@ private fun OsmdroidMapView(
                         selectedMarker?.title = "Selected Location"
                         mapViewRef.invalidate()
 
-                        onLocationSelected(p.latitude, p.longitude)
+                        currentOnLocationSelected(p.latitude, p.longitude)
                         return true
                     }
 
@@ -336,9 +339,6 @@ private fun OsmdroidMapView(
 
                 mapView = this
             }
-        },
-        update = { view ->
-            mapView = view
         }
     )
 }
