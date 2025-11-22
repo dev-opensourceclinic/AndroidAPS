@@ -220,9 +220,9 @@ private fun MapPickerScreen(
                             imageVector = Icons.Default.Check,
                             contentDescription = stringResource(app.aaps.core.ui.R.string.ok),
                             tint = if (selectedCoords != null)
-                                MaterialTheme.colorScheme.primary
+                                MaterialTheme.colorScheme.onPrimary
                             else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f)
                         )
                     }
                 },
