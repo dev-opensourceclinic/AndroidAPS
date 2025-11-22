@@ -29,8 +29,6 @@ dependencies {
     api(libs.androidx.constraintlayout)
     api(libs.com.google.android.gms.playservices.location)
     api(libs.kotlin.reflect)
-    // OkHttp for Nominatim API
-    api(libs.com.squareup.okhttp3.okhttp)
     // OpenStreetMap for map picker
     api(libs.org.osmdroid)
 

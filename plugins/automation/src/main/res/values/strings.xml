@@ -151,14 +151,8 @@
     <string name="on">ON</string>
     <string name="off">OFF</string>
 
-    <!--    Location Search (OpenStreetMap)-->
-    <string name="search_location">Search Location</string>
-    <string name="search_address">Enter address or place name</string>
-    <string name="search">Search</string>
-    <string name="no_results_found">No results found</string>
+    <!--    Map Picker (OpenStreetMap)-->
     <string name="osm_attribution">Data © OpenStreetMap contributors</string>
-    <string name="search_location_button">Search location</string>
-    <string name="search_error">Error searching for location</string>
     <string name="pick_from_map">Pick from map</string>
     <string name="pick_location_from_map">Pick Location from Map</string>
     <string name="tap_to_select_location">Tap on the map to select a location</string>

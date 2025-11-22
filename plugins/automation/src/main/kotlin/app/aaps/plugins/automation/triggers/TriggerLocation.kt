@@ -9,7 +9,6 @@ import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.utils.JsonHelper
 import app.aaps.plugins.automation.R
 import app.aaps.plugins.automation.dialogs.MapPickerDialog
-import app.aaps.plugins.automation.dialogs.PlaceSearchDialog
 import app.aaps.plugins.automation.elements.InputButton
 import app.aaps.plugins.automation.elements.InputDouble
 import app.aaps.plugins.automation.elements.InputLocationMode
@@ -46,31 +45,6 @@ class TriggerLocation(injector: HasAndroidInjector) : Trigger(injector) {
         locationDataContainer.lastLocation?.let {
             latitude.setValue(it.latitude)
             longitude.setValue(it.longitude)
-        }
-    }
-
-    private val searchAction = Runnable {
-        val activity = scanForActivity(context) ?: return@Runnable
-
-        // Subscribe to place selection events before showing the dialog
-        placeSelectedDisposable?.dispose()
-        placeSelectedDisposable = rxBus
-            .toObservable(EventPlaceSelected::class.java)
-            .observeOn(aapsSchedulers.main)
-            .subscribe({ event ->
-                latitude.setValue(event.latitude)
-                longitude.setValue(event.longitude)
-                // Extract short name from display name if possible
-                val shortName = event.displayName.split(",").firstOrNull()?.trim() ?: event.displayName
-                if (name.value.isEmpty()) {
-                    name.value = shortName
-                }
-                aapsLogger.debug(LTag.AUTOMATION, "Place selected: ${event.displayName} at ${event.latitude}, ${event.longitude}")
-            }, fabricPrivacy::logException)
-
-        // Show the place search dialog
-        activity.supportFragmentManager.let {
-            PlaceSearchDialog().show(it, "PlaceSearchDialog")
         }
     }
 
@@ -158,7 +132,6 @@ class TriggerLocation(injector: HasAndroidInjector) : Trigger(injector) {
             .add(StaticLabel(rh, R.string.location, this))
             .add(LabelWithElement(rh, rh.gs(app.aaps.core.ui.R.string.name_short), "", name))
             .maybeAdd(InputButton(rh.gs(R.string.currentlocation), buttonAction), locationDataContainer.lastLocation != null)
-            .add(InputButton(rh.gs(R.string.search_location_button), searchAction))
             .add(InputButton(rh.gs(R.string.pick_from_map), mapAction))
             .add(LabelWithElement(rh, rh.gs(R.string.distance_short), "", distance))
             .add(LabelWithElement(rh, rh.gs(R.string.location_mode), "", modeSelected))
