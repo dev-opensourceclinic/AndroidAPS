@@ -1,9 +1,11 @@
 package app.aaps.plugins.automation.dialogs
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,10 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -27,19 +32,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.plugins.automation.R
 import app.aaps.plugins.automation.events.EventPlaceSelected
 import app.aaps.plugins.automation.services.LastLocationDataContainer
-import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -61,10 +66,12 @@ class MapPickerDialog : BaseDialog() {
         savedInstanceState: Bundle?
     ): View {
         onCreateViewGeneral()
+        val isDarkTheme = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MaterialTheme {
+                AapsTheme(darkTheme = isDarkTheme) {
                     MapPickerContent(
                         initialLocation = locationDataContainer.lastLocation?.let {
                             GeoPoint(it.latitude, it.longitude)
@@ -102,6 +109,75 @@ class MapPickerDialog : BaseDialog() {
 }
 
 @Composable
+private fun AapsTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    val lightColors = lightColorScheme(
+        primary = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_primary),
+        onPrimary = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onPrimary),
+        primaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_primaryContainer),
+        onPrimaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onPrimaryContainer),
+        secondary = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_secondary),
+        onSecondary = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onSecondary),
+        secondaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_secondaryContainer),
+        onSecondaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onSecondaryContainer),
+        tertiary = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_tertiary),
+        onTertiary = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onTertiary),
+        tertiaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_tertiaryContainer),
+        onTertiaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onTertiaryContainer),
+        error = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_error),
+        onError = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onError),
+        errorContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_errorContainer),
+        onErrorContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onErrorContainer),
+        background = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_background),
+        onBackground = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onBackground),
+        surface = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_surface),
+        onSurface = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onSurface),
+        surfaceVariant = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_surfaceVariant),
+        onSurfaceVariant = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_onSurfaceVariant),
+        outline = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_outline),
+        inverseSurface = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_inverseSurface),
+        inverseOnSurface = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_inverseOnSurface),
+        inversePrimary = colorResource(app.aaps.core.ui.R.color.aaps_theme_light_inversePrimary),
+    )
+
+    val darkColors = darkColorScheme(
+        primary = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_primary),
+        onPrimary = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onPrimary),
+        primaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_primaryContainer),
+        onPrimaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onPrimaryContainer),
+        secondary = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_secondary),
+        onSecondary = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onSecondary),
+        secondaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_secondaryContainer),
+        onSecondaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onSecondaryContainer),
+        tertiary = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_tertiary),
+        onTertiary = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onTertiary),
+        tertiaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_tertiaryContainer),
+        onTertiaryContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onTertiaryContainer),
+        error = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_error),
+        onError = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onError),
+        errorContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_errorContainer),
+        onErrorContainer = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onErrorContainer),
+        background = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_background),
+        onBackground = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onBackground),
+        surface = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_surface),
+        onSurface = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onSurface),
+        surfaceVariant = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_surfaceVariant),
+        onSurfaceVariant = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_onSurfaceVariant),
+        outline = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_outline),
+        inverseSurface = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_inverseSurface),
+        inverseOnSurface = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_inverseOnSurface),
+        inversePrimary = colorResource(app.aaps.core.ui.R.color.aaps_theme_dark_inversePrimary),
+    )
+
+    MaterialTheme(
+        colorScheme = if (darkTheme) darkColors else lightColors,
+        content = content
+    )
+}
+
+@Composable
 private fun MapPickerContent(
     initialLocation: GeoPoint?,
     onLocationSelected: (Double, Double) -> Unit,
@@ -121,6 +197,7 @@ private fun MapPickerContent(
             Text(
                 text = stringResource(R.string.pick_from_map),
                 style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -147,6 +224,7 @@ private fun MapPickerContent(
                     stringResource(R.string.selected_coords, lat, lon)
                 } ?: stringResource(R.string.tap_to_select_location),
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
@@ -168,7 +246,10 @@ private fun MapPickerContent(
                 Button(
                     onClick = onOkClick,
                     modifier = Modifier.weight(1f),
-                    enabled = selectedCoords != null
+                    enabled = selectedCoords != null,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
                     Text(stringResource(app.aaps.core.ui.R.string.ok))
                 }
@@ -205,7 +286,7 @@ private fun OsmdroidMapView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
             // Configure osmdroid
-            Configuration.getInstance().userAgentValue = "AndroidAPS/1.0"
+            org.osmdroid.config.Configuration.getInstance().userAgentValue = "AndroidAPS/1.0"
 
             MapView(context).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
