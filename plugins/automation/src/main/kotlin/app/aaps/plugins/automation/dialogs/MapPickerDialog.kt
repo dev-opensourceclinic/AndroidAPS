@@ -227,18 +227,19 @@ private fun OsmdroidMapView(
                 }
 
                 // Add tap listener
+                val mapViewRef = this
                 val mapEventsReceiver = object : MapEventsReceiver {
                     override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
                         // Update or create selected marker
                         if (selectedMarker == null) {
-                            selectedMarker = Marker(this@apply).apply {
+                            selectedMarker = Marker(mapViewRef).apply {
                                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                                this@apply.overlays.add(this)
                             }
+                            mapViewRef.overlays.add(selectedMarker)
                         }
                         selectedMarker?.position = p
                         selectedMarker?.title = "Selected Location"
-                        invalidate()
+                        mapViewRef.invalidate()
 
                         onLocationSelected(p.latitude, p.longitude)
                         return true
