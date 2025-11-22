@@ -8,8 +8,8 @@ import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.utils.JsonHelper
 import app.aaps.plugins.automation.R
-import app.aaps.plugins.automation.dialogs.MapPickerDialog
 import app.aaps.plugins.automation.elements.InputButton
+import app.aaps.plugins.automation.ui.MapPickerActivity
 import app.aaps.plugins.automation.elements.InputDouble
 import app.aaps.plugins.automation.elements.InputLocationMode
 import app.aaps.plugins.automation.elements.InputString
@@ -49,9 +49,9 @@ class TriggerLocation(injector: HasAndroidInjector) : Trigger(injector) {
     }
 
     private val mapAction = Runnable {
-        val activity = scanForActivity(context) ?: return@Runnable
+        val ctx = context ?: return@Runnable
 
-        // Subscribe to place selection events before showing the dialog
+        // Subscribe to place selection events before starting the activity
         placeSelectedDisposable?.dispose()
         placeSelectedDisposable = rxBus
             .toObservable(EventPlaceSelected::class.java)
@@ -62,10 +62,13 @@ class TriggerLocation(injector: HasAndroidInjector) : Trigger(injector) {
                 aapsLogger.debug(LTag.AUTOMATION, "Location picked from map: ${event.latitude}, ${event.longitude}")
             }, fabricPrivacy::logException)
 
-        // Show the map picker dialog
-        activity.supportFragmentManager.let {
-            MapPickerDialog().show(it, "MapPickerDialog")
-        }
+        // Start the map picker activity
+        val intent = MapPickerActivity.createIntent(
+            ctx,
+            latitude = if (latitude.value != 0.0) latitude.value else null,
+            longitude = if (longitude.value != 0.0) longitude.value else null
+        )
+        ctx.startActivity(intent)
     }
 
     private constructor(injector: HasAndroidInjector, triggerLocation: TriggerLocation) : this(injector) {

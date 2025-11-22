@@ -1,27 +1,27 @@
-package app.aaps.plugins.automation.dialogs
+package app.aaps.plugins.automation.ui
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -31,9 +31,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -42,11 +41,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.ui.locale.LocaleHelper
 import app.aaps.plugins.automation.R
 import app.aaps.plugins.automation.events.EventPlaceSelected
 import app.aaps.plugins.automation.services.LastLocationDataContainer
+import dagger.android.support.DaggerAppCompatActivity
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -55,7 +55,7 @@ import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import javax.inject.Inject
 
-class MapPickerDialog : BaseDialog() {
+class MapPickerActivity : DaggerAppCompatActivity() {
 
     @Inject lateinit var rxBus: RxBus
     @Inject lateinit var locationDataContainer: LastLocationDataContainer
@@ -63,50 +63,60 @@ class MapPickerDialog : BaseDialog() {
     private var selectedLat: Double? = null
     private var selectedLon: Double? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        onCreateViewGeneral()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         val isDarkTheme = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
-        return ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                AapsTheme(darkTheme = isDarkTheme) {
-                    MapPickerContent(
-                        initialLocation = locationDataContainer.lastLocation?.let {
-                            GeoPoint(it.latitude, it.longitude)
-                        },
-                        onLocationSelected = { lat, lon ->
-                            selectedLat = lat
-                            selectedLon = lon
-                            aapsLogger.debug(LTag.AUTOMATION, "Location selected: $lat, $lon")
-                        },
-                        onOkClick = {
-                            if (submit()) {
-                                dismiss()
-                            }
-                        },
-                        onCancelClick = {
-                            dismiss()
+
+        val initialLat = intent.getDoubleExtra(EXTRA_LATITUDE, Double.NaN)
+        val initialLon = intent.getDoubleExtra(EXTRA_LONGITUDE, Double.NaN)
+        val initialLocation = if (!initialLat.isNaN() && !initialLon.isNaN()) {
+            GeoPoint(initialLat, initialLon)
+        } else {
+            locationDataContainer.lastLocation?.let {
+                GeoPoint(it.latitude, it.longitude)
+            }
+        }
+
+        setContent {
+            AapsTheme(darkTheme = isDarkTheme) {
+                MapPickerScreen(
+                    initialLocation = initialLocation,
+                    onLocationSelected = { lat, lon ->
+                        selectedLat = lat
+                        selectedLon = lon
+                    },
+                    onConfirm = {
+                        val lat = selectedLat
+                        val lon = selectedLon
+                        if (lat != null && lon != null) {
+                            rxBus.send(EventPlaceSelected(lat, lon, "$lat, $lon"))
                         }
-                    )
-                }
+                        finish()
+                    },
+                    onCancel = {
+                        finish()
+                    }
+                )
             }
         }
     }
 
-    override fun submit(): Boolean {
-        val lat = selectedLat
-        val lon = selectedLon
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
 
-        if (lat == null || lon == null) {
-            return false
+    companion object {
+        private const val EXTRA_LATITUDE = "latitude"
+        private const val EXTRA_LONGITUDE = "longitude"
+
+        fun createIntent(context: Context, latitude: Double? = null, longitude: Double? = null): Intent {
+            return Intent(context, MapPickerActivity::class.java).apply {
+                latitude?.let { putExtra(EXTRA_LATITUDE, it) }
+                longitude?.let { putExtra(EXTRA_LONGITUDE, it) }
+            }
         }
-
-        rxBus.send(EventPlaceSelected(lat, lon, "$lat, $lon"))
-        return true
     }
 }
 
@@ -179,37 +189,62 @@ private fun AapsTheme(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MapPickerContent(
+private fun MapPickerScreen(
     initialLocation: GeoPoint?,
     onLocationSelected: (Double, Double) -> Unit,
-    onOkClick: () -> Unit,
-    onCancelClick: () -> Unit
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
 ) {
     var selectedCoords by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.pick_from_map)) },
+                navigationIcon = {
+                    IconButton(onClick = onCancel) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(app.aaps.core.ui.R.string.cancel)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = onConfirm,
+                        enabled = selectedCoords != null
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = stringResource(app.aaps.core.ui.R.string.ok),
+                            tint = if (selectedCoords != null)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            // Title
-            Text(
-                text = stringResource(R.string.pick_from_map),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Map - fixed aspect ratio for stable layout
+            // Map takes all available space
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
+                    .weight(1f)
             ) {
                 OsmdroidMapView(
                     initialLocation = initialLocation,
@@ -220,43 +255,20 @@ private fun MapPickerContent(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Selected coordinates text
-            Text(
-                text = selectedCoords?.let { (lat, lon) ->
-                    stringResource(R.string.selected_coords, lat, lon)
-                } ?: stringResource(R.string.tap_to_select_location),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Buttons - always at bottom
-            Row(
-                modifier = Modifier.fillMaxWidth()
+            // Coordinates display at bottom
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                OutlinedButton(
-                    onClick = onCancelClick,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(stringResource(app.aaps.core.ui.R.string.cancel))
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Button(
-                    onClick = onOkClick,
-                    modifier = Modifier.weight(1f),
-                    enabled = selectedCoords != null,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(stringResource(app.aaps.core.ui.R.string.ok))
-                }
+                Text(
+                    text = selectedCoords?.let { (lat, lon) ->
+                        stringResource(R.string.selected_coords, lat, lon)
+                    } ?: stringResource(R.string.tap_to_select_location),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
         }
     }
@@ -272,7 +284,6 @@ private fun OsmdroidMapView(
     var mapView by remember { mutableStateOf<MapView?>(null) }
     var selectedMarker: Marker? = remember { null }
 
-    // Handle lifecycle events for MapView
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -290,7 +301,6 @@ private fun OsmdroidMapView(
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
-            // Configure osmdroid
             org.osmdroid.config.Configuration.getInstance().userAgentValue = "AndroidAPS/1.0"
 
             MapView(context).apply {
@@ -298,11 +308,9 @@ private fun OsmdroidMapView(
                 setMultiTouchControls(true)
                 controller.setZoom(15.0)
 
-                // Set initial location - use current location if available, otherwise default to London
                 val startPoint = initialLocation ?: GeoPoint(51.5074, -0.1278)
                 controller.setCenter(startPoint)
 
-                // Add current location marker if available
                 initialLocation?.let { point ->
                     val currentMarker = Marker(this)
                     currentMarker.position = point
@@ -312,11 +320,9 @@ private fun OsmdroidMapView(
                     overlays.add(currentMarker)
                 }
 
-                // Add tap listener
                 val mapViewRef = this
                 val mapEventsReceiver = object : MapEventsReceiver {
                     override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
-                        // Update or create selected marker
                         if (selectedMarker == null) {
                             selectedMarker = Marker(mapViewRef).apply {
                                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)

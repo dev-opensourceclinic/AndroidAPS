@@ -24,8 +24,8 @@ import app.aaps.plugins.automation.dialogs.ChooseTriggerDialog
 import app.aaps.plugins.automation.dialogs.EditActionDialog
 import app.aaps.plugins.automation.dialogs.EditEventDialog
 import app.aaps.plugins.automation.dialogs.EditTriggerDialog
-import app.aaps.plugins.automation.dialogs.MapPickerDialog
 import app.aaps.plugins.automation.services.LocationService
+import app.aaps.plugins.automation.ui.MapPickerActivity
 import app.aaps.plugins.automation.triggers.Trigger
 import app.aaps.plugins.automation.triggers.TriggerAutosensValue
 import app.aaps.plugins.automation.triggers.TriggerBTDevice
@@ -73,7 +73,7 @@ abstract class AutomationModule {
     @ContributesAndroidInjector abstract fun contributesEditActionDialog(): EditActionDialog
     @ContributesAndroidInjector abstract fun contributesEditEventDialog(): EditEventDialog
     @ContributesAndroidInjector abstract fun contributesEditTriggerDialog(): EditTriggerDialog
-    @ContributesAndroidInjector abstract fun contributesMapPickerDialog(): MapPickerDialog
+    @ContributesAndroidInjector abstract fun contributesMapPickerActivity(): MapPickerActivity
     @ContributesAndroidInjector abstract fun automationEventInjector(): AutomationEventObject
 
     @ContributesAndroidInjector abstract fun triggerInjector(): Trigger
