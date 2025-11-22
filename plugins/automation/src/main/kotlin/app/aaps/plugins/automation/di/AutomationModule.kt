@@ -24,6 +24,7 @@ import app.aaps.plugins.automation.dialogs.ChooseTriggerDialog
 import app.aaps.plugins.automation.dialogs.EditActionDialog
 import app.aaps.plugins.automation.dialogs.EditEventDialog
 import app.aaps.plugins.automation.dialogs.EditTriggerDialog
+import app.aaps.plugins.automation.dialogs.PlaceSearchDialog
 import app.aaps.plugins.automation.services.LocationService
 import app.aaps.plugins.automation.triggers.Trigger
 import app.aaps.plugins.automation.triggers.TriggerAutosensValue
@@ -72,6 +73,7 @@ abstract class AutomationModule {
     @ContributesAndroidInjector abstract fun contributesEditActionDialog(): EditActionDialog
     @ContributesAndroidInjector abstract fun contributesEditEventDialog(): EditEventDialog
     @ContributesAndroidInjector abstract fun contributesEditTriggerDialog(): EditTriggerDialog
+    @ContributesAndroidInjector abstract fun contributesPlaceSearchDialog(): PlaceSearchDialog
     @ContributesAndroidInjector abstract fun automationEventInjector(): AutomationEventObject
 
     @ContributesAndroidInjector abstract fun triggerInjector(): Trigger

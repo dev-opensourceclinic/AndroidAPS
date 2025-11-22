@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="key_google_apis_android" translatable="false">AIzaSyDcZpDRMaGjdhihXp531cVYM6LkEL8KbgM</string>
-
     <string name="automation_short">Auto</string>
     <string name="automation">Automation</string>
     <string name="automation_description">User defined automation tasks</string>
@@ -152,5 +150,14 @@
     <string name="newSmbMode">New SMB mode:</string>
     <string name="on">ON</string>
     <string name="off">OFF</string>
+
+    <!--    Location Search (OpenStreetMap)-->
+    <string name="search_location">Search Location</string>
+    <string name="search_address">Enter address or place name</string>
+    <string name="search">Search</string>
+    <string name="no_results_found">No results found</string>
+    <string name="osm_attribution">Data © OpenStreetMap contributors</string>
+    <string name="search_location_button">Search location</string>
+    <string name="search_error">Error searching for location</string>
 
 </resources>
