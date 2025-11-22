@@ -152,7 +152,7 @@ class PlaceSearchDialog : BaseDialog() {
             holder.itemView.isSelected = position == selectedPosition
             holder.itemView.setBackgroundResource(
                 if (position == selectedPosition)
-                    app.aaps.core.ui.R.color.list_highlight
+                    app.aaps.core.ui.R.color.colorLightGray
                 else
                     android.R.color.transparent
             )

@@ -2,11 +2,13 @@ package app.aaps.plugins.automation.location
 
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
+import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -75,10 +77,10 @@ class NominatimService @Inject constructor(
      * Reverse geocode coordinates to address
      * @param lat Latitude
      * @param lon Longitude
-     * @return Single emitting place or null if not found
+     * @return Maybe emitting place if found, empty otherwise
      */
-    fun reverseGeocode(lat: Double, lon: Double): Single<NominatimPlace?> {
-        return Single.fromCallable {
+    fun reverseGeocode(lat: Double, lon: Double): Maybe<NominatimPlace> {
+        return Maybe.fromCallable<NominatimPlace> {
             val url = "$BASE_URL/reverse?lat=$lat&lon=$lon&format=json"
 
             aapsLogger.debug(LTag.AUTOMATION, "Nominatim reverse geocode: $lat, $lon")
@@ -98,7 +100,7 @@ class NominatimService @Inject constructor(
             }
 
             val body = response.body?.string() ?: return@fromCallable null
-            val json = org.json.JSONObject(body)
+            val json = JSONObject(body)
 
             if (json.has("error")) {
                 aapsLogger.error(LTag.AUTOMATION, "Nominatim error: ${json.optString("error")}")
