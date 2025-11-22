@@ -97,7 +97,7 @@ data class ICfg(
         if (bolus.amount != 0.0) {
             val bolusTime = bolus.timestamp
             val t = (time - bolusTime) / 1000.0 / 60.0
-            val td = dia * 60 // always >= MIN_DIA
+            val td = dia * 60 //getDIA() always >= MIN_DIA
             val tp = peak.toDouble()
             // force the IOB to 0 if over DIA hours have passed
             if (t < td) {
