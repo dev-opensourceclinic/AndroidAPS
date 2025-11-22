@@ -80,34 +80,45 @@ class NominatimService @Inject constructor(
      * @return Maybe emitting place if found, empty otherwise
      */
     fun reverseGeocode(lat: Double, lon: Double): Maybe<NominatimPlace> {
-        return Maybe.fromCallable<NominatimPlace> {
-            val url = "$BASE_URL/reverse?lat=$lat&lon=$lon&format=json"
+        return Maybe.create<NominatimPlace> { emitter ->
+            try {
+                val url = "$BASE_URL/reverse?lat=$lat&lon=$lon&format=json"
 
-            aapsLogger.debug(LTag.AUTOMATION, "Nominatim reverse geocode: $lat, $lon")
+                aapsLogger.debug(LTag.AUTOMATION, "Nominatim reverse geocode: $lat, $lon")
 
-            val request = Request.Builder()
-                .url(url)
-                .header("User-Agent", USER_AGENT)
-                .header("Accept", "application/json")
-                .get()
-                .build()
+                val request = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", USER_AGENT)
+                    .header("Accept", "application/json")
+                    .get()
+                    .build()
 
-            val response = client.newCall(request).execute()
+                val response = client.newCall(request).execute()
 
-            if (!response.isSuccessful) {
-                aapsLogger.error(LTag.AUTOMATION, "Nominatim reverse geocode failed: ${response.code}")
-                return@fromCallable null
+                if (!response.isSuccessful) {
+                    aapsLogger.error(LTag.AUTOMATION, "Nominatim reverse geocode failed: ${response.code}")
+                    emitter.onComplete()
+                    return@create
+                }
+
+                val body = response.body?.string()
+                if (body == null) {
+                    emitter.onComplete()
+                    return@create
+                }
+
+                val json = JSONObject(body)
+
+                if (json.has("error")) {
+                    aapsLogger.error(LTag.AUTOMATION, "Nominatim error: ${json.optString("error")}")
+                    emitter.onComplete()
+                    return@create
+                }
+
+                emitter.onSuccess(NominatimPlace.fromJson(json))
+            } catch (e: Exception) {
+                emitter.onError(e)
             }
-
-            val body = response.body?.string() ?: return@fromCallable null
-            val json = JSONObject(body)
-
-            if (json.has("error")) {
-                aapsLogger.error(LTag.AUTOMATION, "Nominatim error: ${json.optString("error")}")
-                return@fromCallable null
-            }
-
-            NominatimPlace.fromJson(json)
         }.subscribeOn(Schedulers.io())
     }
 }
