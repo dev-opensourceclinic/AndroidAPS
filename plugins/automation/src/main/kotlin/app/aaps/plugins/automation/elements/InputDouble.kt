@@ -44,4 +44,8 @@ class InputDouble() : Element {
         numberPicker?.value = value
         return this
     }
+
+    override fun cleanup() {
+        numberPicker = null
+    }
 }

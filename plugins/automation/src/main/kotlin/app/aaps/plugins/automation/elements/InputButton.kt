@@ -22,4 +22,8 @@ class InputButton() : Element {
                 it.gravity = Gravity.CENTER_HORIZONTAL
             })
     }
+
+    override fun cleanup() {
+        runnable = null
+    }
 }

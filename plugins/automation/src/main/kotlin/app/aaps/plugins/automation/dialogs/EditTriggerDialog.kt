@@ -87,6 +87,9 @@ class EditTriggerDialog : BaseDialog() {
     override fun onDestroyView() {
         super.onDestroyView()
         disposable.clear()
+        // Clean up triggers to prevent memory leaks from View and Context references
+        triggers?.cleanup()
+        triggers = null
         _binding = null
     }
 

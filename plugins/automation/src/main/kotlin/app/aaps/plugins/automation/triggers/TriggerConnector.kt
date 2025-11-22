@@ -111,6 +111,13 @@ class TriggerConnector(injector: HasAndroidInjector) : Trigger(injector) {
 
     override fun duplicate(): Trigger = TriggerConnector(injector, connectorType)
 
+    override fun cleanup() {
+        super.cleanup()
+        for (trigger in list) {
+            trigger.cleanup()
+        }
+    }
+
     override fun generateDialog(root: LinearLayout) {
         root.addView(
             LinearLayout(root.context).also { mainLayout ->

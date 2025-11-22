@@ -143,4 +143,14 @@ class TriggerLocation(injector: HasAndroidInjector) : Trigger(injector), PingPla
     fun currentMode(currentDistance: Double): InputLocationMode.Mode {
         return if (currentDistance <= distance.value) InputLocationMode.Mode.INSIDE else InputLocationMode.Mode.OUTSIDE
     }
+
+    override fun cleanup() {
+        super.cleanup()
+        context = null
+        latitude.cleanup()
+        longitude.cleanup()
+        distance.cleanup()
+        modeSelected.cleanup()
+        name.cleanup()
+    }
 }

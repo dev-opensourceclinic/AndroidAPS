@@ -74,6 +74,15 @@ abstract class Trigger(val injector: HasAndroidInjector) {
         root.addView(title)
     }
 
+    /**
+     * Clean up any View or Context references to prevent memory leaks.
+     * Called when the dialog is destroyed.
+     * Subclasses should override this method and call super.cleanup().
+     */
+    open fun cleanup() {
+        // Base implementation - subclasses should override
+    }
+
     fun toJSON(): String =
         JSONObject()
             .put("type", this::class.java.simpleName)
