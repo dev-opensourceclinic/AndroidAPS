@@ -385,6 +385,8 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
     @Synchronized
     override fun onDestroyView() {
         super.onDestroyView()
+        // Clear GraphView references from series to prevent memory leaks
+        overviewData.clearGraphViewRefs()
         _binding = null
     }
 

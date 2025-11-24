@@ -115,4 +115,9 @@ interface OverviewData {
     var stepsForScale: Scale
     var stepsCountGraphSeries: SeriesData
 
+    /**
+     * Clear all GraphView references from series to prevent memory leaks.
+     * Should be called when the OverviewFragment is destroyed.
+     */
+    fun clearGraphViewRefs()
 }

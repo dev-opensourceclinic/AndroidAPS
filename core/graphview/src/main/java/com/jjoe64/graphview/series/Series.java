@@ -119,6 +119,12 @@ public interface Series<E extends DataPointInterface> {
     void onGraphViewAttached(GraphView graphView);
 
     /**
+     * clear all stored GraphView references to prevent memory leaks.
+     * Should be called when the GraphView's hosting Activity/Fragment is destroyed.
+     */
+    void clearGraphViews();
+
+    /**
      * @return whether there are data points
      */
     boolean isEmpty();

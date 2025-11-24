@@ -370,6 +370,15 @@ public abstract class BaseSeries<E extends DataPointInterface> implements Series
     }
 
     /**
+     * clear all stored GraphView references to prevent memory leaks.
+     * Should be called when the GraphView's hosting Activity/Fragment is destroyed.
+     */
+    @Override
+    public void clearGraphViews() {
+        mGraphViews.clear();
+    }
+
+    /**
      * @param dataPoint     values the values must be in the correct order!
      *                      x-value has to be ASC. First the lowest x value and at least the highest x value.
      * @param scrollToEnd   true => graphview will scroll to the end (maxX)
