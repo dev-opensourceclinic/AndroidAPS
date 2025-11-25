@@ -58,6 +58,7 @@
     <string name="queue">Queue:</string>
     <string name="status">Status:</string>
     <string name="clear_log">Clear log</string>
+    <string name="logs">Logs</string>
     <string name="full_sync">Full synchronization</string>
     <string name="full_sync_comment">Full synchronization? It may take many hours and until finish you\'ll not see new data in NS.</string>
     <string name="ns_sync_options">Synchronization</string>
