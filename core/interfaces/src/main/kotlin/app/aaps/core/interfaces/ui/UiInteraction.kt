@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.FragmentManager
+import app.aaps.core.data.model.ICfg
 import app.aaps.core.interfaces.nsclient.NSAlarm
 
 /**
@@ -53,7 +54,7 @@ interface UiInteraction {
 
     fun runWizardDialog(fragmentManager: FragmentManager, carbs: Int? = null, name: String? = null)
     fun runLoopDialog(fragmentManager: FragmentManager, showOkCancel: Int)
-    fun runProfileSwitchDialog(fragmentManager: FragmentManager, profileName: String? = null)
+    fun runProfileSwitchDialog(fragmentManager: FragmentManager, profileName: String? = null, iCfg: ICfg? = null)
     fun runTempBasalDialog(fragmentManager: FragmentManager)
     fun runTreatmentDialog(fragmentManager: FragmentManager)
     fun runInsulinDialog(fragmentManager: FragmentManager)

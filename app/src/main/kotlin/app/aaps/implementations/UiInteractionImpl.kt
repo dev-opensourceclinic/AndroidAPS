@@ -10,12 +10,14 @@ import app.aaps.MainActivity
 import app.aaps.activities.HistoryBrowseActivity
 import app.aaps.activities.MyPreferenceFragment
 import app.aaps.activities.PreferencesActivity
+import app.aaps.core.data.model.ICfg
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.nsclient.NSAlarm
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventDismissNotification
 import app.aaps.core.interfaces.rx.events.EventNewNotification
 import app.aaps.core.interfaces.ui.UiInteraction
+import app.aaps.core.objects.extensions.toJson
 import app.aaps.core.ui.dialogs.OKDialog
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.plugins.configuration.activities.SingleFragmentActivity
@@ -96,9 +98,14 @@ class UiInteractionImpl @Inject constructor(
             .show(fragmentManager, "LoopDialog")
     }
 
-    override fun runProfileSwitchDialog(fragmentManager: FragmentManager, profileName: String?) {
+    override fun runProfileSwitchDialog(fragmentManager: FragmentManager, profileName: String?, iCfg: ICfg?) {
         ProfileSwitchDialog()
-            .also { it.arguments = Bundle().also { bundle -> bundle.putString("profileName", profileName) } }
+            .also {
+                it.arguments = Bundle().also { bundle ->
+                    bundle.putString("profileName", profileName)
+                    iCfg?.let { bundle.putString("iCfg", it.toJson().toString()) }
+                }
+            }
             .show(fragmentManager, "ProfileSwitchDialog")
     }
 
