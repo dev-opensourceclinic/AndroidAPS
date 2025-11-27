@@ -9,6 +9,12 @@ android {
     defaultConfig {
         minSdk = Versions.wearMinSdk
     }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.16"
+    }
 }
 
 dependencies {
@@ -17,6 +23,13 @@ dependencies {
     api(libs.androidx.preference)
     api(libs.androidx.gridlayout)
 
+    // Compose
+    api(platform(libs.androidx.compose.bom))
+    api(libs.androidx.compose.ui)
+    api(libs.androidx.compose.ui.tooling.preview)
+    api(libs.androidx.compose.material3)
+    api(libs.androidx.compose.runtime)
+    debugApi(libs.androidx.compose.ui.tooling)
 
     api(libs.com.google.android.material)
 
