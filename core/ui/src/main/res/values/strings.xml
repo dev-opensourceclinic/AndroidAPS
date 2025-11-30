@@ -145,6 +145,8 @@
     <string name="none"><![CDATA[<none>]]></string>
     <string name="remove_label">REMOVE</string>
     <string name="activate_profile">Activate profile</string>
+    <string name="activate_insulin">Activate insulin</string>
+    <string name="confirm_concentration">Confirm concentration</string>
     <string name="reset">reset</string>
     <string name="profileswitch_ismissing">ProfileSwitch missing. Please do a profile switch or press \"Activate Profile\" in the LocalProfile.</string>
     <string name="profile">Profile</string>
@@ -171,7 +173,14 @@
     <string name="pump_disconnected">Pump disconnected</string>
     <string name="pump_suspended">Pump suspended</string>
     <string name="mode_reverted">Mode reverted</string>
+    <string name="insulin_shortname">INS</string>
+    <string name="select_insulin">Select Insulin to Edit</string>
+    <string name="select_pump_insulin">Select Pump Insulin</string>
+    <string name="select_pen_insulin">Select Insulin</string>
+    <string name="insulin_template">Template</string>
     <string name="dia">DIA</string>
+    <string name="peak">Peak</string>
+    <string name="concentration">Concentration</string>
     <string name="ic_short">IC</string>
     <string name="isf_short">ISF</string>
     <string name="canceling_tbr_failed">Canceling of temporary basal failed</string>
@@ -450,6 +459,8 @@
     <string name="temp_target_high_target">Temporary target top value</string>
     <string name="temp_target_value">Temporary target value</string>
     <string name="profile_dia">Profile DIA value</string>
+    <string name="insulin_dia">Insulin DIA value</string>
+    <string name="insulin_peak">Insulin Peak value</string>
     <string name="profile_sensitivity_value">Profile sensitivity value</string>
     <string name="profile_max_daily_basal_value">Maximal profile basal value</string>
     <string name="current_basal_value">Current basal value</string>

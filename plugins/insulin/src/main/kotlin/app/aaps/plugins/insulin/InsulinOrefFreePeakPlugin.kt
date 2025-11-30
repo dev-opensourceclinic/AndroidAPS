@@ -71,7 +71,7 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
         parent.addPreference(category)
         category.apply {
             key = "insulin_free_peak_settings"
-            title = rh.gs(R.string.insulin_oref_peak)
+            title = rh.gs(app.aaps.core.interfaces.R.string.insulin_oref_peak)
             initialExpandedChildrenCount = 0
             addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.InsulinOrefPeak, title = app.aaps.core.interfaces.R.string.insulin_peak_time))
         }
