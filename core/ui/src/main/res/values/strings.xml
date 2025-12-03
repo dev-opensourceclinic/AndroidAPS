@@ -174,7 +174,7 @@
     <string name="pump_suspended">Pump suspended</string>
     <string name="mode_reverted">Mode reverted</string>
     <string name="insulin_shortname">INS</string>
-    <string name="select_insulin">Select Insulin to Edit</string>
+    <string name="select_insulin">Select Insulin</string>
     <string name="select_pump_insulin">Select Pump Insulin</string>
     <string name="select_pen_insulin">Select Insulin</string>
     <string name="insulin_template">Template</string>
@@ -604,6 +604,7 @@
     <string name="confirmation">Confirmation</string>
     <string name="message">Message</string>
     <string name="ok">OK</string>
+    <string name="next">Next</string>
     <string name="cancel">Cancel</string>
     <string name="dismiss">DISMISS</string>
     <string name="yes">Yes</string>

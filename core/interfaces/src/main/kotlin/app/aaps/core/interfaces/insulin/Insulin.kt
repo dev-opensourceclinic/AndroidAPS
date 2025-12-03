@@ -11,13 +11,22 @@ interface Insulin : ConfigExportImport {
     /**
      * Provide list of available Insulin
      * with no parameter (concentration == null) or without enable_insulin_concentration, only Insulins using the current running concentration will be provided (by default 1.0)
-     * if concentration is provided with 0.à, then the overall list of available insulins is provided (external boluses provided by pens)
+     * if concentration is provided with 0.0, then the overall list of available insulins is provided (external boluses provided by pens)
      * if a specific concentration is provided, then only the list of insulin consistent with selected value will be provided (to manage changing concentration value during Insulin_Change events)
      *
      * @param concentration only provide the list of Insulins using a specific concentration value
      * @return Basal insulin recalculated to U100 units used inside core of AAPS
      */
     fun insulinList(concentration: Double? = null): List<CharSequence> = emptyList()
+
+    /**
+     * provide insulin configuration with insulinLabel,
+     * if insulinLabel is not found within insulins, then current running iCfg is returned
+     *
+     * @param insulinLabel insulinLabel of insulin
+     * @return ICfg of insulin
+     */
+    fun getInsulin(insulinLabel: String): ICfg = iCfg
 
     val comment: String
     @Deprecated("Use iCfg.dia instead")
