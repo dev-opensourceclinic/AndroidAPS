@@ -58,6 +58,7 @@ interface UiInteraction {
     fun runTempBasalDialog(fragmentManager: FragmentManager)
     fun runTreatmentDialog(fragmentManager: FragmentManager)
     fun runInsulinDialog(fragmentManager: FragmentManager)
+    fun runInsulinSwitchDialog(fragmentManager: FragmentManager, concentration: Double? = null, iCfg: ICfg?)
     fun runCalibrationDialog(fragmentManager: FragmentManager)
     fun runCarbsDialog(fragmentManager: FragmentManager)
     fun runTempTargetDialog(fragmentManager: FragmentManager)

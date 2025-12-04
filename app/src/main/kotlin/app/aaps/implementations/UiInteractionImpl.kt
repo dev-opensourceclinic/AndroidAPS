@@ -33,6 +33,7 @@ import app.aaps.ui.dialogs.CareDialog
 import app.aaps.ui.dialogs.ExtendedBolusDialog
 import app.aaps.ui.dialogs.FillDialog
 import app.aaps.ui.dialogs.InsulinDialog
+import app.aaps.ui.dialogs.InsulinSwitchDialog
 import app.aaps.ui.dialogs.LoopDialog
 import app.aaps.ui.dialogs.ProfileSwitchDialog
 import app.aaps.ui.dialogs.ProfileViewerDialog
@@ -122,6 +123,17 @@ class UiInteractionImpl @Inject constructor(
     override fun runInsulinDialog(fragmentManager: FragmentManager) {
         InsulinDialog()
             .show(fragmentManager, "InsulinDialog")
+    }
+
+    override fun runInsulinSwitchDialog(fragmentManager: FragmentManager, concentration: Double?, iCfg: ICfg?) {
+        InsulinSwitchDialog()
+            .also {
+                it.arguments = Bundle().also { bundle ->
+                    iCfg?.let { bundle.putString("iCfg", it.toJson().toString()) }
+                    concentration?.let { bundle.putDouble("concentration", it) }
+                }
+            }
+            .show(fragmentManager, "InsulinSwitchDialog")
     }
 
     override fun runCalibrationDialog(fragmentManager: FragmentManager) {

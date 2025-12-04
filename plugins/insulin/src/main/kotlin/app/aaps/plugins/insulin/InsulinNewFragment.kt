@@ -28,6 +28,8 @@ import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.interfaces.utils.SafeParse
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
+import app.aaps.core.keys.DoubleNonKey
+import app.aaps.core.keys.interfaces.DoubleNonPreferenceKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.ui.dialogs.OKDialog
 import app.aaps.core.ui.extensions.toVisibility
@@ -61,6 +63,7 @@ class InsulinNewFragment : DaggerFragment() {
     private val binding get() = _binding!!
 
     private val currentInsulin: ICfg get() = insulinPlugin.currentInsulin
+    private val iCfg: ICfg get() = insulinPlugin.iCfg
     private var selectedTemplate = InsulinType.OREF_RAPID_ACTING    // Default Insulin (should only be used on new install)
     private var selectedConcentration = ConcentrationType.U100    // Default Concentration
     private val insulinList: List<CharSequence> get() = insulinPlugin.insulinList(0.0)
@@ -92,7 +95,7 @@ class InsulinNewFragment : DaggerFragment() {
         if (insulinPlugin.numOfInsulins == 0) {
             insulinPlugin.loadSettings()
         }
-        insulinPlugin.setCurrent(insulinPlugin.iCfg)
+        insulinPlugin.setCurrent(iCfg)
 
         val insulinTemplateList: List<CharSequence> = insulinPlugin.insulinTemplateLabelList()
         setUpSpinnerAdapter(binding.insulinTemplate, insulinTemplateList)
@@ -193,6 +196,9 @@ class InsulinNewFragment : DaggerFragment() {
             binding.name.setText(insulinPlugin.createNewInsulinLabel(currentInsulin, insulinPlugin.currentInsulinIndex, selectedTemplate))
             updateGui()
         }
+        binding.activateInsulin.setOnClickListener {
+            uiInteraction.runInsulinSwitchDialog(parentFragmentManager, iCfg = currentInsulin)
+        }
     }
 
     private fun updateTextField() {
@@ -225,6 +231,11 @@ class InsulinNewFragment : DaggerFragment() {
         binding.concentrationRead.visibility = (!currentInsulin.isNew).toVisibility()
         binding.peakEdit.visibility = (selectedTemplate == InsulinType.OREF_FREE_PEAK).toVisibility()
         binding.peakRead.visibility = (selectedTemplate != InsulinType.OREF_FREE_PEAK).toVisibility()
+        val activateInsulinVisibility = !insulinPlugin.hasUnsavedChanges &&
+            !currentInsulin.isNew &&
+            currentInsulin.concentration == preferences.get(DoubleNonKey.ApprovedConcentration) &&
+            insulinPlugin.isValidEditState(activity)
+        binding.activateInsulin.visibility = activateInsulinVisibility.toVisibility()
     }
 
     private fun updateValidationState() {
