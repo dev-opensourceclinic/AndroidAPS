@@ -10,6 +10,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import app.aaps.core.data.model.ICfg
+import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Action
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
@@ -23,18 +24,22 @@ import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventConcentrationChange
+import app.aaps.core.interfaces.rx.events.EventPreferenceChange
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.interfaces.utils.SafeParse
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.DoubleNonKey
-import app.aaps.core.keys.interfaces.DoubleNonPreferenceKey
+import app.aaps.core.keys.LongNonKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.ui.dialogs.OKDialog
 import app.aaps.core.ui.extensions.toVisibility
 import app.aaps.plugins.insulin.databinding.InsulinNewFragmentBinding
 import dagger.android.support.DaggerFragment
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.plusAssign
 import java.text.DecimalFormat
 import javax.inject.Inject
 
@@ -69,6 +74,23 @@ class InsulinNewFragment : DaggerFragment() {
     private val insulinList: List<CharSequence> get() = insulinPlugin.insulinList(0.0)
     private val minPeak: Double get() = hardLimits.minPeak().toDouble()
     private val maxPeak: Double get() = hardLimits.maxPeak().toDouble()
+    private val availableConcentrationList: List<CharSequence>
+        get() = insulinPlugin.getAvailableConcentrationLabels()
+    private val confirmationNeeded : Boolean
+        get() = !concentrationConfirmed || (currentConcentration != targetConcentration && recentUpdate)
+
+    private var disposable: CompositeDisposable = CompositeDisposable()
+    private val concentrationConfirmed: Boolean
+        get() = preferences.get(LongNonKey.LastInsulinChange) < preferences.get(LongNonKey.LastInsulinConfirmation) || (currentConcentration == 1.0 && targetConcentration == 1.0)
+    private val recentUpdate: Boolean
+        get() = preferences.get(LongNonKey.LastInsulinChange) > System.currentTimeMillis() - T.mins(15).msecs()
+    private val currentConcentration
+        get() = preferences.get(DoubleNonKey.ApprovedConcentration)
+    private val targetConcentration
+        get() = preferences.get(DoubleNonKey.NewConcentration)
+
+
+
 
     private val textWatch = object : TextWatcher {
         override fun afterTextChanged(s: Editable) {}
@@ -105,11 +127,23 @@ class InsulinNewFragment : DaggerFragment() {
         val concentrationList: List<CharSequence> = insulinPlugin.concentrationLabelList()
         setUpSpinnerAdapter(binding.concentrationList, concentrationList)
         binding.concentrationList.setText(rh.gs(ConcentrationType.U100.label), false)
+
+        val currentConcentrationLabel = rh.gs(ConcentrationType.fromDouble(insulinPlugin.iCfg.concentration).label)
+        binding.concentrationChangeList.setText(currentConcentrationLabel, false)
+
+        binding.changeConcentrationReminder.isChecked = targetConcentration != currentConcentration
     }
 
     @Synchronized
     override fun onResume() {
         super.onResume()
+        disposable += rxBus
+            .toObservable(EventConcentrationChange::class.java)
+            .observeOn(aapsSchedulers.main)
+            .subscribe({
+                           binding.changeConcentrationReminder.isChecked = targetConcentration != currentConcentration
+                           updateGui()
+                       }, fabricPrivacy::logException)
         updateGui()
     }
 
@@ -124,8 +158,8 @@ class InsulinNewFragment : DaggerFragment() {
         updateFormFields()
         updateButtonVisibility()
         updateValidationState()
+        updateSpinners()
         updateGraph()
-        setUpSpinnerAdapter(binding.insulinList, insulinList)
     }
 
     private fun setupClickListeners() {
@@ -179,8 +213,14 @@ class InsulinNewFragment : DaggerFragment() {
             }
         }
         binding.insulinRemove.setOnClickListener {
+            val concentrationRemoved = currentInsulin.concentration
+            val lastConcentration = insulinPlugin.insulins.count { it.concentration == concentrationRemoved } == 1
             insulinPlugin.removeCurrentInsulin(activity)
             selectedTemplate = InsulinType.fromInt(currentInsulin.insulinTemplate)
+            if (lastConcentration && concentrationRemoved == targetConcentration) {
+                preferences.put(DoubleNonKey.NewConcentration, currentConcentration)
+                binding.changeConcentrationReminder.isChecked = false
+            }
             updateGui()
         }
         binding.reset.setOnClickListener {
@@ -198,6 +238,20 @@ class InsulinNewFragment : DaggerFragment() {
         }
         binding.activateInsulin.setOnClickListener {
             uiInteraction.runInsulinSwitchDialog(parentFragmentManager, iCfg = currentInsulin)
+        }
+        binding.concentrationChangeList.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
+            val selectedConcentrationType = insulinPlugin.getAvailableConcentrations()[position]
+            preferences.put(DoubleNonKey.NewConcentration, selectedConcentrationType.value)
+        }
+        binding.changeConcentrationReminder.setOnCheckedChangeListener { _, isChecked ->
+            if (!isChecked) {
+                preferences.put(DoubleNonKey.NewConcentration, insulinPlugin.iCfg.concentration)
+                updateSpinners()
+            }
+            updateGui()
+        }
+        binding.confirmConcentration.setOnClickListener {
+            uiInteraction.runConcentrationDialog(parentFragmentManager)
         }
     }
 
@@ -233,9 +287,14 @@ class InsulinNewFragment : DaggerFragment() {
         binding.peakRead.visibility = (selectedTemplate != InsulinType.OREF_FREE_PEAK).toVisibility()
         val activateInsulinVisibility = !insulinPlugin.hasUnsavedChanges &&
             !currentInsulin.isNew &&
-            currentInsulin.concentration == preferences.get(DoubleNonKey.ApprovedConcentration) &&
-            insulinPlugin.isValidEditState(activity)
+            currentInsulin.concentration == currentConcentration &&
+            insulinPlugin.isValidEditState(activity) &&
+            !confirmationNeeded
         binding.activateInsulin.visibility = activateInsulinVisibility.toVisibility()
+        binding.confirmConcentration.visibility = confirmationNeeded.toVisibility()
+        binding.changeConcentrationReminder.visibility = (config.enableInsulinConcentration()).toVisibility()
+
+        binding.showNewConcentration.visibility = (binding.changeConcentrationReminder.isChecked && config.enableInsulinConcentration()).toVisibility()
     }
 
     private fun updateValidationState() {
@@ -243,6 +302,19 @@ class InsulinNewFragment : DaggerFragment() {
         val bgColor = if (isValid) app.aaps.core.ui.R.attr.okBackgroundColor else app.aaps.core.ui.R.attr.errorBackgroundColor
         view?.setBackgroundColor(rh.gac(context, bgColor))
         binding.insulinList.isEnabled = isValid
+    }
+
+    private fun updateSpinners() {
+        setUpSpinnerAdapter(binding.insulinList, insulinList)
+        val availableConcentrations = availableConcentrationList
+        setUpSpinnerAdapter(binding.concentrationChangeList, availableConcentrations)
+        val currentConcentrationLabel = rh.gs(ConcentrationType.fromDouble(preferences.get(DoubleNonKey.NewConcentration)).label)
+        if (availableConcentrations.contains(currentConcentrationLabel)) {
+            binding.concentrationChangeList.setText(currentConcentrationLabel, false)
+        } else if (availableConcentrations.isNotEmpty()) {
+            val iCfgConcentrationLabel = rh.gs(ConcentrationType.fromDouble(insulinPlugin.iCfg.concentration).label)
+            binding.concentrationChangeList.setText(iCfgConcentrationLabel, false)
+        }
     }
 
     private fun saveCurrentInsulin() {

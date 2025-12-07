@@ -11,6 +11,7 @@ import app.aaps.ui.activities.StatsActivity
 import app.aaps.ui.activities.SurveyActivity
 import app.aaps.ui.activities.TDDStatsActivity
 import app.aaps.ui.activities.TreatmentsActivity
+import app.aaps.ui.activities.fragments.ConcentrationFragment
 import app.aaps.ui.activities.fragments.TreatmentsBolusCarbsFragment
 import app.aaps.ui.activities.fragments.TreatmentsCareportalFragment
 import app.aaps.ui.activities.fragments.TreatmentsExtendedBolusesFragment
@@ -91,5 +92,6 @@ abstract class UiModule {
     @ContributesAndroidInjector abstract fun contributesTreatmentsProfileSwitchFragment(): TreatmentsProfileSwitchFragment
     @ContributesAndroidInjector abstract fun contributesTreatmentsUserEntryFragment(): TreatmentsUserEntryFragment
     @ContributesAndroidInjector abstract fun contributesTreatmentsRunningModeFragment(): TreatmentsRunningModeFragment
+    @ContributesAndroidInjector abstract fun contributesConcentrationFragment(): ConcentrationFragment
 
 }

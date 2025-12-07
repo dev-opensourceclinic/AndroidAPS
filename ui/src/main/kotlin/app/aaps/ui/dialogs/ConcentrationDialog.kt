@@ -12,12 +12,13 @@ import app.aaps.core.interfaces.logging.UserEntryLogger
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
-import app.aaps.core.interfaces.rx.events.EventInsulinChange
+import app.aaps.core.interfaces.rx.events.EventConcentrationChange
+import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.keys.DoubleNonKey
-import app.aaps.core.keys.LongNonKey
 import app.aaps.core.ui.R
 import app.aaps.core.ui.activities.TranslatedDaggerAppCompatActivity
 import app.aaps.core.ui.dialogs.OKDialog
+import app.aaps.ui.activities.ConcentrationActivity
 import app.aaps.ui.databinding.DialogConcentrationBinding
 import dagger.android.HasAndroidInjector
 import java.text.DecimalFormat
@@ -30,14 +31,20 @@ class ConcentrationDialog : DialogFragmentWithDate() {
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var uel: UserEntryLogger
     @Inject lateinit var rxBus: RxBus
+    @Inject lateinit var uiInteraction: UiInteraction
 
     var helperActivity: TranslatedDaggerAppCompatActivity? = null
     private var _binding: DialogConcentrationBinding? = null
-    private val currentInsulin: Double
+    private val currentConcentration: Double
         get()= preferences.get(DoubleNonKey.ApprovedConcentration)
-    private val targetInsulin: Double
+    private val targetConcentration: Double
         get()= preferences.get(DoubleNonKey.NewConcentration)
-
+    private val confirmOnly: Boolean
+        get() = currentConcentration == targetConcentration
+    private val currentConcentrationString: String
+        get() = rh.gs(ConcentrationType.fromDouble(currentConcentration).label)
+    private val targetConcentrationString: String
+        get() = rh.gs(ConcentrationType.fromDouble(targetConcentration).label)
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -58,14 +65,15 @@ class ConcentrationDialog : DialogFragmentWithDate() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.concentration.setParams(
             0.0, 40.0, 200.0, 10.0, DecimalFormat("0"), false, binding.okcancel.ok
         )
-        if (currentInsulin == targetInsulin)
-            binding.message.text = rh.gs(R.string.concentration_title, currentInsulin)
-        else
-            binding.message.text = rh.gs(R.string.concentration_title2, currentInsulin, targetInsulin)
+        if (confirmOnly)
+            binding.message.text = rh.gs(R.string.concentration_title, currentConcentrationString)
+        else {
+            binding.okcancel.ok.text = rh.gs(R.string.next)
+            binding.message.text = rh.gs(R.string.concentration_title2, currentConcentrationString, targetConcentrationString)
+        }
     }
 
     override fun onDestroyView() {
@@ -80,34 +88,28 @@ class ConcentrationDialog : DialogFragmentWithDate() {
 
     override fun submit(): Boolean {
         if (_binding == null) return false
-        val concentration = binding.concentration.value / 100.0
-        val currentConcentrationString = rh.gs(ConcentrationType.fromDouble(currentInsulin).label)
-        val targetConcentrationString = rh.gs(ConcentrationType.fromDouble(targetInsulin).label)
-        val now = System.currentTimeMillis()
-        when(concentration) {
-            targetInsulin -> {
+        val userConcentration = binding.concentration.value
+        val concentration = userConcentration / 100.0
+        when (concentration) {
+            targetConcentration -> { // default,either for a concentration change or confirmation, it should be here
                 activity?.let { activity ->
-                    OKDialog.showConfirmation(activity, rh.gs(R.string.concentration), rh.gs(R.string.ins_concentration_confirmed, targetConcentrationString), {
-                        uel.log(action = Action.RESERVOIR_CHANGE, source = Sources.ConcentrationDialog, value = ValueWithUnit.InsulinConcentration(binding.concentration.value.toInt()))
-                    })
-                    preferences.put(DoubleNonKey.ApprovedConcentration, targetInsulin)
-                    preferences.put(LongNonKey.LastInsulinConfirmation, now)
-                    rxBus.send(EventInsulinChange())
+                    if (confirmOnly) {  // Ok to confirm new concentration
+                        OKDialog.showConfirmation(activity, rh.gs(R.string.concentration), rh.gs(R.string.ins_concentration_confirmed, targetConcentrationString), {
+                            uel.log(action = Action.RESERVOIR_CHANGE, source = Sources.ConcentrationDialog, value = ValueWithUnit.InsulinConcentration(userConcentration.toInt()))
+                            activePlugin.activeInsulin.approveConcentration(targetConcentration)
+                            rxBus.send(EventConcentrationChange())
+                        })
+                        if (activity is ConcentrationActivity)
+                            activity.finish()
+                    } else {    // next to apply new concentration after insulin selection and profileswitch
+                        uiInteraction.runInsulinSwitchDialog(parentFragmentManager, concentration = concentration)
+                    }
                 }
             }
-            currentInsulin -> {
+            else                -> {
                 activity?.let { activity ->
-                    OKDialog.showConfirmation(activity, rh.gs(R.string.concentration), rh.gs(R.string.ins_concentration_unchanged, currentConcentrationString, targetConcentrationString), {
-                        uel.log(action = Action.RESERVOIR_CHANGE, source = Sources.ConcentrationDialog, value = ValueWithUnit.InsulinConcentration(binding.concentration.value.toInt()))
-                    })
-                    preferences.put(DoubleNonKey.NewConcentration, concentration)
-                    preferences.put(LongNonKey.LastInsulinConfirmation, now)
-                    rxBus.send(EventInsulinChange())
+                    OKDialog.show(activity, rh.gs(R.string.concentration), rh.gs(R.string.concentration_not_confirmed))
                 }
-            }
-            else    -> {
-                activity?.let { activity ->
-                    OKDialog.show(activity, rh.gs(R.string.concentration), rh.gs(R.string.concentration_not_confirmed))}
             }
         }
         return true

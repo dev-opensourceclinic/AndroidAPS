@@ -28,6 +28,22 @@ interface Insulin : ConfigExportImport {
      */
     fun getInsulin(insulinLabel: String): ICfg = iCfg
 
+    /**
+     * provide the first iCfg available within insulins with selected concentration
+     * with Current running concentration iCfg will be returned
+     * with another concentration (standard call when you change concentration, it provides the first insulin in the list)
+     */
+    fun getDefaultInsulin(concentration: Double? = null): ICfg = iCfg
+
+    /**
+     * Call done to approve a new concentration
+     * triggered by ConcentrationDialog on confirmation of a non standard concentration different to U100
+     * or by ProfileSwitch dialog when a new concentration has been selected (ConcentrationDialog->InsulinSwitchDialog->ProfileSwitchDialog)
+     *
+     * @param concentration new concentration
+     */
+    fun approveConcentration(concentration: Double) {}
+
     val comment: String
     @Deprecated("Use iCfg.dia instead")
     val dia: Double

@@ -64,7 +64,7 @@ class InsulinSwitchDialog : DialogFragmentWithDate() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.okcancel.ok.text = rh.gs(R.string.next)
-        iCfg = iCfg ?: activePlugin.activeInsulin.iCfg
+        iCfg = iCfg ?: activePlugin.activeInsulin.getDefaultInsulin(concentration)
         updateFieldText()
         iCfg?.let { iCfg ->
             context?.let { context ->
