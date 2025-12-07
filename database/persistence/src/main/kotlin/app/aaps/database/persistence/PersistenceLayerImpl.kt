@@ -753,9 +753,9 @@ class PersistenceLayerImpl @Inject constructor(
             .map { pair -> Pair(pair.first.fromDb(), pair.second.fromDb()) }
 
     override fun getLastEffectiveProfileSwitchId(): Long? = repository.getLastEffectiveProfileSwitchId()
-    override fun insertEffectiveProfileSwitch(effectiveProfileSwitch: EPS): Single<PersistenceLayer.TransactionResult<EPS>> =
-        repository.runTransactionForResult(InsertEffectiveProfileSwitchTransaction(effectiveProfileSwitch.toDb()))
-            .doOnError { aapsLogger.error(LTag.DATABASE, "Error while inserting EffectiveProfileSwitch", it) }
+    override fun insertOrUpdateEffectiveProfileSwitch(effectiveProfileSwitch: EPS): Single<PersistenceLayer.TransactionResult<EPS>> =
+        repository.runTransactionForResult(InsertOrUpdateEffectiveProfileSwitch(effectiveProfileSwitch.toDb()))
+            .doOnError { aapsLogger.error(LTag.DATABASE, "Error while saving EffectiveProfileSwitch", it) }
             .map { result ->
                 val transactionResult = PersistenceLayer.TransactionResult<EPS>()
                 result.inserted.forEach {

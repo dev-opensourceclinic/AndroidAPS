@@ -7,6 +7,7 @@ import app.aaps.core.data.model.BS
 import app.aaps.core.data.model.ICfg
 import app.aaps.core.data.time.T
 import app.aaps.core.graph.data.GraphViewWithCleanup
+import app.aaps.core.objects.extensions.iobCalc
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import kotlin.math.floor
