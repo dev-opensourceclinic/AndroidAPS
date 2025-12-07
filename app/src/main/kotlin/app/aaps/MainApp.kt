@@ -36,6 +36,7 @@ import app.aaps.core.interfaces.ui.compose.ComposeUiProvider
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.interfaces.utils.SafeParse
+import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.interfaces.versionChecker.VersionCheckerUtils
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.IntKey
@@ -67,8 +68,8 @@ import app.aaps.receivers.TimeDateOrTZChangeReceiver
 import app.aaps.ui.activityMonitor.ActivityMonitor
 import app.aaps.ui.widget.Widget
 import app.aaps.utils.configureLeakCanary
-import com.google.firebase.FirebaseApp
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.remoteConfig
 import dagger.android.AndroidInjector
@@ -112,6 +113,7 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
     @Inject lateinit var rh: Provider<ResourceHelper>
     @Inject lateinit var loop: Loop
     @Inject lateinit var profileFunction: ProfileFunction
+    @Inject lateinit var fabricPrivacy: FabricPrivacy
     @Inject lateinit var repository: AppRepository
     @Inject lateinit var hardLimits: HardLimits
     @Inject lateinit var activePlugin: ActivePlugin
@@ -128,7 +130,12 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
         // Here should be everything injected
         aapsLogger.debug("onCreate")
         ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleListener.get())
-        if (config.disableLeakCanary())  configureLeakCanary(false)
+        // Configure LeakCanary with Firebase reporting
+        // Memory leaks will be uploaded to Firebase Crashlytics via FabricPrivacy.logException
+        configureLeakCanary(
+            isEnabled = !config.disableLeakCanary(),
+            fabricPrivacy = fabricPrivacy
+        )
 
         // Do necessary migrations
         doMigrations()
@@ -471,26 +478,39 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
         return factory.create()
     }
 
+    private val timeDateReceiver = TimeDateOrTZChangeReceiver()
+    private val networkReceiver = NetworkChangeReceiver()
+    private val chargingReceiver = ChargingStateReceiver()
+    private val btReceiver = BTReceiver()
+
     private fun registerLocalBroadcastReceiver() {
         var filter = IntentFilter()
         filter.addAction(Intent.ACTION_TIME_CHANGED)
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED)
-        registerReceiver(TimeDateOrTZChangeReceiver(), filter)
+        registerReceiver(timeDateReceiver, filter)
         filter = IntentFilter()
         @Suppress("DEPRECATION")
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
         filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
-        registerReceiver(NetworkChangeReceiver(), filter)
+        registerReceiver(networkReceiver, filter)
         filter = IntentFilter()
         filter.addAction(Intent.ACTION_POWER_CONNECTED)
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
         filter.addAction(Intent.ACTION_BATTERY_CHANGED)
-        registerReceiver(ChargingStateReceiver(), filter)
+        registerReceiver(chargingReceiver, filter)
         filter = IntentFilter()
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
-        registerReceiver(BTReceiver(), filter)
+        registerReceiver(btReceiver, filter)
+    }
+
+    private fun unregisterReceivers() {
+        super.onTerminate()
+        unregisterReceiver(timeDateReceiver)
+        unregisterReceiver(networkReceiver)
+        unregisterReceiver(chargingReceiver)
+        unregisterReceiver(btReceiver)
     }
 
     private fun setupRemoteConfig() {
@@ -521,6 +541,9 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
 
     override fun onTerminate() {
         aapsLogger.debug(LTag.CORE, "onTerminate")
+        handler.removeCallbacksAndMessages(null)
+        handler.looper.quitSafely()
+        unregisterReceivers()
         unregisterActivityLifecycleCallbacks(activityMonitor)
         uiInteraction.stopAlarm("onTerminate")
         super.onTerminate()

@@ -41,6 +41,7 @@ import app.aaps.database.transactions.CgmSourceTransaction
 import app.aaps.database.transactions.CutCarbsTransaction
 import app.aaps.database.transactions.InsertAndCancelCurrentTemporaryTargetTransaction
 import app.aaps.database.transactions.InsertBolusWithTempIdTransaction
+import app.aaps.database.transactions.InsertEffectiveProfileSwitchTransaction
 import app.aaps.database.transactions.InsertIfNewByTimestampCarbsTransaction
 import app.aaps.database.transactions.InsertIfNewByTimestampTherapyEventTransaction
 import app.aaps.database.transactions.InsertOrUpdateApsResultTransaction
@@ -50,8 +51,8 @@ import app.aaps.database.transactions.InsertOrUpdateCachedTotalDailyDoseTransact
 import app.aaps.database.transactions.InsertOrUpdateCarbsTransaction
 import app.aaps.database.transactions.InsertOrUpdateEffectiveProfileSwitch
 import app.aaps.database.transactions.InsertOrUpdateHeartRateTransaction
-import app.aaps.database.transactions.InsertOrUpdateProfileSwitch
-import app.aaps.database.transactions.InsertOrUpdateRunningMode
+import app.aaps.database.transactions.InsertOrUpdateProfileSwitchTransaction
+import app.aaps.database.transactions.InsertOrUpdateRunningModeTransaction
 import app.aaps.database.transactions.InsertOrUpdateStepsCountTransaction
 import app.aaps.database.transactions.InsertOrUpdateTherapyEventTransaction
 import app.aaps.database.transactions.InsertTemporaryBasalWithTempIdTransaction
@@ -752,9 +753,9 @@ class PersistenceLayerImpl @Inject constructor(
             .map { pair -> Pair(pair.first.fromDb(), pair.second.fromDb()) }
 
     override fun getLastEffectiveProfileSwitchId(): Long? = repository.getLastEffectiveProfileSwitchId()
-    override fun insertOrUpdateEffectiveProfileSwitch(effectiveProfileSwitch: EPS): Single<PersistenceLayer.TransactionResult<EPS>> =
-        repository.runTransactionForResult(InsertOrUpdateEffectiveProfileSwitch(effectiveProfileSwitch.toDb()))
-            .doOnError { aapsLogger.error(LTag.DATABASE, "Error while saving EffectiveProfileSwitch", it) }
+    override fun insertEffectiveProfileSwitch(effectiveProfileSwitch: EPS): Single<PersistenceLayer.TransactionResult<EPS>> =
+        repository.runTransactionForResult(InsertEffectiveProfileSwitchTransaction(effectiveProfileSwitch.toDb()))
+            .doOnError { aapsLogger.error(LTag.DATABASE, "Error while inserting EffectiveProfileSwitch", it) }
             .map { result ->
                 val transactionResult = PersistenceLayer.TransactionResult<EPS>()
                 result.inserted.forEach {
@@ -873,7 +874,7 @@ class PersistenceLayerImpl @Inject constructor(
 
     override fun getLastRunningModeId(): Long? = repository.getLastRunningModeId()
     override fun insertOrUpdateRunningMode(runningMode: RM, action: Action, source: Sources, note: String?, listValues: List<ValueWithUnit>): Single<PersistenceLayer.TransactionResult<RM>> =
-        repository.runTransactionForResult(InsertOrUpdateRunningMode(runningMode.toDb()))
+        repository.runTransactionForResult(InsertOrUpdateRunningModeTransaction(runningMode.toDb()))
             .doOnError { aapsLogger.error(LTag.DATABASE, "Error while inserting RunningMode", it) }
             .map { result ->
                 val transactionResult = PersistenceLayer.TransactionResult<RM>()
@@ -930,7 +931,7 @@ class PersistenceLayerImpl @Inject constructor(
                         if (doLog) ueValues.add(
                             UE(
                                 timestamp = dateUtil.now(),
-                                action = Action.PROFILE_SWITCH,
+                                action = Action.RUNNING_MODE,
                                 source = Sources.NSClient,
                                 note = "",
                                 values = listOf(ValueWithUnit.Timestamp(it.timestamp))
@@ -944,13 +945,27 @@ class PersistenceLayerImpl @Inject constructor(
                         if (doLog) ueValues.add(
                             UE(
                                 timestamp = dateUtil.now(),
-                                action = Action.PROFILE_SWITCH_REMOVED,
+                                action = Action.RUNNING_MODE_REMOVED,
                                 source = Sources.NSClient,
                                 note = "",
                                 values = listOf(ValueWithUnit.Timestamp(it.timestamp))
                             )
                         )
                     aapsLogger.debug(LTag.DATABASE, "Invalidated RunningMode $it")
+                    transactionResult.invalidated.add(it.fromDb())
+                }
+                result.updatedDuration.forEach {
+                    if (config.AAPSCLIENT.not())
+                        if (doLog) ueValues.add(
+                            UE(
+                                timestamp = dateUtil.now(),
+                                action = Action.RUNNING_MODE_UPDATED,
+                                source = Sources.NSClient,
+                                note = "",
+                                values = listOf(ValueWithUnit.Timestamp(it.timestamp))
+                            )
+                        )
+                    aapsLogger.debug(LTag.DATABASE, "Updated duration RunningMode $it")
                     transactionResult.invalidated.add(it.fromDb())
                 }
                 result.updatedNsId.forEach {
@@ -1003,7 +1018,7 @@ class PersistenceLayerImpl @Inject constructor(
 
     override fun getLastProfileSwitchId(): Long? = repository.getLastProfileSwitchId()
     override fun insertOrUpdateProfileSwitch(profileSwitch: PS, action: Action?, source: Sources?, note: String?, listValues: List<ValueWithUnit>?): Single<PersistenceLayer.TransactionResult<PS>> =
-        repository.runTransactionForResult(InsertOrUpdateProfileSwitch(profileSwitch.toDb()))
+        repository.runTransactionForResult(InsertOrUpdateProfileSwitchTransaction(profileSwitch.toDb()))
             .doOnError { aapsLogger.error(LTag.DATABASE, "Error while inserting ProfileSwitch", it) }
             .map { result ->
                 val transactionResult = PersistenceLayer.TransactionResult<PS>()

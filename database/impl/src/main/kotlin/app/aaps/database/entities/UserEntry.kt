@@ -121,6 +121,9 @@ data class UserEntry(
         EXIT_AAPS,
         PLUGIN_ENABLED,
         PLUGIN_DISABLED,
+        RUNNING_MODE,
+        RUNNING_MODE_REMOVED,
+        RUNNING_MODE_UPDATED,
         UNKNOWN
         ;
     }
