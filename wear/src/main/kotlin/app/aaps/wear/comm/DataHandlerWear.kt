@@ -155,9 +155,7 @@ class DataHandlerWear @Inject constructor(
             .observeOn(aapsSchedulers.io)
             .subscribe {
                 aapsLogger.debug(LTag.WEAR, "Status received: dataset=${it.dataset} iob=${it.iobSum} cob=${it.cob}")
-                // Store in legacy SharedPreferences (backwards compatibility)
-                persistence.store(it)
-                // Store in DataStore (new, efficient storage) - supports all datasets (0, 1, 2)
+                // Store in DataStore - supports all datasets (0, 1, 2)
                 dataStoreScope.launch {
                     complicationDataRepository.updateStatusData(it)
 
@@ -173,9 +171,7 @@ class DataHandlerWear @Inject constructor(
             .subscribe {
                 aapsLogger.debug(LTag.WEAR, "BG received: dataset=${it.dataset} sgv=${it.sgvString} arrow=${it.slopeArrow}")
 
-                // Store in legacy SharedPreferences (backwards compatibility)
-                persistence.store(it)
-                // Store in DataStore (new, efficient storage) - supports all datasets (0, 1, 2)
+                // Store in DataStore - supports all datasets (0, 1, 2)
                 dataStoreScope.launch {
                     complicationDataRepository.updateBgData(it)
 
@@ -190,7 +186,10 @@ class DataHandlerWear @Inject constructor(
             .observeOn(aapsSchedulers.io)
             .subscribe {
                 aapsLogger.debug(LTag.WEAR, "GraphData received from ${it.sourceNodeId}")
-                persistence.store(it)
+                // Store in DataStore
+                dataStoreScope.launch {
+                    complicationDataRepository.updateGraphData(it)
+                }
                 LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(DataLayerListenerServiceWear.INTENT_NEW_DATA))
             }
         disposable += rxBus
@@ -198,7 +197,10 @@ class DataHandlerWear @Inject constructor(
             .observeOn(aapsSchedulers.io)
             .subscribe {
                 aapsLogger.debug(LTag.WEAR, "TreatmentData received from ${it.sourceNodeId}")
-                persistence.store(it)
+                // Store in DataStore
+                dataStoreScope.launch {
+                    complicationDataRepository.updateTreatmentData(it)
+                }
                 LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(DataLayerListenerServiceWear.INTENT_NEW_DATA))
             }
         disposable += rxBus

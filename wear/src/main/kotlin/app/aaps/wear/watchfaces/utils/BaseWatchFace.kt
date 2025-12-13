@@ -24,7 +24,8 @@ import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.ui.extensions.toVisibility
 import app.aaps.core.ui.extensions.toVisibilityKeepSpace
 import app.aaps.wear.R
-import app.aaps.wear.data.RawDisplayData
+import app.aaps.wear.data.ComplicationData
+import app.aaps.wear.data.ComplicationDataRepository
 import app.aaps.wear.events.EventWearPreferenceChange
 import app.aaps.wear.interaction.menus.MainMenuActivity
 import app.aaps.wear.interaction.utils.Persistence
@@ -35,6 +36,11 @@ import com.ustwo.clockwise.wearable.WatchFace
 import dagger.android.AndroidInjection
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.floor
 
@@ -49,6 +55,7 @@ import kotlin.math.floor
 abstract class BaseWatchFace : WatchFace() {
 
     @Inject lateinit var persistence: Persistence
+    @Inject lateinit var complicationDataRepository: ComplicationDataRepository
     @Inject lateinit var aapsLogger: AAPSLogger
     @Inject lateinit var rxBus: RxBus
     @Inject lateinit var aapsSchedulers: AapsSchedulers
@@ -57,12 +64,23 @@ abstract class BaseWatchFace : WatchFace() {
     @Inject lateinit var simpleUi: SimpleUi
 
     private var disposable = CompositeDisposable()
-    private val rawData = RawDisplayData()
+    private val watchfaceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    protected val singleBg get() = rawData.singleBg
-    protected val status get() = rawData.status
-    private val treatmentData get() = rawData.treatmentData
-    private val graphData get() = rawData.graphData
+    // DataStore as single source of truth - using EventData models directly
+    private var complicationData: ComplicationData = ComplicationData()
+
+    protected val singleBg get() = arrayOf(
+        complicationData.bgData,
+        complicationData.bgData1,
+        complicationData.bgData2
+    )
+    protected val status get() = arrayOf(
+        complicationData.statusData,
+        complicationData.statusData1,
+        complicationData.statusData2
+    )
+    private val treatmentData get() = complicationData.treatmentData
+    private val graphData get() = complicationData.graphData
 
     abstract fun inflateLayout(inflater: LayoutInflater): ViewBinding
 
@@ -135,19 +153,18 @@ abstract class BaseWatchFace : WatchFace() {
                 if (layoutSet) setDataFields()
                 invalidate()
             }
-        disposable += rxBus
-            .toObservable(EventData.Status::class.java)
-            .observeOn(aapsSchedulers.main)
-            .subscribe {
-                // this event is received as last batch of data
-                rawData.updateFromPersistence(persistence)
+        // Observe DataStore for updates
+        watchfaceScope.launch {
+            complicationDataRepository.complicationData.collect { data ->
+                complicationData = data
                 if (!simpleUi.isEnabled(currentWatchMode) || !needUpdate()) {
                     setupCharts()
                     setDataFields()
                 }
                 invalidate()
             }
-        rawData.updateFromPersistence(persistence)
+        }
+
         persistence.turnOff()
 
         val inflater = (getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater)
@@ -241,6 +258,7 @@ abstract class BaseWatchFace : WatchFace() {
 
     override fun onDestroy() {
         disposable.clear()
+        watchfaceScope.cancel()
         simpleUi.onDestroy()
         super.onDestroy()
     }

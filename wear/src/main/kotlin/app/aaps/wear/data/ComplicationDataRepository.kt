@@ -55,34 +55,16 @@ class ComplicationDataRepository @Inject constructor(
      */
     suspend fun updateBgData(singleBg: EventData.SingleBg) {
         try {
-            val newBgData = BgData(
-                timeStamp = singleBg.timeStamp,
-                sgvString = singleBg.sgvString,
-                glucoseUnits = singleBg.glucoseUnits,
-                slopeArrow = singleBg.slopeArrow,
-                delta = singleBg.delta,
-                deltaDetailed = singleBg.deltaDetailed,
-                avgDelta = singleBg.avgDelta,
-                avgDeltaDetailed = singleBg.avgDeltaDetailed,
-                sgvLevel = singleBg.sgvLevel,
-                sgv = singleBg.sgv,
-                high = singleBg.high,
-                low = singleBg.low,
-                color = singleBg.color
-            )
-
             dataStore.updateData { current ->
-                val updated = when (singleBg.dataset) {
-                    0    -> current.copy(bgData = newBgData, lastUpdateTimestamp = System.currentTimeMillis())
-                    1    -> current.copy(bgData1 = newBgData, lastUpdateTimestamp = System.currentTimeMillis())
-                    2    -> current.copy(bgData2 = newBgData, lastUpdateTimestamp = System.currentTimeMillis())
-
+                when (singleBg.dataset) {
+                    0    -> current.copy(bgData = singleBg, lastUpdateTimestamp = System.currentTimeMillis())
+                    1    -> current.copy(bgData1 = singleBg, lastUpdateTimestamp = System.currentTimeMillis())
+                    2    -> current.copy(bgData2 = singleBg, lastUpdateTimestamp = System.currentTimeMillis())
                     else -> {
                         aapsLogger.warn(LTag.WEAR, "Unknown BG dataset ${singleBg.dataset}, ignoring")
                         current
                     }
                 }
-                updated
             }
         } catch (e: Exception) {
             aapsLogger.error(LTag.WEAR, "Failed to update BG data", e)
@@ -95,40 +77,51 @@ class ComplicationDataRepository @Inject constructor(
      */
     suspend fun updateStatusData(status: EventData.Status) {
         try {
-            val newStatusData = StatusData(
-                externalStatus = status.externalStatus,
-                iobSum = status.iobSum,
-                iobDetail = status.iobDetail,
-                cob = status.cob,
-                currentBasal = status.currentBasal,
-                battery = status.battery,
-                rigBattery = status.rigBattery,
-                openApsStatus = status.openApsStatus,
-                bgi = status.bgi,
-                batteryLevel = status.batteryLevel,
-                patientName = status.patientName,
-                tempTarget = status.tempTarget,
-                tempTargetLevel = status.tempTargetLevel,
-                reservoirString = status.reservoirString,
-                reservoir = status.reservoir,
-                reservoirLevel = status.reservoirLevel
-            )
-
             dataStore.updateData { current ->
-                val updated = when (status.dataset) {
-                    0    -> current.copy(statusData = newStatusData, lastUpdateTimestamp = System.currentTimeMillis())
-                    1    -> current.copy(statusData1 = newStatusData, lastUpdateTimestamp = System.currentTimeMillis())
-                    2    -> current.copy(statusData2 = newStatusData, lastUpdateTimestamp = System.currentTimeMillis())
-
+                when (status.dataset) {
+                    0    -> current.copy(statusData = status, lastUpdateTimestamp = System.currentTimeMillis())
+                    1    -> current.copy(statusData1 = status, lastUpdateTimestamp = System.currentTimeMillis())
+                    2    -> current.copy(statusData2 = status, lastUpdateTimestamp = System.currentTimeMillis())
                     else -> {
                         aapsLogger.warn(LTag.WEAR, "Unknown Status dataset ${status.dataset}, ignoring")
                         current
                     }
                 }
-                updated
             }
         } catch (e: Exception) {
             aapsLogger.error(LTag.WEAR, "Failed to update status data", e)
+        }
+    }
+
+    /**
+     * Update Graph data from phone
+     */
+    suspend fun updateGraphData(graphData: EventData.GraphData) {
+        try {
+            dataStore.updateData { current ->
+                current.copy(
+                    graphData = graphData,
+                    lastUpdateTimestamp = System.currentTimeMillis()
+                )
+            }
+        } catch (e: Exception) {
+            aapsLogger.error(LTag.WEAR, "Failed to update graph data", e)
+        }
+    }
+
+    /**
+     * Update Treatment data from phone
+     */
+    suspend fun updateTreatmentData(treatmentData: EventData.TreatmentData) {
+        try {
+            dataStore.updateData { current ->
+                current.copy(
+                    treatmentData = treatmentData,
+                    lastUpdateTimestamp = System.currentTimeMillis()
+                )
+            }
+        } catch (e: Exception) {
+            aapsLogger.error(LTag.WEAR, "Failed to update treatment data", e)
         }
     }
 

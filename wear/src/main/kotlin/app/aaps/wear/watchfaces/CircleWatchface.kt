@@ -27,15 +27,18 @@ import app.aaps.core.interfaces.rx.weardata.EventData.ActionResendData
 import app.aaps.core.interfaces.rx.weardata.EventData.SingleBg
 import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.wear.R
-import app.aaps.wear.data.RawDisplayData
 import app.aaps.wear.interaction.menus.MainMenuActivity
-import app.aaps.wear.interaction.utils.Persistence
 import app.aaps.wear.watchfaces.utils.WatchfaceViewAdapter.Companion.SelectedWatchFace
 import com.ustwo.clockwise.common.WatchFaceTime
 import com.ustwo.clockwise.wearable.WatchFace
 import dagger.android.AndroidInjection
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -45,19 +48,28 @@ import kotlin.math.max
 class CircleWatchface : WatchFace() {
 
     @Inject lateinit var rxBus: RxBus
-
     @Inject lateinit var aapsSchedulers: AapsSchedulers
     @Inject lateinit var aapsLogger: AAPSLogger
     @Inject lateinit var sp: SP
-    @Inject lateinit var persistence: Persistence
+    @Inject lateinit var complicationDataRepository: app.aaps.wear.data.ComplicationDataRepository
 
     private var disposable = CompositeDisposable()
+    private val watchfaceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    private val rawData = RawDisplayData()
+    // DataStore as single source of truth - using EventData models directly
+    private var complicationData: app.aaps.wear.data.ComplicationData = app.aaps.wear.data.ComplicationData()
 
-    private val singleBg get() = rawData.singleBg
-    private val status get() = rawData.status
-    private val graphData get() = rawData.graphData
+    private val singleBg get() = arrayOf(
+        complicationData.bgData,
+        complicationData.bgData1,
+        complicationData.bgData2
+    )
+    private val status get() = arrayOf(
+        complicationData.statusData,
+        complicationData.statusData1,
+        complicationData.statusData2
+    )
+    private val graphData get() = complicationData.graphData
 
     companion object {
 
@@ -106,18 +118,18 @@ class CircleWatchface : WatchFace() {
         myLayout = inflater.inflate(R.layout.activity_circle, null)
         prepareLayout()
         prepareDrawTime()
-        disposable += rxBus
-            .toObservable(EventData.Status::class.java)
-            .observeOn(aapsSchedulers.main)
-            .subscribe {
-                // this event is received as last batch of data
-                aapsLogger.debug(LTag.WEAR, "Status received")
-                rawData.updateFromPersistence(persistence)
+
+        // Observe DataStore for automatic updates
+        watchfaceScope.launch {
+            complicationDataRepository.complicationData.collect { data ->
+                complicationData = data
                 addToWatchSet()
                 prepareLayout()
                 prepareDrawTime()
                 invalidate()
             }
+        }
+
         disposable += rxBus
             .toObservable(EventData.Preferences::class.java)
             .observeOn(aapsSchedulers.main)
@@ -126,13 +138,14 @@ class CircleWatchface : WatchFace() {
                 prepareLayout()
                 invalidate()
             }
-        rawData.updateFromPersistence(persistence)
+
         rxBus.send(EventWearToMobile(ActionResendData("CircleWatchFace::onCreate")))
         wakeLock.release()
     }
 
     override fun onDestroy() {
         disposable.clear()
+        watchfaceScope.cancel()
         super.onDestroy()
     }
 

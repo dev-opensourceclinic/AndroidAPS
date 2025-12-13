@@ -26,20 +26,9 @@ open class Persistence @Inject constructor(
 
     companion object {
 
-        const val BG_DATA_PERSISTENCE_KEY = "bg_data"
-        const val BG1_DATA_PERSISTENCE_KEY = "bg1_data"
-        const val BG2_DATA_PERSISTENCE_KEY = "bg2_data"
-        const val GRAPH_DATA_PERSISTENCE_KEY = "graph_data"
-        const val TREATMENT_PERSISTENCE_KEY = "treatment_data"
-        const val STATUS_PERSISTENCE_KEY = "status_data"
-        const val STATUS1_PERSISTENCE_KEY = "status1_data"
-        const val STATUS2_PERSISTENCE_KEY = "status2_data"
-        const val LOOP_STATES_PERSISTENCE_KEY = "loop_states"
-
         const val KEY_COMPLICATIONS = "complications"
         const val KEY_LAST_SHOWN_SINCE_VALUE = "lastSince"
         const val KEY_STALE_REPORTED = "staleReported"
-        const val KEY_DATA_UPDATED = "data_updated_at"
 
         const val CUSTOM_WATCHFACE = "custom_watchface"
         const val CUSTOM_DEFAULT_WATCHFACE = "custom_default_watchface"
@@ -62,14 +51,6 @@ open class Persistence @Inject constructor(
         sp.putBoolean(key, value)
     }
 
-    fun whenDataUpdated(): Long {
-        return sp.getLong(KEY_DATA_UPDATED, 0)
-    }
-
-    private fun markDataUpdated() {
-        sp.putLong(KEY_DATA_UPDATED, dateUtil.now())
-    }
-
     fun getSetOf(key: String): Set<String> {
         return explodeSet(getString(key, ""), "|")
     }
@@ -84,80 +65,6 @@ open class Persistence @Inject constructor(
         val set = explodeSet(getString(key, ""), "|")
         set.remove(value)
         putString(key, joinSet(set, "|"))
-    }
-
-    fun readSingleBg(array: Array<EventData.SingleBg>): Array<EventData.SingleBg> {
-        val switch = sp.getBoolean(R.string.key_switch_external, false)
-        try {
-            var s = sp.getStringOrNull(BG_DATA_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded BG data: $s")
-            if (s != null) {
-                array[0] = EventData.deserialize(s) as EventData.SingleBg
-            }
-             s = sp.getStringOrNull(if (switch) BG2_DATA_PERSISTENCE_KEY else BG1_DATA_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded BG data: $s")
-            if (s != null) {
-                array[1] = EventData.deserialize(s) as EventData.SingleBg
-            }
-            s = sp.getStringOrNull(if (switch) BG1_DATA_PERSISTENCE_KEY else BG2_DATA_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded BG data: $s")
-            if (s != null) {
-                array[2] =  EventData.deserialize(s) as EventData.SingleBg
-            }
-        } catch (exception: Exception) {
-            aapsLogger.error(LTag.WEAR, exception.toString())
-        }
-        return array
-    }
-
-    fun readStatus(array: Array<EventData.Status>): Array<EventData.Status> {
-        val switch = sp.getBoolean(R.string.key_switch_external, false)
-        try {
-            var s = sp.getStringOrNull(STATUS_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded Status data: $s")
-            if (s != null) {
-                array[0] =  EventData.deserialize(s) as EventData.Status
-            }
-            s = sp.getStringOrNull(if (switch) STATUS2_PERSISTENCE_KEY else STATUS1_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded Status data: $s")
-            if (s != null) {
-                array[1] =  EventData.deserialize(s) as EventData.Status
-            }
-            s = sp.getStringOrNull(if (switch) STATUS1_PERSISTENCE_KEY else STATUS2_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded Status data: $s")
-            if (s != null) {
-                array[2] = EventData.deserialize(s) as EventData.Status
-            }
-        } catch (exception: Exception) {
-            aapsLogger.error(LTag.WEAR, exception.toString())
-        }
-        return array
-    }
-
-    fun readTreatments(): EventData.TreatmentData? {
-        try {
-            val s = sp.getStringOrNull(TREATMENT_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded Treatments data: $s")
-            if (s != null) {
-                return EventData.deserialize(s) as EventData.TreatmentData
-            }
-        } catch (exception: Exception) {
-            aapsLogger.error(LTag.WEAR, exception.toString())
-        }
-        return null
-    }
-
-    fun readGraphData(): EventData.GraphData? {
-        try {
-            val s = sp.getStringOrNull(GRAPH_DATA_PERSISTENCE_KEY, null)
-            //aapsLogger.debug(LTag.WEAR, "Loaded Graph data: $s")
-            if (s != null) {
-                return EventData.deserialize(s) as EventData.GraphData
-            }
-        } catch (exception: Exception) {
-            aapsLogger.error(LTag.WEAR, exception.toString())
-        }
-        return null
     }
 
     fun readCustomWatchface(isDefault: Boolean = false): EventData.ActionSetCustomWatchface? {
@@ -202,61 +109,6 @@ open class Persistence @Inject constructor(
             aapsLogger.error(LTag.WEAR, exception.toString())
         }
         return null
-    }
-
-    fun store(singleBg: EventData.SingleBg) {
-
-        when(singleBg.dataset) {
-            0 -> {
-                putString(BG_DATA_PERSISTENCE_KEY, singleBg.serialize())
-                aapsLogger.debug(LTag.WEAR, "Stored BG data: $singleBg")
-                markDataUpdated()
-            }
-
-            1 -> {
-                putString(BG1_DATA_PERSISTENCE_KEY, singleBg.serialize())
-                aapsLogger.debug(LTag.WEAR, "Stored BG1 data: $singleBg")
-            }
-
-            2 -> {
-                putString(BG2_DATA_PERSISTENCE_KEY, singleBg.serialize())
-                aapsLogger.debug(LTag.WEAR, "Stored BG2 data: $singleBg")
-            }
-        }
-    }
-
-    fun store(graphData: EventData.GraphData) {
-        putString(GRAPH_DATA_PERSISTENCE_KEY, graphData.serialize())
-        aapsLogger.debug(LTag.WEAR, "Stored Graph data: $graphData")
-    }
-
-    fun store(treatmentData: EventData.TreatmentData) {
-        putString(TREATMENT_PERSISTENCE_KEY, treatmentData.serialize())
-        aapsLogger.debug(LTag.WEAR, "Stored Treatments data: $treatmentData")
-    }
-
-    fun store(states: EventData.LoopStatesList) {
-        putString(LOOP_STATES_PERSISTENCE_KEY, states.serialize())
-        aapsLogger.debug(LTag.WEAR, "Stored Loop states data: $states")
-    }
-
-    fun store(status: EventData.Status) {
-        when (status.dataset) {
-            0 -> {
-                putString(STATUS_PERSISTENCE_KEY, status.serialize())
-                aapsLogger.debug(LTag.WEAR, "Stored Status data: $status")
-            }
-
-            1 -> {
-                putString(STATUS1_PERSISTENCE_KEY, status.serialize())
-                aapsLogger.debug(LTag.WEAR, "Stored Status1 data: $status")
-            }
-
-            2 -> {
-                putString(STATUS2_PERSISTENCE_KEY, status.serialize())
-                aapsLogger.debug(LTag.WEAR, "Stored Status2 data: $status")
-            }
-        }
     }
 
     fun store(customWatchface: EventData.ActionSetCustomWatchface, customWatchfaceFull: EventData.ActionSetCustomWatchface? = null, isDefault: Boolean = false) {

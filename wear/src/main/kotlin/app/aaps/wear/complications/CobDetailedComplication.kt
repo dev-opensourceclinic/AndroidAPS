@@ -6,8 +6,6 @@ import android.app.PendingIntent
 import android.support.wearable.complications.ComplicationData
 import android.support.wearable.complications.ComplicationText
 import app.aaps.core.interfaces.logging.LTag
-import app.aaps.core.interfaces.rx.weardata.EventData
-import app.aaps.wear.data.RawDisplayData
 import dagger.android.AndroidInjection
 
 /**
@@ -31,33 +29,12 @@ class CobDetailedComplication : ModernBaseComplicationProviderService() {
         data: app.aaps.wear.data.ComplicationData,
         complicationPendingIntent: PendingIntent
     ): ComplicationData? {
-        val statusData = data.statusData
-
         return when (dataType) {
             ComplicationData.TYPE_SHORT_TEXT -> {
-                // Create RawDisplayData for compatibility with existing displayFormat methods
-                val raw = RawDisplayData()
-                raw.status[0] = EventData.Status(
-                    dataset = 0,
-                    externalStatus = statusData.externalStatus,
-                    iobSum = statusData.iobSum,
-                    iobDetail = statusData.iobDetail,
-                    cob = statusData.cob,
-                    currentBasal = statusData.currentBasal,
-                    battery = statusData.battery,
-                    rigBattery = statusData.rigBattery,
-                    openApsStatus = statusData.openApsStatus,
-                    bgi = statusData.bgi,
-                    batteryLevel = statusData.batteryLevel,
-                    patientName = statusData.patientName,
-                    tempTarget = statusData.tempTarget,
-                    tempTargetLevel = statusData.tempTargetLevel,
-                    reservoirString = statusData.reservoirString,
-                    reservoir = statusData.reservoir,
-                    reservoirLevel = statusData.reservoirLevel
-                )
+                // Pass EventData arrays directly to DisplayFormat
+                val status = arrayOf(data.statusData, data.statusData1, data.statusData2)
 
-                val cob = displayFormat.detailedCob(raw, 0)
+                val cob = displayFormat.detailedCob(status, 0)
                 val builder = ComplicationData.Builder(ComplicationData.TYPE_SHORT_TEXT)
                     .setShortText(ComplicationText.plainText(cob.first))
                     .setTapAction(complicationPendingIntent)
