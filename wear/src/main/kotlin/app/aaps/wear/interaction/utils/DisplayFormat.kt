@@ -21,7 +21,6 @@ class DisplayFormat @Inject internal constructor() {
     }
 
     @Inject lateinit var sp: SP
-    @Inject lateinit var wearUtil: WearUtil
     @Inject lateinit var context: Context
 
     /**
@@ -39,7 +38,7 @@ class DisplayFormat @Inject internal constructor() {
     fun basalRateSymbol() = if (areComplicationsUnicode()) "\u238D\u2006" else ""
 
     fun shortTimeSince(refTime: Long): String {
-        val deltaTimeMs = wearUtil.msSince(refTime)
+        val deltaTimeMs = WearUtil.msSince(refTime)
         return if (deltaTimeMs < Constants.MINUTE_IN_MS) {
             "0'"
         } else if (deltaTimeMs < Constants.HOUR_IN_MS) {

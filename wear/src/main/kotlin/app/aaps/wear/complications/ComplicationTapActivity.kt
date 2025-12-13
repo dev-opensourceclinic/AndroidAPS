@@ -22,7 +22,6 @@ import app.aaps.wear.interaction.menus.MainMenuActivity
 import app.aaps.wear.interaction.menus.StatusMenuActivity
 import app.aaps.wear.interaction.utils.Constants
 import app.aaps.wear.interaction.utils.DisplayFormat
-import app.aaps.wear.interaction.utils.WearUtil
 import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
 
@@ -37,7 +36,6 @@ import javax.inject.Inject
  */
 class ComplicationTapActivity : DaggerAppCompatActivity() {
 
-    @Inject lateinit var wearUtil: WearUtil
     @Inject lateinit var displayFormat: DisplayFormat
     @Inject lateinit var sp: SP
     @Inject lateinit var aapsLogger: AAPSLogger
@@ -158,7 +156,7 @@ class ComplicationTapActivity : DaggerAppCompatActivity() {
             ComplicationAction.STATUS -> intentOpen = Intent(this, StatusMenuActivity::class.java)
 
             ComplicationAction.WARNING_OLD, ComplicationAction.WARNING_SYNC -> {
-                val oneAndHalfMinuteAgo = wearUtil.timestamp() - (Constants.MINUTE_IN_MS + Constants.SECOND_IN_MS * 30)
+                val oneAndHalfMinuteAgo = System.currentTimeMillis() - (Constants.MINUTE_IN_MS + Constants.SECOND_IN_MS * 30)
                 val since = extras.getLong(EXTRA_COMPLICATION_SINCE, oneAndHalfMinuteAgo)
                 @StringRes val labelId = if (action == ComplicationAction.WARNING_SYNC) R.string.msg_warning_sync else R.string.msg_warning_old
                 val msg = String.format(getString(labelId), displayFormat.shortTimeSince(since))

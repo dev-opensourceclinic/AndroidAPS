@@ -53,6 +53,7 @@ import app.aaps.wear.watchfaces.utils.BaseWatchFace
 import app.aaps.wear.watchfaces.utils.WatchfaceViewAdapter.Companion.SelectedWatchFace
 import org.joda.time.DateTime
 import org.joda.time.TimeOfDay
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import javax.inject.Inject
@@ -98,7 +99,13 @@ class CustomWatchface : BaseWatchFace() {
         rxBus.send(EventUpdateSelectedWatchface())
         binding = ActivityCustomBinding.inflate(inflater)
         setDefaultColors()
-        persistence.store(defaultWatchface(false), defaultWatchface(true), true)
+        runBlocking {
+            complicationDataRepository.storeCustomWatchface(
+                customWatchface = defaultWatchface(false).customWatchfaceData,
+                customWatchfaceFull = defaultWatchface(true).customWatchfaceData,
+                isDefault = true
+            )
+        }
         (context.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(displaySize)
         zoomFactor = (displaySize.x).toDouble() / templeResolution.toDouble()
         return binding
@@ -207,18 +214,20 @@ class CustomWatchface : BaseWatchFace() {
     }
 
     private fun setWatchfaceStyle() {
-        var customWatchface = persistence.readCustomWatchface() ?: persistence.readCustomWatchface(true)
-        if (customWatchface == null) { // if neither CWF or Default CWF is found within persistence, then force reload of default Layout
-            super.onCreate()
-            customWatchface = persistence.readCustomWatchface(true)
+        var customWatchfaceData = runBlocking {
+            complicationDataRepository.getCustomWatchface() ?: complicationDataRepository.getCustomWatchface(true)
         }
-        customWatchface?.let {
-            updatePref(it.customWatchfaceData.metadata)
+        if (customWatchfaceData == null) { // if neither CWF or Default CWF is found, then force reload of default Layout
+            super.onCreate()
+            customWatchfaceData = runBlocking { complicationDataRepository.getCustomWatchface(true) }
+        }
+        customWatchfaceData?.let {
+            updatePref(it.metadata)
             try {
-                json = JSONObject(it.customWatchfaceData.json)
-                if (!resDataMap.isEquals(it.customWatchfaceData.resData) || jsonString != it.customWatchfaceData.json) {
-                    resDataMap = it.customWatchfaceData.resData
-                    jsonString = it.customWatchfaceData.json
+                json = JSONObject(it.json)
+                if (!resDataMap.isEquals(it.resData) || jsonString != it.json) {
+                    resDataMap = it.resData
+                    jsonString = it.json
                     DynProvider.init(this, json)
                     FontMap.init(this)
                     ViewMap.init(this)
@@ -273,7 +282,9 @@ class CustomWatchface : BaseWatchFace() {
                 manageSpecificViews()
             } catch (_: Exception) {
                 aapsLogger.debug(LTag.WEAR, "Crash during Custom watch load")
-                persistence.store(defaultWatchface(true), isDefault = false) // relaod correct values to avoid crash of watchface
+                runBlocking {
+                    complicationDataRepository.storeCustomWatchface(defaultWatchface(true).customWatchfaceData, isDefault = false)
+                } // reload correct values to avoid crash of watchface
             }
         }
     }

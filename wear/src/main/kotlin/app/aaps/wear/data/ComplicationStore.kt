@@ -1,5 +1,6 @@
 package app.aaps.wear.data
 
+import app.aaps.core.interfaces.rx.weardata.CwfData
 import app.aaps.core.interfaces.rx.weardata.EventData
 import kotlinx.serialization.Serializable
 
@@ -125,5 +126,8 @@ data class ComplicationData(
         boluses = ArrayList(),
         predictions = ArrayList()
     ),
+    val customWatchface: CwfData? = null,
+    val customWatchfaceDefault: CwfData? = null,
+    val customWatchfaceDefaultFull: CwfData? = null,
     val lastUpdateTimestamp: Long = 0L
 )

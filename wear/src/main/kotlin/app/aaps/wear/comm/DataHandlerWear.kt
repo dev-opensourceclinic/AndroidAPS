@@ -48,7 +48,6 @@ import app.aaps.wear.data.ComplicationDataRepository
 import app.aaps.wear.interaction.WatchfaceConfigurationActivity
 import app.aaps.wear.interaction.actions.AcceptActivity
 import app.aaps.wear.interaction.actions.ProfileSwitchActivity
-import app.aaps.wear.interaction.utils.Persistence
 import app.aaps.wear.tile.ActionsTileService
 import app.aaps.wear.tile.LoopStateTileService
 import app.aaps.wear.tile.QuickWizardTileService
@@ -72,7 +71,6 @@ class DataHandlerWear @Inject constructor(
     private val sp: SP,
     private val preferences: Preferences,
     private val aapsLogger: AAPSLogger,
-    private val persistence: Persistence,
     private val complicationDataRepository: ComplicationDataRepository
 ) {
 
@@ -261,19 +259,23 @@ class DataHandlerWear @Inject constructor(
             .observeOn(aapsSchedulers.io)
             .subscribe {
                 aapsLogger.debug(LTag.WEAR, "Custom Watchface received from ${it.sourceNodeId}")
-                persistence.store(it)
-                persistence.readSimplifiedCwf()?.let {
-                    rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(it, false)))
+                dataStoreScope.launch {
+                    complicationDataRepository.storeCustomWatchface(it.customWatchfaceData)
+                    complicationDataRepository.getSimplifiedCustomWatchface()?.let { cwf ->
+                        rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(EventData.ActionSetCustomWatchface(cwf), false)))
+                    }
                 }
             }
         disposable += rxBus
             .toObservable(EventData.ActionUpdateCustomWatchface::class.java)
             .observeOn(aapsSchedulers.io)
             .subscribe {
-                aapsLogger.debug(LTag.WEAR, "Custom Watchface received from ${it.sourceNodeId}")
-                persistence.store(it)
-                persistence.readSimplifiedCwf()?.let {
-                    rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(it, false)))
+                aapsLogger.debug(LTag.WEAR, "Custom Watchface metadata update received from ${it.sourceNodeId}")
+                dataStoreScope.launch {
+                    complicationDataRepository.updateCustomWatchfaceMetadata(it.customWatchfaceData.metadata)
+                    complicationDataRepository.getSimplifiedCustomWatchface()?.let { cwf ->
+                        rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(EventData.ActionSetCustomWatchface(cwf), false)))
+                    }
                 }
             }
         disposable += rxBus
@@ -281,9 +283,11 @@ class DataHandlerWear @Inject constructor(
             .observeOn(aapsSchedulers.io)
             .subscribe {
                 aapsLogger.debug(LTag.WEAR, "Set Default Watchface received from ${it.sourceNodeId}")
-                persistence.setDefaultWatchface()
-                persistence.readCustomWatchface()?.let {
-                    rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(it, false)))
+                dataStoreScope.launch {
+                    complicationDataRepository.setDefaultWatchface()
+                    complicationDataRepository.getCustomWatchface()?.let { cwf ->
+                        rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(EventData.ActionSetCustomWatchface(cwf), false)))
+                    }
                 }
             }
         disposable += rxBus
@@ -291,8 +295,10 @@ class DataHandlerWear @Inject constructor(
             .observeOn(aapsSchedulers.io)
             .subscribe { eventData ->
                 aapsLogger.debug(LTag.WEAR, "Custom Watchface requested from ${eventData.sourceNodeId} export ${eventData.exportFile}")
-                persistence.readSimplifiedCwf(eventData.exportFile)?.let {
-                    rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(it, eventData.exportFile)))
+                dataStoreScope.launch {
+                    complicationDataRepository.getSimplifiedCustomWatchface(eventData.exportFile)?.let { cwf ->
+                        rxBus.send(EventWearDataToMobile(EventData.ActionGetCustomWatchface(EventData.ActionSetCustomWatchface(cwf), eventData.exportFile)))
+                    }
                 }
             }
     }

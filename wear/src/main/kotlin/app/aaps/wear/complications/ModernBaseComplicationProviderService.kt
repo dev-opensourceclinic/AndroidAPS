@@ -45,13 +45,7 @@ abstract class ModernBaseComplicationProviderService : ComplicationProviderServi
 
     @Inject lateinit var aapsLogger: AAPSLogger
     @Inject lateinit var displayFormat: DisplayFormat
-    @Inject lateinit var wearUtil: WearUtil
     @Inject lateinit var complicationDataRepository: ComplicationDataRepository
-
-    companion object {
-
-        const val INTENT_NEW_DATA = "app.aaps.data.NEW_DATA"
-    }
 
     /**
      * Build complication data using modern DataStore-backed data models
@@ -122,7 +116,7 @@ abstract class ModernBaseComplicationProviderService : ComplicationProviderServi
             }
         }
 
-        aapsLogger.debug(LTag.WEAR, "DataStore read: bgData0=${data.bgData.sgvString} bgData1=${data.bgData1.sgvString} bgData2=${data.bgData2.sgvString} lastUpdate=${wearUtil.msSince(data.lastUpdateTimestamp)}ms ago")
+        aapsLogger.debug(LTag.WEAR, "DataStore read: bgData0=${data.bgData.sgvString} bgData1=${data.bgData1.sgvString} bgData2=${data.bgData2.sgvString} lastUpdate=${WearUtil.msSince(data.lastUpdateTimestamp)}ms ago")
 
         // Determine data freshness
         val timeSinceUpdate = System.currentTimeMillis() - data.lastUpdateTimestamp
@@ -131,13 +125,13 @@ abstract class ModernBaseComplicationProviderService : ComplicationProviderServi
         val complicationData = when {
             timeSinceUpdate > Constants.STALE_MS -> {
                 // No new data from phone - connection/config issue
-                aapsLogger.warn(LTag.WEAR, "Stale sync: ${wearUtil.msSince(data.lastUpdateTimestamp)}ms since update")
+                aapsLogger.warn(LTag.WEAR, "Stale sync: ${WearUtil.msSince(data.lastUpdateTimestamp)}ms since update")
                 buildNoSyncComplicationData(dataType, data, complicationPendingIntent)
             }
 
             timeSinceBg > Constants.STALE_MS     -> {
                 // Data arriving but outdated - sensor/uploader issue
-                aapsLogger.warn(LTag.WEAR, "Stale BG: ${wearUtil.msSince(data.bgData.timeStamp)}ms old")
+                aapsLogger.warn(LTag.WEAR, "Stale BG: ${WearUtil.msSince(data.bgData.timeStamp)}ms old")
                 buildOutdatedComplicationData(dataType, data, complicationPendingIntent)
             }
 

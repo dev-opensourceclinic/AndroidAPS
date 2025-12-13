@@ -28,7 +28,6 @@ import app.aaps.wear.data.ComplicationData
 import app.aaps.wear.data.ComplicationDataRepository
 import app.aaps.wear.events.EventWearPreferenceChange
 import app.aaps.wear.interaction.menus.MainMenuActivity
-import app.aaps.wear.interaction.utils.Persistence
 import com.ustwo.clockwise.common.WatchFaceTime
 import com.ustwo.clockwise.common.WatchMode
 import com.ustwo.clockwise.common.WatchShape
@@ -40,7 +39,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import kotlin.math.floor
 
@@ -54,7 +55,6 @@ import kotlin.math.floor
 
 abstract class BaseWatchFace : WatchFace() {
 
-    @Inject lateinit var persistence: Persistence
     @Inject lateinit var complicationDataRepository: ComplicationDataRepository
     @Inject lateinit var aapsLogger: AAPSLogger
     @Inject lateinit var rxBus: RxBus
@@ -153,6 +153,12 @@ abstract class BaseWatchFace : WatchFace() {
                 if (layoutSet) setDataFields()
                 invalidate()
             }
+
+        // Load initial data synchronously (like old persistence.updateFromPersistence())
+        runBlocking {
+            complicationData = complicationDataRepository.complicationData.first()
+        }
+
         // Observe DataStore for updates
         watchfaceScope.launch {
             complicationDataRepository.complicationData.collect { data ->
@@ -164,8 +170,6 @@ abstract class BaseWatchFace : WatchFace() {
                 invalidate()
             }
         }
-
-        persistence.turnOff()
 
         val inflater = (getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater)
         val bindLayout = inflateLayout(inflater)
