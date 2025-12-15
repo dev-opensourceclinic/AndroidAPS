@@ -77,8 +77,7 @@ class InsulinNewFragment : DaggerFragment() {
     private val availableConcentrationList: List<CharSequence>
         get() = insulinPlugin.getAvailableConcentrationLabels()
     private val confirmationNeeded : Boolean
-        get() = !concentrationConfirmed || (currentConcentration != targetConcentration && recentUpdate)
-
+        get() = !concentrationConfirmed || (currentConcentration != targetConcentration && recentUpdate) || insulinPlugin.iCfg.concentration != currentConcentration
     private var disposable: CompositeDisposable = CompositeDisposable()
     private val concentrationConfirmed: Boolean
         get() = preferences.get(LongNonKey.LastInsulinChange) < preferences.get(LongNonKey.LastInsulinConfirmation) || (currentConcentration == 1.0 && targetConcentration == 1.0)
