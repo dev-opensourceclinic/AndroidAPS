@@ -255,8 +255,8 @@ class ProfileSwitchDialog : DialogFragmentWithDate() {
                                 ).filterNotNull()
                             ).subscribe()
                         }
-                        if (newICfg.concentration == targetConcentration && currentConcentration != targetConcentration) {
-                            activePlugin.activeInsulin.approveConcentration(newICfg.concentration)
+                        iCfg?.let {
+                            activePlugin.activeInsulin.approveConcentration(it.concentration)
                             rxBus.send(EventConcentrationChange())
                         }
                         if (activity is ConcentrationActivity) {

@@ -40,7 +40,7 @@ class ConcentrationDialog : DialogFragmentWithDate() {
     private val targetConcentration: Double
         get()= preferences.get(DoubleNonKey.NewConcentration)
     private val confirmOnly: Boolean
-        get() = currentConcentration == targetConcentration
+        get() = currentConcentration == targetConcentration && activePlugin.activeInsulin.iCfg.concentration == targetConcentration
     private val currentConcentrationString: String
         get() = rh.gs(ConcentrationType.fromDouble(currentConcentration).label)
     private val targetConcentrationString: String
