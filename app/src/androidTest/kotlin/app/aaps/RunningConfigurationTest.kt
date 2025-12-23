@@ -45,42 +45,43 @@ class RunningConfigurationTest @Inject constructor() {
 
     @SuppressLint("CheckResult")
     @Test
-    fun runningConfigurationTest() = runBlocking {
+    fun runningConfigurationTest() {
+        runBlocking {
+            // There is existing RunningConfig - should be default after clearDatabases
+            assertThat(persistenceLayer.getPermanentRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
+            assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
 
-        // There is existing RunningConfig - should be default after clearDatabases
-        assertThat(persistenceLayer.getPermanentRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
-        assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
+            // Change to OPEN_LOOP for 3 sec and let expire
+            persistenceLayer.insertOrUpdateRunningMode(
+                RM(
+                    timestamp = dateUtil.now(),
+                    mode = RM.Mode.OPEN_LOOP,
+                    duration = T.secs(3).msecs()
+                ),
+                action = Action.OPEN_LOOP_MODE,
+                note = "Test",
+                listValues = listOf(ValueWithUnit.SimpleString(RM.Mode.OPEN_LOOP.toString())),
+                source = Sources.Loop
+            )
+            assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.Mode.OPEN_LOOP)
+            SystemClock.sleep(T.secs(3).msecs())
+            assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
+            assertThat(persistenceLayer.getRunningModes().size).isEqualTo(2)
+            persistenceLayer.clearDatabases()
 
-        // Change to OPEN_LOOP for 3 sec and let expire
-        persistenceLayer.insertOrUpdateRunningMode(
-            RM(
-                timestamp = dateUtil.now(),
-                mode = RM.Mode.OPEN_LOOP,
-                duration = T.secs(3).msecs()
-            ),
-            action = Action.OPEN_LOOP_MODE,
-            note = "Test",
-            listValues = listOf(ValueWithUnit.SimpleString(RM.Mode.OPEN_LOOP.toString())),
-            source = Sources.Loop
-        )
-        assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.Mode.OPEN_LOOP)
-        SystemClock.sleep(T.secs(3).msecs())
-        assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
-        assertThat(persistenceLayer.getRunningModes().size).isEqualTo(2)
-        persistenceLayer.clearDatabases()
-
-        // Change to permanent CLOSED_LOOP
-        persistenceLayer.insertOrUpdateRunningMode(
-            RM(
-                timestamp = dateUtil.now(),
-                mode = RM.Mode.CLOSED_LOOP,
-                duration = 0
-            ),
-            action = Action.CLOSED_LOOP_MODE,
-            note = "Test",
-            listValues = listOf(ValueWithUnit.SimpleString(RM.Mode.CLOSED_LOOP.toString())),
-            source = Sources.Loop
-        )
-        assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.Mode.CLOSED_LOOP)
+            // Change to permanent CLOSED_LOOP
+            persistenceLayer.insertOrUpdateRunningMode(
+                RM(
+                    timestamp = dateUtil.now(),
+                    mode = RM.Mode.CLOSED_LOOP,
+                    duration = 0
+                ),
+                action = Action.CLOSED_LOOP_MODE,
+                note = "Test",
+                listValues = listOf(ValueWithUnit.SimpleString(RM.Mode.CLOSED_LOOP.toString())),
+                source = Sources.Loop
+            )
+            assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.Mode.CLOSED_LOOP)
+        }
     }
 }
