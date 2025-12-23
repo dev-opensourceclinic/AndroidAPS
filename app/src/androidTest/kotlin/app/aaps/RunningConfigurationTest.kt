@@ -35,18 +35,6 @@ class RunningConfigurationTest @Inject constructor() {
         context.androidInjector().inject(this@RunningConfigurationTest)
         runBlocking {
             persistenceLayer.clearDatabases()
-            // Initialize a default RunningMode after clearing databases to fix race condition
-            persistenceLayer.insertOrUpdateRunningMode(
-                runningMode = RM(
-                    timestamp = dateUtil.now(),
-                    mode = RM.DEFAULT_MODE,
-                    autoForced = false,
-                    duration = 0
-                ),
-                action = Action.LOOP_DISABLED,
-                source = Sources.Aaps,
-                listValues = listOf(ValueWithUnit.SimpleString("Test initialization"))
-            )
         }
     }
 
@@ -59,7 +47,7 @@ class RunningConfigurationTest @Inject constructor() {
     @Test
     fun runningConfigurationTest() = runBlocking {
 
-        // There is existing RunningConfig
+        // There is existing RunningConfig - should be default after clearDatabases
         assertThat(persistenceLayer.getPermanentRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
         assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
 
@@ -78,7 +66,7 @@ class RunningConfigurationTest @Inject constructor() {
         assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.Mode.OPEN_LOOP)
         SystemClock.sleep(T.secs(3).msecs())
         assertThat(persistenceLayer.getRunningModeActiveAt(dateUtil.now()).mode).isEqualTo(RM.DEFAULT_MODE)
-        assertThat(persistenceLayer.getRunningModes().size).isEqualTo(1)
+        assertThat(persistenceLayer.getRunningModes().size).isEqualTo(2)
         persistenceLayer.clearDatabases()
 
         // Change to permanent CLOSED_LOOP
