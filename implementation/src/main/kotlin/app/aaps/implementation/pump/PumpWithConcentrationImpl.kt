@@ -84,7 +84,7 @@ class PumpWithConcentrationImpl @Inject constructor(
 
     override val baseBasalRate: Double get() = activePumpInternal.baseBasalRate * concentration
 
-    override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult = activePumpInternal.deliverTreatment(detailedBolusInfo.copy().also { it.insulin /= concentration } )
+    override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult = activePumpInternal.deliverTreatment(detailedBolusInfo.also { it.insulin /= concentration } )
 
     override fun setTempBasalAbsolute(absoluteRate: Double, durationInMinutes: Int, enforceNew: Boolean, tbrType: PumpSync.TemporaryBasalType): PumpEnactResult =
         profileFunction.getProfile()?.let { profile ->
