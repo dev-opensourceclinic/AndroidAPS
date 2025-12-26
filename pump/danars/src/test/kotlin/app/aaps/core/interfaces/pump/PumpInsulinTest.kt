@@ -8,7 +8,7 @@ class PumpInsulinTest : TestBase() {
 
     @Test
     fun testConversion() {
-        assertThat(PumpInsulin(1.0).internationalUnits(5.0)).isEqualTo(5.0)
-        assertThat(PumpInsulin(1.0).internationalUnits(0.5)).isEqualTo(0.5)
+        assertThat(PumpInsulin(1.0).iU(5.0)).isEqualTo(5.0)
+        assertThat(PumpInsulin(1.0).iU(0.5)).isEqualTo(0.5)
     }
 }

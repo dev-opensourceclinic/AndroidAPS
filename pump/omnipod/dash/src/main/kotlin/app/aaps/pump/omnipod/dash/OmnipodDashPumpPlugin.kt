@@ -542,16 +542,18 @@ class OmnipodDashPumpPlugin @Inject constructor(
                 ret
         }
 
-    override val reservoirLevel: Double
+    override val reservoirLevel: PumpInsulin
         get() {
             if (podStateManager.activationProgress.isBefore(ActivationProgress.COMPLETED)) {
-                return 0.0
+                return PumpInsulin(0.0)
             }
 
             // Omnipod only reports reservoir level when there's < 1023 pulses left
-            return podStateManager.pulsesRemaining?.let {
-                it * PodConstants.POD_PULSE_BOLUS_UNITS
-            } ?: RESERVOIR_OVER_50_UNITS_DEFAULT
+            return PumpInsulin(
+                podStateManager.pulsesRemaining?.let {
+                    it * PodConstants.POD_PULSE_BOLUS_UNITS
+                } ?: RESERVOIR_OVER_50_UNITS_DEFAULT
+            )
         }
 
     override val batteryLevel: Int
@@ -567,7 +569,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
             bolusDeliveryInProgress = true
             aapsLogger.info(LTag.PUMP, "Delivering treatment: $detailedBolusInfo $bolusCanceled")
             val requestedBolusAmount = detailedBolusInfo.insulin
-            if (requestedBolusAmount > reservoirLevel) {
+            if (requestedBolusAmount > reservoirLevel.cU) {
                 return pumpEnactResultProvider.get()
                     .success(false)
                     .enacted(false)

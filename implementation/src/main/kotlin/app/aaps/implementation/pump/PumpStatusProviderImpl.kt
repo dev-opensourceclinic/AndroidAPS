@@ -84,7 +84,7 @@ class PumpStatusProviderImpl @Inject constructor(
         val runningMode = persistenceLayer.getRunningModeActiveAt(now)
 
         val pumpJson = JSONObject()
-            .put("reservoir", pump.reservoirLevel.toInt())
+            .put("reservoir", pump.reservoirLevel.iU(profile.insulinConcentration()).toInt())
             .put("clock", dateUtil.toISOString(now))
         val battery = JSONObject().put("percent", pump.batteryLevel)
         val status = JSONObject()

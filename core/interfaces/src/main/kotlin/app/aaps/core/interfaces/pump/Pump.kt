@@ -120,7 +120,7 @@ interface Pump {
     /**
      * Reservoir level at time of last connection [Units of insulin]
      */
-    val reservoirLevel: Double
+    val reservoirLevel: PumpInsulin
 
     /**
      * Battery level at time of last connection [%]

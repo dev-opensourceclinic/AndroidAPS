@@ -943,8 +943,8 @@ class ComboV2Plugin @Inject constructor(
     // pump again and resets the current pump state.
 
     private var _reservoirLevel: Double? = null
-    override val reservoirLevel: Double
-        get() = _reservoirLevel ?: 0.0
+    override val reservoirLevel: PumpInsulin
+        get() = PumpInsulin(_reservoirLevel ?: 0.0)
 
     private var _batteryLevel: Int? = null
     override val batteryLevel: Int

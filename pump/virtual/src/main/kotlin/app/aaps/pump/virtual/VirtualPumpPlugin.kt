@@ -165,10 +165,11 @@ open class VirtualPumpPlugin @Inject constructor(
     override val baseBasalRate: Double
         get() = pumpSync.expectedPumpState().profile?.getBasal() ?: 0.0
 
-    override val reservoirLevel: Double
-        get() =
+    override val reservoirLevel: PumpInsulin
+        get() = PumpInsulin(
             if (config.AAPSCLIENT) processedDeviceStatusData.pumpData?.reservoir ?: -1.0
             else reservoirInUnits.toDouble()
+        )
 
     override val batteryLevel: Int
         get() = batteryPercent

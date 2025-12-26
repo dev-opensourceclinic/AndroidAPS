@@ -23,6 +23,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
 import app.aaps.core.interfaces.pump.PumpSync
@@ -541,7 +542,7 @@ class MedtronicPumpPlugin @Inject constructor(
     override val lastBolusTime: Long? get() = null
     override val lastBolusAmount: Double? get() = null
     override val baseBasalRate: Double get() = medtronicPumpStatus.basalProfileForHour
-    override val reservoirLevel: Double get() = medtronicPumpStatus.reservoirRemainingUnits
+    override val reservoirLevel: PumpInsulin get() = PumpInsulin(medtronicPumpStatus.reservoirRemainingUnits)
     override val batteryLevel: Int get() = medtronicPumpStatus.batteryRemaining
 
     override fun triggerUIChange() {
