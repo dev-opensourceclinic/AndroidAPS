@@ -25,8 +25,10 @@ import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.protection.ProtectionCheck
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventConcentrationChange
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.keys.BooleanNonKey
+import app.aaps.core.keys.DoubleNonKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.objects.extensions.fromJson
 import app.aaps.core.objects.profile.ProfileSealed
@@ -35,6 +37,7 @@ import app.aaps.core.ui.extensions.toVisibility
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.utils.HtmlHelper
 import app.aaps.ui.R
+import app.aaps.ui.activities.ConcentrationActivity
 import app.aaps.ui.databinding.DialogProfileswitchBinding
 import com.google.common.base.Joiner
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -63,6 +66,13 @@ class ProfileSwitchDialog : DialogFragmentWithDate() {
     private var profileName: String? = null
     private var iCfg: ICfg? = null
     private val disposable = CompositeDisposable()
+    private val currentConcentration: Double
+        get()= preferences.get(DoubleNonKey.ApprovedConcentration)
+    private val targetConcentration: Double
+        get()= preferences.get(DoubleNonKey.NewConcentration)
+    private val confirmOnly: Boolean
+        get() = currentConcentration == targetConcentration
+
     private var _binding: DialogProfileswitchBinding? = null
 
     // This property is only valid between onCreateView and onDestroyView.
@@ -245,13 +255,25 @@ class ProfileSwitchDialog : DialogFragmentWithDate() {
                                 ).filterNotNull()
                             ).subscribe()
                         }
+                        iCfg?.let {
+                            activePlugin.activeInsulin.approveConcentration(it.concentration)
+                            rxBus.send(EventConcentrationChange())
+                        }
+                        if (activity is ConcentrationActivity) {
+                            activity.finish()
+                        }
                     }
                 })
             else {
                 OKDialog.show(
-                    activity,
-                    rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch),
-                    HtmlHelper.fromHtml(Joiner.on("<br/>").join(validity.reasons))
+                    context = activity,
+                    title = rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch),
+                    message = HtmlHelper.fromHtml(Joiner.on("<br/>").join(validity.reasons)),
+                    runnable = {
+                        if (activity is ConcentrationActivity) {
+                            activity.finish()
+                        }
+                    }
                 )
                 return false
             }
