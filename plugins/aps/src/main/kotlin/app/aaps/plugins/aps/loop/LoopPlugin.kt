@@ -168,6 +168,7 @@ class LoopPlugin @Inject constructor(
     override fun onStop() {
         disposable.clear()
         handler?.removeCallbacksAndMessages(null)
+        handler?.looper?.quit()
         handler = null
         super.onStop()
     }
@@ -682,6 +683,7 @@ class LoopPlugin @Inject constructor(
 
     override fun disableCarbSuggestions(durationMinutes: Int) {
         carbsSuggestionsSuspendedUntil = System.currentTimeMillis() + durationMinutes * 60 * 1000
+        aapsLogger.debug(LTag.CORE, "CarbSuggestion disabled until ${dateUtil.dateAndTimeAndSecondsString(carbsSuggestionsSuspendedUntil)}")
         dismissSuggestion()
     }
 

@@ -2,11 +2,14 @@ package app.aaps.plugins.insulin
 
 import androidx.fragment.app.FragmentActivity
 import app.aaps.core.data.model.ICfg
+import app.aaps.core.data.model.TE
 import app.aaps.core.data.plugin.PluginType
+import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Action
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
 import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.insulin.ConcentrationType
 import app.aaps.core.interfaces.insulin.Insulin
 import app.aaps.core.interfaces.insulin.InsulinType
@@ -18,15 +21,22 @@ import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
+import app.aaps.core.interfaces.rx.events.EventConcentrationChange
+import app.aaps.core.interfaces.rx.events.EventTherapyEventChange
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.DoubleNonKey
+import app.aaps.core.keys.LongNonKey
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.extensions.fromJson
 import app.aaps.core.objects.extensions.toJson
 import app.aaps.core.ui.toast.ToastUtils
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.plusAssign
 import org.json.JSONArray
 import org.json.JSONObject
 import javax.inject.Inject
@@ -47,7 +57,10 @@ class InsulinPlugin @Inject constructor(
     val hardLimits: HardLimits,
     val uiInteraction: UiInteraction,
     val uel: UserEntryLogger,
-    val activePlugin: ActivePlugin
+    val activePlugin: ActivePlugin,
+    val aapsSchedulers: AapsSchedulers,
+    val fabricPrivacy: FabricPrivacy,
+    val persistenceLayer: PersistenceLayer
 ) : PluginBase(
     PluginDescription()
         .mainType(PluginType.INSULIN)
@@ -77,6 +90,18 @@ class InsulinPlugin @Inject constructor(
 
     lateinit var currentInsulin: ICfg
     private var lastWarned: Long = 0
+    private var disposable: CompositeDisposable = CompositeDisposable()
+    private val currentConcentration: Double
+        get()= preferences.get(DoubleNonKey.ApprovedConcentration)
+    private val targetConcentration: Double
+        get()= preferences.get(DoubleNonKey.NewConcentration)
+    private val concentrationConfirmed: Boolean
+        get()= preferences.get(LongNonKey.LastInsulinChange) < preferences.get(LongNonKey.LastInsulinConfirmation)
+    val MAX_INSULIN = T.days(7).msecs()
+    private val recentUpdate: Boolean
+        get()=preferences.get(LongNonKey.LastInsulinChange) > System.currentTimeMillis() - T.mins(15).msecs()
+    private val DEFAULTCONCENTRATION = 1.0
+
     var insulins: ArrayList<ICfg> = ArrayList()
     var currentInsulinIndex = 0
     val numOfInsulins get() = insulins.size
@@ -84,6 +109,36 @@ class InsulinPlugin @Inject constructor(
     override fun onStart() {
         super.onStart()
         loadSettings()
+        disposable += rxBus
+            .toObservable(EventTherapyEventChange::class.java)
+            .observeOn(aapsSchedulers.main)
+            .subscribe({ swapAdapter() }, fabricPrivacy::logException)
+        swapAdapter()
+        if (!config.isEngineeringMode()) { // Concentration not allowed without engineering mode
+            preferences.put(DoubleNonKey.NewConcentration, DEFAULTCONCENTRATION)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        disposable.clear()
+    }
+
+    @Synchronized
+    fun swapAdapter() { // Launch Popup to confirm Insulin concentration on Reservoir change
+        val now = System.currentTimeMillis()
+        disposable += persistenceLayer
+            .getTherapyEventDataFromTime(now - MAX_INSULIN, false)
+            .observeOn(aapsSchedulers.main)
+            .subscribe { list ->
+                list.filter { te -> te.type == TE.Type.INSULIN_CHANGE }.firstOrNull()?.let {
+                    preferences.put(LongNonKey.LastInsulinChange, it.timestamp)
+                }
+                val showOnUpdateRequest = (currentConcentration != targetConcentration) && recentUpdate
+                if (!concentrationConfirmed || showOnUpdateRequest) {
+                    uiInteraction.runInsulinConfirmation()
+                }
+            }
     }
 
     override fun insulinList(concentration: Double?): List<CharSequence> {
@@ -118,6 +173,20 @@ class InsulinPlugin @Inject constructor(
                 return it
         }
         return iCfg     // if no insulin found then return current running iCfg
+    }
+
+    override fun getDefaultInsulin(concentration: Double?): ICfg {
+        if (concentration == null || concentration == iCfg.concentration) return iCfg  // without null or current concentration, return current running iCfg
+        return insulins.firstOrNull { it.concentration == concentration } ?: iCfg
+    }
+
+    override fun approveConcentration(concentration: Double) {
+        if ((recentUpdate || !concentrationConfirmed) && concentration == targetConcentration) {
+            val now = System.currentTimeMillis()
+            preferences.put(DoubleNonKey.ApprovedConcentration, concentration)
+            preferences.put(LongNonKey.LastInsulinConfirmation, now)
+            rxBus.send(EventConcentrationChange())
+        }
     }
 
     fun insulinTemplateList(): List<InsulinType> = listOf(
@@ -323,5 +392,21 @@ class InsulinPlugin @Inject constructor(
 
     val isPeakEditable: Boolean
         get() = InsulinType.fromInt(currentInsulin.insulinTemplate) == InsulinType.OREF_FREE_PEAK
+
+    fun getAvailableConcentrations(): List<ConcentrationType> {
+        val availableConcentrations = mutableSetOf<Double>()
+        insulins.forEach { availableConcentrations.add(it.concentration) }
+
+        return concentrationList().filter { concentrationType ->
+            availableConcentrations.contains(concentrationType.value)
+        }
+    }
+
+    fun getAvailableConcentrationLabels(): List<CharSequence> {
+        return getAvailableConcentrations().map { rh.gs(it.label) }
+    }
+
+    val hasMultipleConcentrations: Boolean
+        get() = getAvailableConcentrations().size > 1
 
 }
