@@ -164,7 +164,7 @@ class InsightPlugin @Inject constructor(
 
     override val pumpDescription: PumpDescription = PumpDescription().also { it.fillFor(PumpType.ACCU_CHEK_INSIGHT) }
     private val _bolusLock: Any = arrayOfNulls<Any>(0)
-    override var lastBolusAmount = 0.0
+    override var lastBolusAmount = PumpInsulin(0.0)
         private set
     var lastBolusTimestamp = 0L
         private set
@@ -220,7 +220,7 @@ class InsightPlugin @Inject constructor(
         context.bindService(Intent(context, InsightAlertService::class.java), serviceConnection, Context.BIND_AUTO_CREATE)
         createNotificationChannel()
         lastBolusTimestamp = preferences.get(InsightLongNonKey.LastBolusTimestamp)
-        lastBolusAmount = preferences.get(InsightDoubleNonKey.LastBolusAmount)
+        lastBolusAmount = PumpInsulin(preferences.get(InsightDoubleNonKey.LastBolusAmount))
     }
 
     private fun createNotificationChannel() {
@@ -1317,8 +1317,8 @@ class InsightPlugin @Inject constructor(
                 )
                 lastBolusTimestamp = insightBolusID.timestamp
                 preferences.put(InsightLongNonKey.LastBolusTimestamp, lastBolusTimestamp)
-                lastBolusAmount = event.immediateAmount
-                preferences.put(InsightDoubleNonKey.LastBolusAmount, lastBolusAmount)
+                lastBolusAmount = PumpInsulin(event.immediateAmount)
+                preferences.put(InsightDoubleNonKey.LastBolusAmount, lastBolusAmount.cU)
             }
             if (event.bolusType == BolusType.EXTENDED || event.bolusType == BolusType.MULTIWAVE) {
                 if (event.duration > 0 && pumpSync.isProfileRunning(insightBolusID.timestamp)) pumpSync.syncExtendedBolusWithPumpId(

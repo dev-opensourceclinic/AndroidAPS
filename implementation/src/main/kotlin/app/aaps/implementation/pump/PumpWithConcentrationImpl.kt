@@ -50,7 +50,7 @@ class PumpWithConcentrationImpl @Inject constructor(
     override fun getPumpStatus(reason: String) = activePumpInternal.getPumpStatus(reason)
     override val lastDataTime: Long get() = activePumpInternal.lastDataTime
     override val lastBolusTime: Long? get() = activePumpInternal.lastBolusTime
-    override val lastBolusAmount: Double? get() = activePumpInternal.lastBolusAmount
+    override val lastBolusAmount: PumpInsulin? get() = activePumpInternal.lastBolusAmount
     override val reservoirLevel: PumpInsulin get() = activePumpInternal.reservoirLevel
     override val batteryLevel: Int get() = activePumpInternal.batteryLevel
     override fun cancelTempBasal(enforceNew: Boolean): PumpEnactResult = activePumpInternal.cancelTempBasal(enforceNew)

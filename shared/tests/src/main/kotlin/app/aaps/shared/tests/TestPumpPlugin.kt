@@ -54,7 +54,7 @@ class TestPumpPlugin(val rh: ResourceHelper) : PumpWithConcentration {
     override fun isThisProfileSet(profile: EffectiveProfile): Boolean = isProfileSet
     override fun isThisProfileSet(profile: PumpProfile): Boolean = isProfileSet
     override val lastBolusTime: Long? get() = null
-    override val lastBolusAmount: Double? get() = null
+    override val lastBolusAmount: PumpInsulin? get() = null
     override val lastDataTime: Long get() = lastData
     override val baseBasalRate: Double get() = baseBasal
     override val reservoirLevel: PumpInsulin = PumpInsulin(0.0)

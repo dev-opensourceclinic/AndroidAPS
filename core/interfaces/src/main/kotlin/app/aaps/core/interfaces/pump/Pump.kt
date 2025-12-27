@@ -107,7 +107,7 @@ interface Pump {
     /**
      * amount of last bolus delivered in units of insulin
      */
-    val lastBolusAmount: Double?
+    val lastBolusAmount: PumpInsulin?
 
     /**
      * Currently running base basal rate [U/h]

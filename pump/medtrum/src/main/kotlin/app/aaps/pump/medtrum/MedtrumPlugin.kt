@@ -311,7 +311,7 @@ class MedtrumPlugin @Inject constructor(
 
     override val lastDataTime: Long get() = medtrumPump.lastConnection
     override val lastBolusTime: Long? get() = medtrumPump.lastBolusTime
-    override val lastBolusAmount: Double? get() = medtrumPump.lastBolusAmount
+    override val lastBolusAmount: PumpInsulin? get() = PumpInsulin(medtrumPump.lastBolusAmount)
     override val baseBasalRate: Double get() = medtrumPump.baseBasalRate
     override val reservoirLevel: PumpInsulin get() = PumpInsulin(medtrumPump.reservoir)
     override val batteryLevel: Int get() = 0 // We cannot determine battery level (yet)

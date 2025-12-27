@@ -931,7 +931,7 @@ class ComboV2Plugin @Inject constructor(
 
     @OptIn(ExperimentalTime::class)
     override val lastBolusTime: Long? get() = lastBolusUIFlow.value?.timestamp?.toEpochMilliseconds()
-    override val lastBolusAmount: Double? get() = lastBolusUIFlow.value?.bolusAmount?.cctlBolusToIU()
+    override val lastBolusAmount: PumpInsulin? get() = lastBolusUIFlow.value?.bolusAmount?.cctlBolusToIU()?.let { PumpInsulin(it) }
     override val baseBasalRate: Double
         get() {
             val currentHour = DateTime().hourOfDay().get()

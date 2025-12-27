@@ -269,7 +269,7 @@ class DiaconnG8Plugin @Inject constructor(
     }
 
     override val lastBolusTime: Long? get() = diaconnG8Pump.lastBolusTime
-    override val lastBolusAmount: Double? get() = diaconnG8Pump.lastBolusAmount
+    override val lastBolusAmount: PumpInsulin? get() = PumpInsulin(diaconnG8Pump.lastBolusAmount)
     override val lastDataTime: Long get() = diaconnG8Pump.lastConnection
     override val baseBasalRate: Double get() = diaconnG8Pump.baseAmount
     override val reservoirLevel: PumpInsulin get() = PumpInsulin(diaconnG8Pump.systemRemainInsulin)

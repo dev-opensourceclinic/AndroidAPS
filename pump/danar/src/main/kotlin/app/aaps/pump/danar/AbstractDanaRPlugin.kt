@@ -164,7 +164,7 @@ abstract class AbstractDanaRPlugin protected constructor(
 
     override val lastDataTime: Long get() = danaPump.lastConnection
     override val lastBolusTime: Long? get() = danaPump.lastBolusTime
-    override val lastBolusAmount: Double? get() = danaPump.lastBolusAmount
+    override val lastBolusAmount: PumpInsulin? get() = PumpInsulin(danaPump.lastBolusAmount)
     override val baseBasalRate: Double get() = danaPump.currentBasal
     override val reservoirLevel: PumpInsulin get() = PumpInsulin(danaPump.reservoirRemainingUnits)
     override val batteryLevel: Int get() = danaPump.batteryRemaining

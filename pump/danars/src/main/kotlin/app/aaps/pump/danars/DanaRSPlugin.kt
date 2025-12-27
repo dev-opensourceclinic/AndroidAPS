@@ -294,7 +294,7 @@ class DanaRSPlugin @Inject constructor(
 
     override val lastDataTime get() = danaPump.lastConnection
     override val lastBolusTime get() = danaPump.lastBolusTime
-    override val lastBolusAmount get() = danaPump.lastBolusAmount
+    override val lastBolusAmount get() = PumpInsulin(danaPump.lastBolusAmount)
     override val baseBasalRate get() = danaPump.currentBasal
     override val reservoirLevel get() = PumpInsulin(danaPump.reservoirRemainingUnits)
     override val batteryLevel get() = danaPump.batteryRemaining

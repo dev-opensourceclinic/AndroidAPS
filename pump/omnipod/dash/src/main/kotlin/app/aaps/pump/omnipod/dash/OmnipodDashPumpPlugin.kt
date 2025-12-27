@@ -529,7 +529,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
     }
 
     override val lastBolusTime: Long? get() = podStateManager.lastBolus?.startTime
-    override val lastBolusAmount: Double? get() = podStateManager.lastBolus?.requestedUnits
+    override val lastBolusAmount: PumpInsulin? get() = podStateManager.lastBolus?.requestedUnits?.let { PumpInsulin(it) }
     override val lastDataTime: Long get() = podStateManager.lastUpdatedSystem
     override val baseBasalRate: Double
         get() {
