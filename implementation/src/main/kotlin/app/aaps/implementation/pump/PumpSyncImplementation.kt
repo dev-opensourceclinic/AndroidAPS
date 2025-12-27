@@ -157,7 +157,7 @@ class PumpSyncImplementation @Inject constructor(
         return profileFunction.getProfile(timestamp)?.let { profile ->
             val bolus = BS(
                 timestamp = timestamp,
-                amount = amount.internationalUnits(concentration = profile.insulinConcentration()), type = type, ids = IDs(
+                amount = amount.iU(concentration = profile.insulinConcentration()), type = type, ids = IDs(
                 temporaryId = temporaryId,
                 pumpType = pumpType,
                 pumpSerial = pumpSerial
@@ -176,7 +176,7 @@ class PumpSyncImplementation @Inject constructor(
         return profileFunction.getProfile(timestamp)?.let { profile ->
         val bolus = BS(
             timestamp = timestamp,
-            amount = amount.internationalUnits(concentration = profile.insulinConcentration()),
+            amount = amount.iU(concentration = profile.insulinConcentration()),
             type = BS.Type.NORMAL, // not used for update
             ids = IDs(
                 temporaryId = temporaryId,
@@ -200,7 +200,7 @@ class PumpSyncImplementation @Inject constructor(
         return profileFunction.getProfile(timestamp)?.let { profile ->
         val bolus = BS(
             timestamp = timestamp,
-            amount = amount.internationalUnits(concentration = profile.insulinConcentration()),
+            amount = amount.iU(concentration = profile.insulinConcentration()),
             type = type ?: BS.Type.NORMAL,
             ids = IDs(
                 pumpId = pumpId,

@@ -161,14 +161,15 @@ open class VirtualPumpPlugin @Inject constructor(
     override fun isThisProfileSet(profile: PumpProfile): Boolean = pumpSync.expectedPumpState().profile?.isEqual(profile) == true
 
     override val lastBolusTime: Long? get() = pumpSync.expectedPumpState().bolus?.timestamp
-    override val lastBolusAmount: Double? get() = pumpSync.expectedPumpState().bolus?.amount
+    override val lastBolusAmount: PumpInsulin? get() = pumpSync.expectedPumpState().bolus?.amount?.let { PumpInsulin(it) }
     override val baseBasalRate: Double
         get() = pumpSync.expectedPumpState().profile?.getBasal() ?: 0.0
 
-    override val reservoirLevel: Double
-        get() =
+    override val reservoirLevel: PumpInsulin
+        get() = PumpInsulin(
             if (config.AAPSCLIENT) processedDeviceStatusData.pumpData?.reservoir ?: -1.0
             else reservoirInUnits.toDouble()
+        )
 
     override val batteryLevel: Int? get() = batteryPercent
 

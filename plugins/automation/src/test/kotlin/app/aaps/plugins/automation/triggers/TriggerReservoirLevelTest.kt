@@ -11,7 +11,7 @@ import java.util.Optional
 class TriggerReservoirLevelTest : TriggerTestBase() {
 
     @Test fun shouldRunTest() {
-        whenever(pumpPluginWithConcentration.reservoirLevel).thenReturn(6.0)
+        whenever(pumpPluginWithConcentration.reservoirLevel).thenReturn(PumpInsulin(6.0))
         var t: TriggerReservoirLevel = TriggerReservoirLevel(injector).setValue(1.0).comparator(Comparator.Compare.IS_EQUAL)
         assertThat(t.shouldRun()).isFalse()
         t = TriggerReservoirLevel(injector).setValue(6.0).comparator(Comparator.Compare.IS_EQUAL)

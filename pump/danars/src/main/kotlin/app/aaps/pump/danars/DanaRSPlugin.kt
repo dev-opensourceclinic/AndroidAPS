@@ -29,6 +29,7 @@ import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpSync
@@ -293,9 +294,9 @@ class DanaRSPlugin @Inject constructor(
 
     override val lastDataTime get() = danaPump.lastConnection
     override val lastBolusTime get() = danaPump.lastBolusTime
-    override val lastBolusAmount get() = danaPump.lastBolusAmount
+    override val lastBolusAmount get() = PumpInsulin(danaPump.lastBolusAmount)
     override val baseBasalRate get() = danaPump.currentBasal
-    override val reservoirLevel get() = danaPump.reservoirRemainingUnits
+    override val reservoirLevel get() = PumpInsulin(danaPump.reservoirRemainingUnits)
     override val batteryLevel get() = danaPump.batteryRemaining
 
     @Synchronized

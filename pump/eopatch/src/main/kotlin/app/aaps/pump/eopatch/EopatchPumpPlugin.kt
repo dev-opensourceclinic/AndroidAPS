@@ -18,6 +18,7 @@ import app.aaps.core.interfaces.pump.BolusProgressData
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
@@ -256,12 +257,12 @@ class EopatchPumpPlugin @Inject constructor(
 
     override val lastDataTime: Long get() = mLastDataTime
     override val lastBolusTime: Long? get() = null
-    override val lastBolusAmount: Double? get() = null
+    override val lastBolusAmount: PumpInsulin? get() = null
     override val baseBasalRate: Double
         get() =
             if (!patchConfig.isActivated || preferenceManager.patchState.isNormalBasalPaused) 0.0
             else normalBasalManager.normalBasal.getCurrentSegment()?.doseUnitPerHour?.toDouble() ?: 0.05
-    override val reservoirLevel: Double get() = if (!patchConfig.isActivated) 0.0 else preferenceManager.patchState.remainedInsulin.toDouble()
+    override val reservoirLevel: PumpInsulin get() = PumpInsulin(if (!patchConfig.isActivated) 0.0 else preferenceManager.patchState.remainedInsulin.toDouble())
     override val batteryLevel: Int? get() = if (patchConfig.isActivated) preferenceManager.patchState.batteryLevel() else null
 
     override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult {

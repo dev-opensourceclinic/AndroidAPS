@@ -28,6 +28,7 @@ import app.aaps.core.interfaces.pump.DetailedBolusInfoStorage
 import app.aaps.core.interfaces.pump.Diaconn
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpSync
@@ -268,10 +269,10 @@ class DiaconnG8Plugin @Inject constructor(
     }
 
     override val lastBolusTime: Long? get() = diaconnG8Pump.lastBolusTime
-    override val lastBolusAmount: Double? get() = diaconnG8Pump.lastBolusAmount
+    override val lastBolusAmount: PumpInsulin? get() = PumpInsulin(diaconnG8Pump.lastBolusAmount)
     override val lastDataTime: Long get() = diaconnG8Pump.lastConnection
     override val baseBasalRate: Double get() = diaconnG8Pump.baseAmount
-    override val reservoirLevel: Double get() = diaconnG8Pump.systemRemainInsulin
+    override val reservoirLevel: PumpInsulin get() = PumpInsulin(diaconnG8Pump.systemRemainInsulin)
     override val batteryLevel: Int? get() = diaconnG8Pump.systemRemainBattery
 
     @Synchronized

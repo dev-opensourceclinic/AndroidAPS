@@ -8,20 +8,20 @@ package app.aaps.core.interfaces.pump
  * In this case pump driver must use PumpInsulin(3.0) which will be translated
  * by PumpSync back to 0.6U to store in database
  */
-class PumpInsulin(private val concentratedUnits: Double) {
+class PumpInsulin(val cU: Double) {
 
     /**
      * Convert amount of insulin delivered by pump to U100 units
      * @param concentration Insulin concentration (0.2 for U20, 2.0 for U200 insulin)
      * @return Insulin amount recalculated to U100 units used inside core of AAPS
      */
-    fun internationalUnits(concentration: Double): Double = concentratedUnits * concentration
+    fun iU(concentration: Double): Double = cU * concentration
 
     override fun equals(other: Any?): Boolean =
-        if (other is PumpInsulin?) concentratedUnits == other?.concentratedUnits
+        if (other is PumpInsulin?) cU == other?.cU
         else false
 
-    override fun hashCode(): Int = (concentratedUnits * 10000).toInt()
+    override fun hashCode(): Int = (cU * 10000).toInt()
 
-    override fun toString(): String = "PumpInsulin($concentratedUnits)"
+    override fun toString(): String = "PumpInsulin($cU)"
 }

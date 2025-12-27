@@ -29,6 +29,7 @@ import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.OmnipodEros
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
@@ -511,7 +512,7 @@ class OmnipodErosPumpPlugin @Inject constructor(
         } else podStateManager.basalSchedule == AapsOmnipodErosManager.mapProfileToBasalSchedule(profile)
 
     override val lastBolusTime: Long? get() = null
-    override val lastBolusAmount: Double? get() = null
+    override val lastBolusAmount: PumpInsulin? get() = null
     override val lastDataTime: Long get() = if (podStateManager.isPodInitialized) podStateManager.lastSuccessfulCommunication.millis else 0
 
     override val baseBasalRate: Double
@@ -519,12 +520,13 @@ class OmnipodErosPumpPlugin @Inject constructor(
             if (!podStateManager.isPodRunning) 0.0
             else podStateManager.basalSchedule?.rateAt(TimeUtil.toDuration(DateTime.now())) ?: 0.0
 
-    override val reservoirLevel: Double
-        get() =
+    override val reservoirLevel: PumpInsulin
+        get() = PumpInsulin(
             if (!podStateManager.isPodRunning) 0.0
             // Omnipod only reports reservoir level when it's 50 units or less.
             // When it's over 50 units, we don't know, so return some default over 50 units
             else podStateManager.reservoirLevel ?: RESERVOIR_OVER_50_UNITS_DEFAULT
+        )
 
     override val batteryLevel: Int?
         get() = if (aapsOmnipodErosManager.isShowRileyLinkBatteryLevel) rileyLinkServiceData.batteryLevel else null

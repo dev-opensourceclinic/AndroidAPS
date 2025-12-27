@@ -931,7 +931,7 @@ class ComboV2Plugin @Inject constructor(
 
     @OptIn(ExperimentalTime::class)
     override val lastBolusTime: Long? get() = lastBolusUIFlow.value?.timestamp?.toEpochMilliseconds()
-    override val lastBolusAmount: Double? get() = lastBolusUIFlow.value?.bolusAmount?.cctlBolusToIU()
+    override val lastBolusAmount: PumpInsulin? get() = lastBolusUIFlow.value?.bolusAmount?.cctlBolusToIU()?.let { PumpInsulin(it) }
     override val baseBasalRate: Double
         get() {
             val currentHour = DateTime().hourOfDay().get()
@@ -943,8 +943,8 @@ class ComboV2Plugin @Inject constructor(
     // pump again and resets the current pump state.
 
     private var _reservoirLevel: Double? = null
-    override val reservoirLevel: Double
-        get() = _reservoirLevel ?: 0.0
+    override val reservoirLevel: PumpInsulin
+        get() = PumpInsulin(_reservoirLevel ?: 0.0)
 
     private var _batteryLevel: Int? = null
     override val batteryLevel: Int?

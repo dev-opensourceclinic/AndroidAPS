@@ -107,7 +107,7 @@ interface Pump {
     /**
      * amount of last bolus delivered in units of insulin
      */
-    val lastBolusAmount: Double?
+    val lastBolusAmount: PumpInsulin?
 
     /**
      * Currently running base basal rate [U/h]
@@ -120,7 +120,7 @@ interface Pump {
     /**
      * Reservoir level at time of last connection [Units of insulin]
      */
-    val reservoirLevel: Double
+    val reservoirLevel: PumpInsulin
 
     /**
      * Battery level at time of last connection [%]

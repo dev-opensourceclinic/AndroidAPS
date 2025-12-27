@@ -16,6 +16,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.Dana
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpRate
@@ -163,9 +164,9 @@ abstract class AbstractDanaRPlugin protected constructor(
 
     override val lastDataTime: Long get() = danaPump.lastConnection
     override val lastBolusTime: Long? get() = danaPump.lastBolusTime
-    override val lastBolusAmount: Double? get() = danaPump.lastBolusAmount
+    override val lastBolusAmount: PumpInsulin? get() = PumpInsulin(danaPump.lastBolusAmount)
     override val baseBasalRate: Double get() = danaPump.currentBasal
-    override val reservoirLevel: Double get() = danaPump.reservoirRemainingUnits
+    override val reservoirLevel: PumpInsulin get() = PumpInsulin(danaPump.reservoirRemainingUnits)
     override val batteryLevel: Int? get() = danaPump.batteryRemaining
 
     override fun stopBolusDelivering() {

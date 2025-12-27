@@ -18,6 +18,7 @@ import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.Pump
 import app.aaps.core.interfaces.pump.PumpEnactResult
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.pump.PumpPluginBase
 import app.aaps.core.interfaces.pump.PumpProfile
 import app.aaps.core.interfaces.pump.PumpSync
@@ -214,10 +215,10 @@ class EquilPumpPlugin @Inject constructor(
 
     override val lastDataTime: Long get() = equilManager.equilState?.lastDataTime ?: 0L
     override val lastBolusTime: Long? get() = null
-    override val lastBolusAmount: Double? get() = null
+    override val lastBolusAmount: PumpInsulin? get() = null
 
     override val baseBasalRate: Double get() = if (isSuspended()) 0.0 else equilManager.equilState?.basalSchedule?.rateAt(toDuration(DateTime.now())) ?: 0.0
-    override val reservoirLevel: Double get() = equilManager.equilState?.currentInsulin?.toDouble() ?: 0.0
+    override val reservoirLevel: PumpInsulin get() = PumpInsulin(equilManager.equilState?.currentInsulin?.toDouble() ?: 0.0)
     override val batteryLevel: Int? get() = equilManager.equilState?.battery
 
     override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult {
