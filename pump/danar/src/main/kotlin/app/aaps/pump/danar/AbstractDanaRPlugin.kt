@@ -167,7 +167,7 @@ abstract class AbstractDanaRPlugin protected constructor(
     override val lastBolusAmount: PumpInsulin? get() = PumpInsulin(danaPump.lastBolusAmount)
     override val baseBasalRate: Double get() = danaPump.currentBasal
     override val reservoirLevel: PumpInsulin get() = PumpInsulin(danaPump.reservoirRemainingUnits)
-    override val batteryLevel: Int get() = danaPump.batteryRemaining
+    override val batteryLevel: Int? get() = danaPump.batteryRemaining
 
     override fun stopBolusDelivering() {
         if (executionService == null) {

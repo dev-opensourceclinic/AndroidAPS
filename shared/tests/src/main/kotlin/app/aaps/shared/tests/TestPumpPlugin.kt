@@ -58,7 +58,7 @@ class TestPumpPlugin(val rh: ResourceHelper) : PumpWithConcentration {
     override val lastDataTime: Long get() = lastData
     override val baseBasalRate: Double get() = baseBasal
     override val reservoirLevel: PumpInsulin = PumpInsulin(0.0)
-    override val batteryLevel: Int = 0
+    override val batteryLevel: Int? = null
     override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult = PumpEnactResultObject(rh).success(true)
     override fun stopBolusDelivering() { /* not needed */
     }

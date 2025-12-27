@@ -96,6 +96,9 @@ enum class Action(val colorGroup: ColorGroup) {
     EXIT_AAPS(ColorGroup.Aaps),
     PLUGIN_ENABLED(ColorGroup.Aaps),
     PLUGIN_DISABLED(ColorGroup.Aaps),
+    RUNNING_MODE(ColorGroup.RunningMode),
+    RUNNING_MODE_REMOVED(ColorGroup.RunningMode),
+    RUNNING_MODE_UPDATED(ColorGroup.RunningMode),
     UNKNOWN(ColorGroup.Aaps)
     ;
 
@@ -113,6 +116,7 @@ enum class Action(val colorGroup: ColorGroup) {
         Loop,
         Careportal,
         Pump,
-        Aaps
+        Aaps,
+        RunningMode
     }
 }

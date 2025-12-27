@@ -361,7 +361,7 @@ sealed class ProfileSealed(
         val o = JSONObject()
         o.put("units", units.asText)
         iCfg?.let { o.put("iCfg", it.toJson()) }
-        o.put("timezone", dateUtil.timeZoneByOffset(utcOffset).id ?: "UTC")
+        o.put("timezone", dateUtil.timeZoneByOffset(utcOffset))
         // SENS
         val sens = JSONArray()
         var elapsedHours = 0L

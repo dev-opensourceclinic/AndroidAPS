@@ -314,7 +314,7 @@ class MedtrumPlugin @Inject constructor(
     override val lastBolusAmount: PumpInsulin? get() = PumpInsulin(medtrumPump.lastBolusAmount)
     override val baseBasalRate: Double get() = medtrumPump.baseBasalRate
     override val reservoirLevel: PumpInsulin get() = PumpInsulin(medtrumPump.reservoir)
-    override val batteryLevel: Int get() = 0 // We cannot determine battery level (yet)
+    override val batteryLevel: Int? = null // We cannot determine battery level (yet)
 
     @Synchronized
     override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult {
@@ -401,7 +401,7 @@ class MedtrumPlugin @Inject constructor(
 
     override fun manufacturer(): ManufacturerType = ManufacturerType.Medtrum
     override fun model(): PumpType = medtrumPump.pumpType()
-    override fun serialNumber(): String = medtrumPump.pumpSNFromSP.toString(radix = 16)
+    override fun serialNumber(): String = medtrumPump.pumpSNFromSP.toString(radix = 16).uppercase()
     override val pumpDescription: PumpDescription get() = PumpDescription().fillFor(medtrumPump.pumpType())
     override val isFakingTempsByExtendedBoluses: Boolean = false
     override fun loadTDDs(): PumpEnactResult = pumpEnactResultProvider.get() // Note: Can implement this if we implement history fully (no priority)

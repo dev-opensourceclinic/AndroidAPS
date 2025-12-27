@@ -485,7 +485,7 @@ class InsightPlugin @Inject constructor(
             return activeBasalRate?.activeBasalRate ?: 0.0
         }
     override val reservoirLevel: PumpInsulin get() = PumpInsulin(cartridgeStatus?.remainingAmount ?: 0.0)
-    override val batteryLevel: Int get() = batteryStatus?.batteryAmount ?: 0
+    override val batteryLevel: Int? get() = batteryStatus?.batteryAmount
 
     override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult {
         if (detailedBolusInfo.insulin.equals(0.0) || detailedBolusInfo.carbs > 0) {
