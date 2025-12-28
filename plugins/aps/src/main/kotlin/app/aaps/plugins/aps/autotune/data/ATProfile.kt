@@ -6,7 +6,6 @@ import app.aaps.core.data.model.data.Block
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
-import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileStore
 import app.aaps.core.interfaces.profile.ProfileUtil
@@ -31,7 +30,6 @@ import javax.inject.Provider
 import kotlin.math.min
 
 class ATProfile @Inject constructor(
-    private val activePlugin: ActivePlugin,
     private val preferences: Preferences,
     private val profileUtil: ProfileUtil,
     private val dateUtil: DateUtil,
