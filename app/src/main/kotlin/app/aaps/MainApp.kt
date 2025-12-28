@@ -415,7 +415,7 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
         insulinPeakTime = when {
             sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
             sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> InsulinType.OREF_ULTRA_RAPID_ACTING.insulinPeakTime
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> (preferences.get(IntKey.InsulinOrefPeak) * 60 * 1000).toLong()
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> (sp.getInt("insulin_oref_peak", 75) * 60 * 1000).toLong()
             sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> InsulinType.OREF_LYUMJEV.insulinPeakTime
             else                                                                                    -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
         }
@@ -436,6 +436,7 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
             sp.remove("ConfigBuilder_INSULIN_InsulinLyumjevPlugin_Enabled")
             sp.remove("ConfigBuilder_INSULIN_InsulinLyumjevPlugin_Visible")
             sp.remove("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin")
+            sp.remove("insulin_oref_peak")
         }
         sp.putBoolean("ConfigBuilder_Enabled_INSULIN_InsulinPlugin", true)
         // TODO Migrate insulin configurations
