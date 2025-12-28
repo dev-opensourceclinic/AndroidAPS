@@ -223,7 +223,7 @@ class InsulinPlugin @Inject constructor(
         if (newICfg.insulinLabel == "" || insulinLabelAlreadyExists(newICfg.insulinLabel))
             newICfg.insulinLabel = createNewInsulinLabel(newICfg)
         val newInsulin = deepClone(newICfg)
-        if (newInsulin.isEqual(iCfg)) {
+        if (insulins.size > 0 && newInsulin.isEqual(iCfg)) {
             insulins.add(0, iCfg)
             currentInsulinIndex = 0
         } else {
