@@ -1,83 +1,82 @@
 package app.aaps.plugins.insulin
 
 import app.aaps.core.data.model.BS
-import app.aaps.core.interfaces.insulin.InsulinType
+import app.aaps.core.data.model.ICfg
+import app.aaps.core.interfaces.R
 import app.aaps.core.interfaces.configuration.Config
-import app.aaps.core.interfaces.logging.AAPSLogger
+import app.aaps.core.interfaces.db.PersistenceLayer
+import app.aaps.core.interfaces.insulin.InsulinType
+import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
-import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.HardLimits
+import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
+import app.aaps.core.keys.StringKey
+import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.extensions.iobCalc
 import app.aaps.shared.tests.TestBase
 import com.google.common.truth.Truth.assertThat
-import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.kotlin.whenever
 
-class InsulinOrefBasePluginTest : TestBase() {
+class InsulinPluginTest : TestBase() {
 
-    var testPeak = 0
-    var testUserDefinedDia = 0.0
-    var shortDiaNotificationSend = false
+    private lateinit var sut: InsulinPlugin
+    private lateinit var insulinConfiguration: String
 
-    inner class InsulinBaseTest(
-        rh: ResourceHelper,
-        profileFunction: ProfileFunction,
-        rxBus: RxBus,
-        aapsLogger: AAPSLogger,
-        config: Config,
-        hardLimits: HardLimits
-    ) : InsulinOrefBasePlugin(rh, profileFunction, rxBus, aapsLogger, config, hardLimits, uiInteraction) {
-
-        override fun sendShortDiaNotification(dia: Double) {
-            shortDiaNotificationSend = true
-        }
-
-        override val userDefinedDia: Double
-            get() = testUserDefinedDia
-
-        override val peak: Int
-            get() = testPeak
-
-        override fun commentStandardText(): String = ""
-        override val id get(): InsulinType = InsulinType.UNKNOWN
-        override val friendlyName get(): String = ""
-        override fun configuration(): JSONObject = JSONObject()
-        override fun applyConfiguration(configuration: JSONObject) {}
-    }
-
-    private lateinit var sut: InsulinBaseTest
-
+    @Mock lateinit var preferences: Preferences
     @Mock lateinit var rh: ResourceHelper
     @Mock lateinit var profileFunction: ProfileFunction
     @Mock lateinit var config: Config
     @Mock lateinit var hardLimits: HardLimits
     @Mock lateinit var uiInteraction: UiInteraction
+    @Mock lateinit var uel: UserEntryLogger
+    @Mock lateinit var activePlugin: ActivePlugin
+    @Mock lateinit var fabricPrivacy: FabricPrivacy
+    @Mock lateinit var persistenceLayer: PersistenceLayer
 
     @BeforeEach
-    fun setUp() {
-        sut = InsulinBaseTest(rh, profileFunction, rxBus, aapsLogger, config, hardLimits)
-        whenever(hardLimits.minDia()).thenReturn(5.0)
+    fun setup() {
+        // dia 5.0 h, Peak 30 min
+        insulinConfiguration = "{\"insulins\":[{\"insulinLabel\":\"test\",\"insulinEndTime\":18000000,\"insulinPeakTime\":1800000,\"concentration\":1.0}]}"
+        whenever(preferences.get(StringKey.InsulinConfiguration)).thenReturn(insulinConfiguration)
+        sut = InsulinPlugin(preferences, rh, profileFunction, rxBus, aapsLogger, config, hardLimits, uiInteraction, uel, activePlugin, aapsSchedulers, fabricPrivacy, persistenceLayer)
+        sut.loadSettings()
     }
 
+    /*
     @Test
-    fun testGetDia() {
-        assertThat(sut.dia).isEqualTo(5.0)
-        testUserDefinedDia = 5.0 + 1
-        assertThat(sut.dia).isEqualTo(5.0 + 1)
-        testUserDefinedDia = 5.0 - 1
-        assertThat(sut.dia).isEqualTo(5.0)
-        assertThat(shortDiaNotificationSend).isTrue()
+    fun `simple peak test`() {
+        assertThat(sut.peak).isEqualTo(45)
+    }
+    */
+
+    @Test
+    fun getIdTest() {
+        assertThat(sut.id).isEqualTo(InsulinType.UNKNOWN)
+    }
+
+    /*
+    @Test
+    fun commentStandardTextTest() {
+        whenever(rh.gs(eq(R.string.lyumjev))).thenReturn("Lyumjev")
+        assertThat(sut.commentStandardText()).isEqualTo("Lyumjev")
+    }
+     */
+
+    @Test
+    fun getFriendlyNameTest() {
+        whenever(rh.gs(eq(R.string.insulin_plugin))).thenReturn("Insulin")
+        assertThat(sut.friendlyName).isEqualTo("Insulin")
     }
 
     @Test
     fun testIobCalcForTreatment() {
-        testPeak = 30
-        testUserDefinedDia = 4.0
         val treatment = BS(timestamp = 0, amount = 10.0, type = BS.Type.NORMAL, iCfg = sut.iCfg)
         val time = System.currentTimeMillis()
         // check directly after bolus

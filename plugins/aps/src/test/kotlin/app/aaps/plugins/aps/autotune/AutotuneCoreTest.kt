@@ -120,7 +120,7 @@ class AutotuneCoreTest : TestBaseWithProfile() {
                 glucoseUnit = units,
                 timeZone = timezone
             )
-            return ATProfile(activePlugin, preferences, profileUtil, dateUtil, rh, profileStoreProvider, aapsLogger).with(ProfileSealed.Pure(pure, activePlugin), localInsulin)
+            return ATProfile(preferences, profileUtil, dateUtil, rh, profileStoreProvider, aapsLogger).with(ProfileSealed.Pure(pure, activePlugin), localInsulin)
         } catch (_: Exception) {
             return null
         }

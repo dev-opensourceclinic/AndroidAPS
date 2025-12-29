@@ -119,6 +119,8 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
     @Inject lateinit var activePlugin: ActivePlugin
 
     lateinit var appComponent: AppComponent
+    lateinit var insulinLabel: String
+    var insulinPeakTime: Long = 0L
 
     private var handler = Handler(HandlerThread(this::class.simpleName + "Handler").also { it.start() }.looper)
     private lateinit var refreshWidget: Runnable
@@ -400,6 +402,43 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
             sp.remove("aps_mode")
         }
 
+        // Get Insulin plugin information for database migration
+        insulinLabel = rh.get().gs(
+            when {
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> InsulinType.OREF_RAPID_ACTING.label
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> InsulinType.OREF_ULTRA_RAPID_ACTING.label
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> InsulinType.OREF_FREE_PEAK.label
+                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> InsulinType.OREF_LYUMJEV.label
+                else                                                                                    -> InsulinType.OREF_RAPID_ACTING.label
+            }
+        )
+        insulinPeakTime = when {
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> InsulinType.OREF_ULTRA_RAPID_ACTING.insulinPeakTime
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> (sp.getInt("insulin_oref_peak", 75) * 60 * 1000).toLong()
+            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> InsulinType.OREF_LYUMJEV.insulinPeakTime
+            else                                                                                    -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
+        }
+        // Migrate Insulin Plugins
+        if (sp.getBoolean("ConfigBuilder_INSULIN_InsulinOrefRapidActingPlugin_Enabled", false) || sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false) ||
+            sp.getBoolean("ConfigBuilder_INSULIN_InsulinOrefUltraRapidActingPlugin_Enabled", false) || sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) ||
+            sp.getBoolean("ConfigBuilder_INSULIN_InsulinOrefFreePeakPlugin_Enabled", false) || sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false) ||
+            sp.getBoolean("ConfigBuilder_INSULIN_InsulinLyumjevPlugin_Enabled", false) || sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)) {
+            sp.remove("ConfigBuilder_INSULIN_InsulinOrefRapidActingPlugin_Enabled")
+            sp.remove("ConfigBuilder_INSULIN_InsulinOrefRapidActingPlugin_Visible")
+            sp.remove("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin")
+            sp.remove("ConfigBuilder_INSULIN_InsulinOrefUltraRapidActingPlugin_Enabled")
+            sp.remove("ConfigBuilder_INSULIN_InsulinOrefUltraRapidActingPlugin_Visible")
+            sp.remove("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin")
+            sp.remove("ConfigBuilder_INSULIN_InsulinOrefFreePeakPlugin_Enabled")
+            sp.remove("ConfigBuilder_INSULIN_InsulinOrefFreePeakPlugin_Visible")
+            sp.remove("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin")
+            sp.remove("ConfigBuilder_INSULIN_InsulinLyumjevPlugin_Enabled")
+            sp.remove("ConfigBuilder_INSULIN_InsulinLyumjevPlugin_Visible")
+            sp.remove("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin")
+            sp.remove("insulin_oref_peak")
+        }
+        sp.putBoolean("ConfigBuilder_Enabled_INSULIN_InsulinPlugin", true)
         // TODO Migrate insulin configurations
     }
 
@@ -407,26 +446,12 @@ class MainApp : DaggerApplication(), ComposeUiProvider {
     fun dataMigrations() {
         // Migrate to database 32 (ICfg)
         // Grab default value first
-        val insulinLabel = rh.get().gs(
-            when {
-                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> InsulinType.OREF_RAPID_ACTING.label
-                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> InsulinType.OREF_ULTRA_RAPID_ACTING.label
-                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> InsulinType.OREF_FREE_PEAK.label
-                sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> InsulinType.OREF_LYUMJEV.label
-                else                                                                                    -> InsulinType.OREF_RAPID_ACTING.label
-            })
         val dia =
             (profileFunction.getProfile() as ProfileSealed.EPS?)?.profileName?.let { profileName ->
                 activePlugin.activeProfileSource.profile?.getSpecificProfile(profileName)?.iCfg?.dia
             }
         val insulinEndTime = ((dia ?: hardLimits.maxDia()) * 3600 * 1000).toLong()
-        val insulinPeakTime = when {
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefRapidActingPlugin", false)      -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefUltraRapidActingPlugin", false) -> InsulinType.OREF_ULTRA_RAPID_ACTING.insulinPeakTime
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinOrefFreePeakPlugin", false)         -> (preferences.get(IntKey.InsulinOrefPeak) * 60 * 1000).toLong()
-            sp.getBoolean("ConfigBuilder_Enabled_INSULIN_InsulinLyumjevPlugin", false)              -> InsulinType.OREF_LYUMJEV.insulinPeakTime
-            else                                                                                    -> InsulinType.OREF_RAPID_ACTING.insulinPeakTime
-        }
+
         val concentration = 1.0
         persistenceLayer.getProfileSwitches().forEach { ps ->
             if (ps.iCfg.insulinEndTime == -1L) {

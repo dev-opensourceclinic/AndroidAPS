@@ -129,8 +129,7 @@ class IobCobCalculatorPlugin @Inject constructor(
                                event.isChanged(DoubleKey.ApsSmbMin5MinCarbsImpact.key) ||
                                event.isChanged(DoubleKey.AbsorptionCutOff.key) ||
                                event.isChanged(DoubleKey.AutosensMax.key) ||
-                               event.isChanged(DoubleKey.AutosensMin.key) ||
-                               event.isChanged(IntKey.InsulinOrefPeak.key)
+                               event.isChanged(DoubleKey.AutosensMin.key)
                            ) {
                                resetDataAndRunCalculation("onEventPreferenceChange", event)
                            }
