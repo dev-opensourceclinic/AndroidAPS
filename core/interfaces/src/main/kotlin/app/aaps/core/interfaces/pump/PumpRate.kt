@@ -9,7 +9,7 @@ package app.aaps.core.interfaces.pump
  * by PumpSync back to 0.6U/h to store in database.
  * For relative basal rate (i.e. %) no conversion is done
  */
-class PumpRate(private val concentratedBasalUnits: Double) {
+class PumpRate(val cU: Double) {
 
     /**
      * Convert basal insulin delivered by pump to U100 units
@@ -17,15 +17,15 @@ class PumpRate(private val concentratedBasalUnits: Double) {
      * @param concentration Insulin concentration (0.2 for U20, 2.0 for U200 insulin)
      * @return Basal insulin recalculated to U100 units used inside core of AAPS
      */
-    fun internationalUnits(concentration: Double, isAbsolute: Boolean): Double =
-        if (isAbsolute) concentratedBasalUnits * concentration
-        else concentratedBasalUnits
+    fun iU(concentration: Double, isAbsolute: Boolean): Double =
+        if (isAbsolute) cU * concentration
+        else cU
 
     override fun equals(other: Any?): Boolean =
-        if (other is PumpRate?) concentratedBasalUnits == other?.concentratedBasalUnits
+        if (other is PumpRate?) cU == other?.cU
         else false
 
-    override fun hashCode(): Int = (concentratedBasalUnits * 10000).toInt()
+    override fun hashCode(): Int = (cU * 10000).toInt()
 
-    override fun toString(): String = "PumpRate($concentratedBasalUnits)"
+    override fun toString(): String = "PumpRate($cU)"
 }
