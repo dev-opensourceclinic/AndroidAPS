@@ -12,6 +12,7 @@ import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.configuration.Config
+import app.aaps.core.interfaces.insulin.ConcentrationHelper
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
@@ -65,7 +66,8 @@ open class VirtualPumpPlugin @Inject constructor(
     private val config: Config,
     private val dateUtil: DateUtil,
     private val processedDeviceStatusData: ProcessedDeviceStatusData,
-    private val pumpEnactResultProvider: Provider<PumpEnactResult>
+    private val pumpEnactResultProvider: Provider<PumpEnactResult>,
+    private val ch: ConcentrationHelper
 ) : PumpPluginBase(
     pluginDescription = PluginDescription()
         .mainType(PluginType.PUMP)
@@ -186,7 +188,7 @@ open class VirtualPumpPlugin @Inject constructor(
         var delivering = 0.0
         while (delivering < detailedBolusInfo.insulin) {
             SystemClock.sleep(200)
-            rxBus.send(EventOverviewBolusProgress(rh, delivering, id = detailedBolusInfo.id))
+            rxBus.send(EventOverviewBolusProgress(ch, PumpInsulin(delivering), id = detailedBolusInfo.id))
             delivering += 0.1
             if (BolusProgressData.stopPressed)
                 return pumpEnactResultProvider.get()

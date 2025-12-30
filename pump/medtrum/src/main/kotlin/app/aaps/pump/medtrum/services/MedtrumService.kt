@@ -8,6 +8,7 @@ import android.os.SystemClock
 import app.aaps.core.data.model.BS
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
+import app.aaps.core.interfaces.insulin.ConcentrationHelper
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
@@ -94,6 +95,8 @@ class MedtrumService : DaggerService(), BLECommCallback {
     @Inject lateinit var pumpSync: PumpSync
     @Inject lateinit var detailedBolusInfoStorage: DetailedBolusInfoStorage
     @Inject lateinit var dateUtil: DateUtil
+    @Inject lateinit var ch: ConcentrationHelper
+
 
     companion object {
 
@@ -466,7 +469,7 @@ class MedtrumService : DaggerService(), BLECommCallback {
             } else {
                 val currentBolusAmount = BolusProgressData.delivered
                 if (currentBolusAmount != lastSentBolusAmount) {
-                    rxBus.send(EventOverviewBolusProgress(rh, BolusProgressData.delivered))
+                    rxBus.send(EventOverviewBolusProgress(ch, PumpInsulin(BolusProgressData.delivered)))
                     lastSentBolusAmount = currentBolusAmount
                 }
             }

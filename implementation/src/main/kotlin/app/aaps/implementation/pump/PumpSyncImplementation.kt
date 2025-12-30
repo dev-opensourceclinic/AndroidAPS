@@ -323,7 +323,7 @@ class PumpSyncImplementation @Inject constructor(
         return profileFunction.getProfile(timestamp)?.let { profile ->
             val temporaryBasal = TB(
                 timestamp = timestamp,
-                rate = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
+                rate = rate.iU(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
                 duration = duration,
                 type = type?.toDbType() ?: TB.Type.NORMAL,
                 isAbsolute = isAbsolute,
@@ -363,7 +363,7 @@ class PumpSyncImplementation @Inject constructor(
         return profileFunction.getProfile(timestamp)?.let { profile ->
             val temporaryBasal = TB(
                 timestamp = timestamp,
-                rate = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
+                rate = rate.iU(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
                 duration = duration,
                 type = type.toDbType(),
                 isAbsolute = isAbsolute,
@@ -397,7 +397,7 @@ class PumpSyncImplementation @Inject constructor(
         return profileFunction.getProfile(timestamp)?.let { profile ->
             val temporaryBasal = TB(
                 timestamp = timestamp,
-                rate = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
+                rate = rate.iU(concentration = profile.insulinConcentration(), isAbsolute = isAbsolute),
                 duration = duration,
                 type = TB.Type.NORMAL, // not used for update
                 isAbsolute = isAbsolute,
@@ -442,7 +442,7 @@ class PumpSyncImplementation @Inject constructor(
         return profileFunction.getProfile(timestamp)?.let { profile ->
             val extendedBolus = EB(
                 timestamp = timestamp,
-                amount = rate.internationalUnits(concentration = profile.insulinConcentration(), isAbsolute = true),
+                amount = rate.iU(concentration = profile.insulinConcentration(), isAbsolute = true),
                 duration = duration,
                 isEmulatingTempBasal = isEmulatingTB,
                 ids = IDs(

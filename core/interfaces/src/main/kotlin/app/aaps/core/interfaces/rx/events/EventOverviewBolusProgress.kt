@@ -1,7 +1,9 @@
 package app.aaps.core.interfaces.rx.events
 
 import app.aaps.core.interfaces.R
+import app.aaps.core.interfaces.insulin.ConcentrationHelper
 import app.aaps.core.interfaces.pump.BolusProgressData
+import app.aaps.core.interfaces.pump.PumpInsulin
 import app.aaps.core.interfaces.resources.ResourceHelper
 import kotlin.math.min
 
@@ -20,11 +22,11 @@ class EventOverviewBolusProgress(status: String, val id: Long? = null, percent: 
     /**
      * Delivering %1$.2fU and percent is calculated
      */
-    constructor(rh: ResourceHelper, delivered: Double, id: Long? = null) :
+    constructor(ch: ConcentrationHelper, delivered: PumpInsulin, id: Long? = null) :
         this(
-            rh.gs(R.string.bolus_delivering, delivered),
+            ch.bolusProgressString(delivered),
             id = id,
-            percent = min((delivered / BolusProgressData.insulin * 100).toInt(), 100)
+            percent = min((ch.fromPump(delivered) / BolusProgressData.insulin * 100).toInt(), 100)
         )
 
     /**
