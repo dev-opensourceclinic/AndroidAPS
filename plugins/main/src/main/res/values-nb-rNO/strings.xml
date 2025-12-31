@@ -162,7 +162,7 @@
     <string name="extended_bolus_button">Forlenget bolus</string>
     <string name="extended_bolus_cancel_button">Avbryt forlenget bolus</string>
     <string name="tools">Verktøy</string>
-    <string name="site_rotation">Rotasjon av stedsområder</string>
+    <string name="site_rotation">Rotasjon av sted</string>
     <string name="nav_history_browser">Historikk</string>
     <string name="sensor_label">Sensor</string>
     <string name="age_label">alder:</string>
