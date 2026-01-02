@@ -132,7 +132,7 @@
     <string name="dpv_default_profile">Cấu hình mặc định DPV</string>
     <string name="invalid_pct">Giá trị % không hợp lệ</string>
     <!-- Other dialogs -->
-    <string name="basal_rate">Tỷ lệ liều Basal</string>
+    <string name="basal_rate">Tỷ lệ liều nền</string>
     <!--    BolusProgressDialog-->
     <string name="stop_pressed">ĐÃ NHẤN DỪNG</string>
     <!--QuickWizard-->
