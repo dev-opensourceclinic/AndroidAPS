@@ -9,10 +9,10 @@
     <string name="dia_valuemustbedetermined">Bạn nên tự xác định giá trị DIA phù hợp cho mình.</string>
     <string name="hypott_label">Hypo Temp-Target</string>
     <string name="hypott_whenhypott">Tại sao cần đặt mục tiêu tạm thời khi bị hạ đường huyết?</string>
-    <string name="hypott_wrongbasal">Để điều chỉnh hạ đường huyết do cài đặt tốc độ basal sai.</string>
+    <string name="hypott_wrongbasal">Để điều chỉnh hạ đường huyết do cài đặt tốc độ liều nền sai.</string>
     <string name="hypott_preventoversmb">Để ngăn AAPS điều chỉnh quá mức sự tăng đường huyết do carbs tác dụng nhanh được dùng để xử lý hạ đường huyết gây ra.</string>
     <string name="hypott_exercise">Để điều chỉnh hạ đường huyết do tập thể dục gây ra.</string>
-    <string name="hypott_0basal">Để ngăn đường huyết giảm thấp khi đã có tốc độ basal tạm thời 0% đang chạy.</string>
+    <string name="hypott_0basal">Để ngăn đường huyết giảm thấp khi đã có tốc độ liều nền tạm thời 0% đang chạy.</string>
     <string name="hypott_hint1">https://wiki.aaps.app/en/latest/DailyLifeWithAaps/TempTargets.html</string>
     <string name="pumpdisconnect_label">Các lý do ‘Ngắt kết nối bơm’ trong AAPS</string>
     <string name="pumpdisconnect_unnecessary">Điều này không cần thiết vì insulin sẽ không được bơm khi bơm đã được ngắt kết nối vật lý.</string>
@@ -132,7 +132,7 @@
     <string name="cob3_no_effect">Cài đặt Cấu hình ở mức 150% sẽ không ảnh hưởng đến lượng carbs hấp thu được tính toán</string>
     <string name="cob_hint1">https://wiki.aaps.app/en/latest/DailyLifeWithAaps/CobCalculation.html</string>
     <string name="iob_value">Giá trị IOB bị ảnh hưởng bởi các liều nền tạm thời đã được tiêm.</string>
-    <string name="iob_hightemp">Basal tạm thời cao sẽ không được bơm khi đường huyết của bạn thấp hơn mục tiêu.</string>
+    <string name="iob_hightemp">Liều nền tạm thời cao sẽ không được bơm khi đường huyết của bạn thấp hơn mục tiêu.</string>
     <string name="iob_negiob">IOB âm trong một khoảng thời gian dài, khi không có vận động, cho thấy Cấu hình của bạn quá mạnh và cần giảm lượng insulin trong phần cài đặt.</string>
     <string name="iob_posiob">IOB dương trong một khoảng thời gian dài cho thấy tình trạng kháng insulin hoặc có bữa ăn chưa được ghi nhận.</string>
     <string name="breadgrams_label">Nhập carbs và bolus</string>
@@ -170,7 +170,7 @@
     <string name="ic_hint1">https://wiki.aaps.app/en/latest/SettingUpAaps/YourAapsProfile.html</string>
     <string name="profileswitch_label">Chuyển cấu hình</string>
     <string name="profileswitch_pctwillchange">Khi thiết lập chuyển Cấu hình ở mức 90%, những câu trả lời nào là đúng?</string>
-    <string name="profileswitch_basallower">Tỷ lệ basal sẽ thấp hơn 10%.</string>
+    <string name="profileswitch_basallower">Tỷ lệ liều nền sẽ thấp hơn 10%.</string>
     <string name="profileswitch_isfhigher">ISF sẽ cao hơn 10%.</string>
     <string name="profileswitch_iclower">Giá trị tỷ lệ I:C sẽ thấp hơn 10%.</string>
     <string name="profileswitch_unchanged">Tỷ lệ ISF và I:C sẽ không thay đổi.</string>
@@ -178,7 +178,7 @@
     <string name="profileswitch2_label">Chuyển Cấu hình</string>
     <string name="profileswitch2_pctwillchange">Khi thiết lập chuyển Cấu hình ở mức 120%, những câu trả lời nào là đúng?</string>
     <string name="profileswitch2_bghigher">Mức đường huyết mục tiêu sẽ cao hơn 20%.</string>
-    <string name="profileswitch2_basalhigher">Tỷ lệ basal sẽ cao hơn 20%.</string>
+    <string name="profileswitch2_basalhigher">Tỷ lệ liều nền sẽ cao hơn 20%.</string>
     <string name="profileswitch2_bgunchanged">Mức đường huyết mục tiêu sẽ không thay đổi.</string>
     <string name="profileswitch2_isfhigher">ISF sẽ cao hơn 20%.</string>
     <string name="profileswitchtime_label">Chuyển Cấu hình</string>
@@ -189,7 +189,7 @@
     <string name="profileswitchtime_100">Chuyển Cấu hình sang mức lớn hơn 100%.</string>
     <string name="profileswitchtime_hint1">https://wiki.aaps.app/en/latest/DailyLifeWithAaps/ProfileSwitch-ProfilePercentage.html</string>
     <string name="profileswitch4_label">Thay đổi Cấu hình</string>
-    <string name="profileswitch4_rates">Tốc độ basal, ISF, tỷ lệ I:C, v.v... nên được thiết lập trong Cấu hình.</string>
+    <string name="profileswitch4_rates">Tỷ lệ liều nền, ISF, I:C, v.v... nên được thiết lập trong Cấu hình.</string>
     <string name="profileswitch4_internet">Kích hoạt các thay đổi trong cấu hình Nightscout của bạn yêu cầu điện thoại chạy AAPS phải có kết nối Internet.</string>
     <string name="profileswitch4_sufficient">Chỉ cần chỉnh sửa Cấu hình để thay đổi các giá trị là đủ để áp dụng các thay đổi.</string>
     <string name="profileswitch4_multi">Có thể thiết lập nhiều Cấu hình và lựa chọn chúng để thích ứng với các tình huống thay đổi (ví dụ: thay đổi hormone, làm việc theo ca, lối sống ngày thường/cuối tuần).</string>
