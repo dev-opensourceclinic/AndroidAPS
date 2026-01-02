@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="executing_right_now">Lệnh đang được thực thi ngay bây giờ</string>
+    <string name="executing_right_now">Đang xử lý lệch</string>
     <string name="basal_value_below_minimum">Giá trị liều nền thấp hơn mức tối thiểu. Cấu hình chưa được thiết lập!</string>
     <!--       Stats -->
     <string name="veryLow" comment="below 3.1">Quá thấp</string>
