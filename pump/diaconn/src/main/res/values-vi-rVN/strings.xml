@@ -19,7 +19,7 @@
     <string name="startingbolus">Đang tiêm bolus</string>
     <string name="waitingforestimatedbolusend">Đang chờ kết thúc liều bolus ước tính</string>
     <string name="gettingbolusstatus">Đang cập nhật trạng thái liều Bolus</string>
-    <string name="stoppingtempbasal">Đang dừng liều basal tạm thời</string>
+    <string name="stoppingtempbasal">Đang dừng liều nền tạm thời</string>
     <string name="settingtempbasal">Đang cài đặt liều nền tạm thời</string>
     <string name="settingextendedbolus">Đang cập nhật liều bolus mở rộng</string>
     <string name="stoppingextendedbolus">Đang dừng liều bolus mở rộng</string>
