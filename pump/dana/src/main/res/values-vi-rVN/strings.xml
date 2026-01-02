@@ -14,7 +14,7 @@
     <string name="insulinlimitviolation">Vi phạm giới hạn insulin</string>
     <string name="boluserrorcode">Yêu cầu: %1$.2fU Đã tiêm: %2$.2fU Mã lỗi: %3$s</string>
     <string name="danar_valuenotsetproperly">Giá trị không được thiết lập đúng</string>
-    <string name="danar_setbasalstep001">Đặt bước basal thành 0,01 U/h</string>
+    <string name="danar_setbasalstep001">Đặt bước liều nền thành 0,01 U/h</string>
     <string name="resetpairing">Đặt lại thông tin ghép đôi?</string>
     <string name="dana_model">%1$s\nMẫu: %2$02X\nGiao thức: %3$02X\nMã: %4$02X</string>
     <string name="processinghistory">Đang xử lý sự kiện</string>
@@ -29,7 +29,7 @@
     <string name="occlusion">Tắc insulin</string>
     <string name="emptyreservoir">Hết insulin</string>
     <string name="checkshaft">Kiểm tra trục truyền động</string>
-    <string name="basalmax">Basal tối đa</string>
+    <string name="basalmax">Liều nền tối đa</string>
     <string name="dailymax">Tối đa hàng ngày</string>
     <string name="bloodsugarmeasurementalert">Cảnh báo đo đường huyết</string>
     <string name="remaininsulinalert">Mức insulin còn lại</string>
@@ -38,7 +38,7 @@
     <string name="gettingpumpstatus">Đang cập nhật trạng thái pump</string>
     <string name="gettingextendedbolusstatus">Đang cập nhật trạng thái bolus mở rộng</string>
     <string name="gettingbolusstatus">Đang cập nhật trạng thái tiêm</string>
-    <string name="gettingtempbasalstatus">Đang cập nhật trạng thái basal tạm thời</string>
+    <string name="gettingtempbasalstatus">Đang cập nhật trạng thái liều nền tạm thời</string>
     <string name="gettingpumpsettings">Đang cập nhật cài đặt pump</string>
     <string name="gettingpumptime">Đang cập nhật thời gian pump</string>
     <string name="largetimedifftitle">Chênh lệch múi giờ lớn</string>
@@ -47,7 +47,7 @@
     <string name="approachingdailylimit">Sắp đạt giới hạn insulin hằng ngày</string>
     <string name="startingbolus">Đang tiêm liều bolus</string>
     <string name="waitingforestimatedbolusend">Đang chờ bolus kết thúc. Còn lại %1$d giây.</string>
-    <string name="stoppingtempbasal">Đang dừng liều basal tạm thời</string>
+    <string name="stoppingtempbasal">Đang dừng liều nền tạm thời</string>
     <string name="settingextendedbolus">Đang cập nhật liều bolus mở rộng</string>
     <string name="stoppingextendedbolus">Đang dừng liều bolus mở rộng</string>
     <string name="updatingbasalrates">Đang cập nhật tốc độ liều nền</string>
@@ -55,7 +55,7 @@
     <string name="waitingfortimesynchronization">Đang chờ đồng bộ thời gian (%1$d giây)</string>
     <string name="wrongpumppassword">Sai mật khẩu pump!</string>
     <string name="danar_history_alarm">Cảnh báo</string>
-    <string name="danar_history_basalhours">Khung giờ basal</string>
+    <string name="danar_history_basalhours">Khung giờ liều nền</string>
     <string name="danar_history_bolus">Liều bolus</string>
     <string name="danar_history_carbohydrates">Carbohydrates</string>
     <string name="danar_history_dailyinsulin">Insulin hàng ngày</string>
@@ -90,7 +90,7 @@
     <string name="pumpdrivercorrected">Trình điều khiển pump đã được sửa</string>
     <string name="danarv2pump">DanaRv2</string>
     <string name="danar_disableeasymode">Tắt chế độ EasyUI trên pump</string>
-    <string name="profile_set_failed">Cài đặt cấu hình basal thất bại</string>
+    <string name="profile_set_failed">Cài đặt cấu hình liều nền thất bại</string>
     <string name="danar_bluetooth_status">Trạng thái Bluetooth</string>
     <string name="firmware_label">Phần mềm</string>
     <string name="danar_pump_settings">Cài đặt pump Dana</string>
