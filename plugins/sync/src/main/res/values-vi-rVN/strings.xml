@@ -55,7 +55,7 @@
     <string name="ns_receive_running_mode">Nhận sự kiện Running mode</string>
     <string name="ns_receive_running_mode_summary">Chấp nhận sự kiện Running mode từ NS hoặc AAPSClient</string>
     <string name="ns_receive_tbr_eb">Nhận TBR và EB</string>
-    <string name="ns_receive_tbr_eb_summary">Chấp nhận basal tạm thời (TBR) và bolus mở rộng (EB) được nhập từ một phiên bản khác</string>
+    <string name="ns_receive_tbr_eb_summary">Chấp nhận liều nền tạm thời (TBR) và bolus mở rộng (EB) được nhập từ một phiên bản khác</string>
     <string name="ns_receive_insulin">Nhận insulin</string>
     <string name="ns_receive_insulin_summary">Chấp nhận insulin được nhập qua NS hoặc AAPSClient (không được bơm, chỉ tính vào IOB)</string>
     <string name="ns_receive_carbs">Nhận carb</string>
