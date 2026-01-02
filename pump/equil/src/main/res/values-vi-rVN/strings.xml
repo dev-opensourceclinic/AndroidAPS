@@ -3,7 +3,7 @@
     <string name="equil_name">Equil 5.3</string>
     <string name="equil_pump_description">Pump Patch Equil 5.3 trở lên </string>
     <!--  start  -->
-    <string name="equil_basal_speed">Base basal</string>
+    <string name="equil_basal_speed">Liều nền cơ bản</string>
     <string name="equil_btn_cancel">Hủy</string>
     <string name="equil_btn_need">Cần</string>
     <string name="equil_btn_skip">Bỏ qua</string>
@@ -40,8 +40,8 @@
     <string name="equil_change_content">Vui lòng tháo bơm ra khỏi đế.</string>
     <string name="equil_unpair_alert">Bạn có chắc chắn muốn từ bỏ quyền kiểm soát đối với %1$s không?</string>
     <string name="equil_devices_number_hint">Số thiết bị</string>
-    <string name="equil_record_basal">Tỷ lệ Basal %1$s U/giờ</string>
-    <string name="equil_record_basal_temp">Tỷ lệ basal tạm thời %1$s U/giờ</string>
+    <string name="equil_record_basal">Tỷ lệ liều nền %1$s U/giờ</string>
+    <string name="equil_record_basal_temp">Tỷ lệ liều nền tạm thời %1$s U/giờ</string>
     <string name="equil_record_bolus">Bolus %1$s U</string>
     <string name="equil_error_set_temp_basal_failed_validation">Thời lượng TBR phải lớn hơn 0 và là bội số của %1$s phút.</string>
     <string name="equil_not_enough_insulin">Insulin trong bình chứa không đủ</string>
@@ -53,7 +53,7 @@
     <string name="equil_retry">Thử lại</string>
     <string name="equil_fill">Prime/Fill</string>
     <string name="equil_air">Đuổi khí</string>
-    <string name="equil_temp_basal_rate">Liều Basal tạm thời</string>
+    <string name="equil_temp_basal_rate">Liều liều nền tạm thời</string>
     <string name="equil_total_delivered">Tổng lượng đã tiêm</string>
     <string name="equil_last_bolus">Liều bolus trước</string>
     <string name="equil_firmware_version">Phiên bản phần mềm</string>
@@ -65,9 +65,9 @@
     <!-- equil - Commands -->
     <string name="equil_common_cmd_set_bolus">Đặt liều Bolus</string>
     <string name="equil_common_cmd_cancel_bolus">Hủy liều bolus</string>
-    <string name="equil_common_cmd_set_tbr">Đặt Basal tạm thời</string>
-    <string name="equil_common_cmd_cancel_tbr">Hủy Basal tạm thời</string>
-    <string name="equil_common_cmd_set_basal_schedule">Đặt lịch trình Basal</string>
+    <string name="equil_common_cmd_set_tbr">Đặt liều nền tạm thời</string>
+    <string name="equil_common_cmd_cancel_tbr">Hủy liều nền tạm thời</string>
+    <string name="equil_common_cmd_set_basal_schedule">Đặt lịch trình liều nền</string>
     <string name="equil_common_cmd_set_time">Đặt thời gian</string>
     <string name="equil_common_cmd_suspend_delivery">Tạm dừng liều insulin</string>
     <string name="equil_common_cmd_resume_delivery">Tiếp tục lại việc tiêm insulin</string>
@@ -97,7 +97,7 @@
     <string name="equil_history_group_all">Tất cả</string>
     <string name="equil_history_group_pair">Ghép đôi</string>
     <string name="equil_history_group_bolus">Liều bolus</string>
-    <string name="equil_history_group_basal">Liều Basal</string>
+    <string name="equil_history_group_basal">Liều nền</string>
     <string name="equil_history_group_configuration">Cấu hình</string>
     <string name="equil_tab_action">Lịch sử hoạt động</string>
     <string name="equil_tab_equil">Lịch sử Equil</string>
@@ -115,8 +115,8 @@
     <string name="equil_history_item10">Mồi ống chứa</string>
     <string name="equil_history_item11">Thu hồi pít-tông pump</string>
     <string name="equil_history_item12">Bắt đầu Bolus nhanh</string>
-    <string name="equil_history_item13">Bắt đầu Basal tạm thời</string>
-    <string name="equil_history_item14">Kết thúc Basal tạm thời</string>
+    <string name="equil_history_item13">Bắt đầu liều nền tạm thời</string>
+    <string name="equil_history_item14">Kết thúc liều nền tạm thời</string>
     <string name="equil_history_item15">Mức pin yếu</string>
     <string name="equil_history_item16">Hết Pin!</string>
     <string name="equil_history_item17">Đặt lại khi bật nguồn</string>
