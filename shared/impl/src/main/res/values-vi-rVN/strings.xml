@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="cwf_comment_background">Hình nền</string>
-    <string name="cwf_comment_chart">Biểu đồ (đường huyết, insulin nền, đường dự đoán...)</string>
+    <string name="cwf_comment_chart">Biểu đồ (đường huyết, liều nền, đường dự đoán...)</string>
     <string name="cwf_comment_cover_chart">Hình ảnh phía trước biểu đồ và phía sau các ô nhập liệu</string>
     <string name="cwf_comment_freetext1">Ghi chú 1</string>
     <string name="cwf_comment_freetext2">Ghi chú 2</string>
@@ -16,7 +16,7 @@
     <string name="cwf_comment_temp_target_ext">Mục tiêu tạm thời hoặc Mục tiêu tạm thời thấp – Mục tiêu tạm thời cao (từ AAPSClient hoặc AAPSClient2)</string>
     <string name="cwf_comment_reservoir_ext">Mức insulin trong ống chứa (từ AAPSClient hoặc AAPSClient2)</string>
     <string name="cwf_comment_rig_battery_ext">Pin vòng lặp toàn cục (%) (từ AAPSClient hoặc AAPSClient2)</string>
-    <string name="cwf_comment_basalRate_ext">Insulin nền (từ AAPSClient/AAPSClient2)</string>
+    <string name="cwf_comment_basalRate_ext">Tỷ lệ liều nền (từ AAPSClient/AAPSClient2)</string>
     <string name="cwf_comment_bgi_ext">Giá trị BGI (từ AAPSClient hoặc AAPSClient2)</string>
     <string name="cwf_comment_status_ext">Tổng hợp trạng thái (từ AAPSClient hoặc AAPSClient2)</string>
     <string name="cwf_comment_loop_ext">Trạng thái vòng lặp &amp; thời gian (AAPSClient/AAPSClient2)</string>
@@ -34,7 +34,7 @@
     <string name="cwf_comment_reservoir">Mức Insulin</string>
     <string name="cwf_comment_uploader_battery">Pin điện thoại (%)</string>
     <string name="cwf_comment_rig_battery">Global loop battery (%)</string>
-    <string name="cwf_comment_basalRate">Tỷ lệ liều Basal</string>
+    <string name="cwf_comment_basalRate">Tỷ lệ liều nền</string>
     <string name="cwf_comment_bgi">Giá trị BGI</string>
     <string name="cwf_comment_status">Tóm tắt trạng thái</string>
     <string name="cwf_comment_time">Thời gian (HH:MM or HH:MM:SS)</string>
