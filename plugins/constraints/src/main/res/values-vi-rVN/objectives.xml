@@ -5,14 +5,14 @@
     <string name="nth_objective">%1$d. Mục tiêu</string>
     <string name="objectivenotstarted">Mục tiêu %1$d chưa được bắt đầu</string>
     <string name="objectivenotfinished">Mục tiêu %1$d chưa hoàn thành</string>
-    <string name="objectives_0_objective">Thiết lập trực quan hóa và theo dõi, cũng như phân tích basal và các tỷ lệ</string>
+    <string name="objectives_0_objective">Thiết lập trực quan hóa và theo dõi, cũng như phân tích liều nền và các tỷ lệ</string>
     <string name="objectives_0_gate">Xác minh rằng dữ liệu đường huyết (BG) có sẵn trong Nightscout và dữ liệu insulin từ bơm đang được tải lên</string>
     <string name="objectives_0_learned">Bạn đã thực hiện thiết lập cơ bản cho hệ sinh thái AAPS. Nightscout không bắt buộc để AAPS hoạt động nhưng rất hữu ích cho việc báo cáo hoặc theo dõi bệnh nhân khác. Nếu bạn chỉ dùng Nightscout cho riêng mình thì không cần phải kết nối với NS mọi lúc. Bạn có thể thiết lập để tải dữ liệu, ví dụ chỉ khi có Wi-Fi ở nhà, nhằm tiết kiệm pin.</string>
     <string name="objectives_openloop_objective">Bắt đầu với chế độ vòng hở (open loop)</string>
     <string name="objectives_openloop_gate">Chạy ở chế độ Vòng hở (Open Loop) trong vài ngày và tự tay thực hiện nhiều basal tạm thời. Thiết lập và sử dụng các mục tiêu tạm thời và mục tiêu tạm thời mặc định (ví dụ cho hoạt động thể chất hoặc xử lý hạ đường huyết bằng carbs)</string>
     <string name="objectives_openloop_learned">Chế độ Vòng hở (Open loop) có thể được sử dụng để đưa ra khuyến nghị nếu bạn không có bơm tương thích hoặc bạn chưa sẵn sàng chuyển sang chế độ vòng kín (closed loop).</string>
-    <string name="objectives_maxbasal_objective">Hiểu về chế độ vòng hở (open loop), bao gồm các khuyến nghị basal tạm thời của nó</string>
-    <string name="objectives_maxbasal_gate">Dựa trên kinh nghiệm đó, quyết định mức basal tối đa nên là bao nhiêu và thiết lập nó trên bơm cũng như trong phần tùy chọn (preferences). Ở chế độ đơn giản (simple mode), giá trị này được tính toán theo khuyến nghị trong wiki và không cần phải tự thiết lập.</string>
+    <string name="objectives_maxbasal_objective">Hiểu về chế độ vòng hở (open loop), bao gồm các khuyến nghị liều nền tạm thời của nó</string>
+    <string name="objectives_maxbasal_gate">Dựa trên kinh nghiệm đó, quyết định mức liều nền tối đa nên là bao nhiêu và thiết lập nó trên bơm cũng như trong phần Tùy chọn (preferences). Ở Chế độ đơn giản (simple mode), giá trị này được tính toán theo khuyến nghị trong wiki và không cần phải tự thiết lập.</string>
     <string name="objectives_maxbasal">Thực hiện theo khuyến nghị</string>
     <string name="objectives_maxbasal_learned">Chú ý đến các tính năng an toàn và điều chỉnh các tham số an toàn khi cần thiết.</string>
     <string name="objectives_maxiobzero_objective">Bắt đầu đóng vòng lặp với chế độ Tạm ngưng khi đường huyết thấp</string>
@@ -22,11 +22,11 @@
     <string name="objectives_maxiob_gate">Chạy trong vài ngày, và ít nhất một đêm không có cảnh báo hạ đường huyết, trước khi hạ mục tiêu BG</string>
     <string name="objectives_maxiob_learned">Cập nhật MaxIOB khi trẻ lớn lên. Đừng để hệ thống bơm nhiều insulin hơn lượng có thể bù bằng thức ăn = đặt giá trị quá cao là một ý tưởng tồi. Trong chế độ đơn giản, MaxIOB được tính tự động</string>
     <string name="maxiobset">Đặt IOB tối đa đúng cách (Không cần trong chế độ đơn giản)</string>
-    <string name="objectives_autosens_objective">Điều chỉnh basal và các tỷ lệ nếu cần, sau đó bật auto-sens</string>
+    <string name="objectives_autosens_objective">Điều chỉnh liều nền và các tỷ lệ nếu cần, sau đó bật auto-sens</string>
     <string name="objectives_autosens_gate">1 tuần chạy vòng lặp thành công ban ngày với việc nhập carb đều đặn. Trong chế độ đơn giản, mặc định autosens được bật.</string>
     <string name="objectives_autosens_learned">Nếu kết quả autosens của bạn không dao động quanh mức 100% thì có thể cấu hình (profile) của bạn chưa đúng.</string>
     <string name="objectives_smb_objective">Bật thêm các tính năng để sử dụng ban ngày, chẳng hạn như SMB</string>
-    <string name="objectives_smb_gate">Bạn phải đọc wiki và tăng MaxIOB thì SMB mới hoạt động tốt! Một cách bắt đầu hợp lý là đặt MaxIOB = bolus trung bình mỗi bữa + 3 × basal tối đa trong ngày. Ở chế độ đơn giản, giá trị này được tính tự động theo khuyến nghị trong wiki nên không cần phải cài đặt.</string>
+    <string name="objectives_smb_gate">Bạn phải đọc wiki và tăng MaxIOB thì SMB mới hoạt động tốt! Một cách bắt đầu hợp lý là đặt MaxIOB = bolus trung bình mỗi bữa + 3 × liều nền tối đa trong ngày. Ở chế độ đơn giản, giá trị này được tính tự động theo khuyến nghị trong wiki nên không cần phải cài đặt.</string>
     <string name="objectives_smb_learned">Mục tiêu của bạn là sử dụng SMB. Thuật toán Oref1 được thiết kế để hỗ trợ bạn với các liều bolus. Bạn không nên tiêm toàn bộ bolus cho bữa ăn mà chỉ một phần, rồi để AAPS tiêm phần còn lại nếu cần. Cách này giúp bạn có thêm khoảng an toàn khi ước lượng carb chưa chính xác. Bạn có biết rằng có thể cài đặt phần trăm kết quả của bộ tính bolus để giảm lượng bolus không?</string>
     <string name="objectives_auto_objective">Bật tự động hóa (Automation)</string>
     <string name="objectives_auto_gate">Đọc tài liệu để hiểu cách tự động hóa hoạt động. Thiết lập các quy tắc đơn giản đầu tiên. Thay vì hành động, hãy để AAPS chỉ hiển thị thông báo. Khi bạn chắc chắn tự động hóa được kích hoạt đúng thời điểm, hãy thay thông báo bằng hành động thật.
