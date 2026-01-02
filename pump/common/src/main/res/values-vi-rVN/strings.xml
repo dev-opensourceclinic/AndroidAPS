@@ -11,7 +11,7 @@
     <string name="pump_status_suspended">Bị tạm dừng</string>
     <string name="pump_status_executing_command">Đang thực hiện lệnh</string>
     <!-- PumpCommon - History Group -->
-    <string name="history_group_basal">Liều Basal</string>
+    <string name="history_group_basal">Liều nền</string>
     <string name="history_group_configuration">Cấu hình</string>
     <string name="history_group_notification">Thông báo</string>
     <string name="history_group_statistic">Thống kê</string>
