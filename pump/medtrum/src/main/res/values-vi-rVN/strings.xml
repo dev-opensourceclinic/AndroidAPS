@@ -21,8 +21,8 @@
     <string name="active_alarms_label">Bật cảnh báo</string>
     <string name="reservoir_level"> %.2f U</string>
     <string name="battery_voltage"> %.2f V</string>
-    <string name="basal_type_label">Kiểu basal</string>
-    <string name="basal_rate_label">Tỷ lệ liều Basal</string>
+    <string name="basal_type_label">Kiểu liều nền</string>
+    <string name="basal_rate_label">Tỷ lệ liều nền</string>
     <string name="current_basal_rate"> %.2f U/h</string>
     <string name="pump_type_label">Loại Pump</string>
     <string name="fw_version_label">Phiên bản FW</string>
