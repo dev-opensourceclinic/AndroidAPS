@@ -31,7 +31,7 @@
     <string name="pref_show_avgdelta">Hiển thị AvgDelta</string>
     <string name="pref_show_phone_battery">Hiển thị pin điện thoại</string>
     <string name="pref_show_rig_battery">Hiển thị mức pin Rig</string>
-    <string name="pref_show_basal_rate">Hiển thị liều basal</string>
+    <string name="pref_show_basal_rate">Hiển thị tỷ lệ liều nền</string>
     <string name="pref_show_temp_target">Hiển thị mục tiêu tạm thời</string>
     <string name="pref_show_reservoir_level">Hiển thị mức insulin</string>
     <string name="pref_show_loop_status">Hiển thị trạng thái vòng lặp</string>
@@ -224,7 +224,7 @@
     <string name="complication_br_cob_iob_ext1">BR, CoB &amp; IoB Ext1</string>
     <string name="complication_br_cob_iob_ext2">BR, CoB &amp; IoB Ext2</string>
     <string name="complication_br_iob">BR &amp; IoB</string>
-    <string name="complication_br">Tỷ lệ liều Basal</string>
+    <string name="complication_br">Tỷ lệ liều nền</string>
     <string name="complication_cob_iob">CoB &amp; IoB</string>
     <string name="complication_cob_icon">Biểu tượng CoB</string>
     <string name="complication_cob_detailed">Chi tiết CoB</string>
@@ -258,8 +258,8 @@
     <string name="loop_status_tbr_duration">%1$d phút</string>
     <string name="loop_status_tbr_rate">%1$.2f U/h (%2$d%%)</string>
     <string name="loop_status_tbr_duration_remaining">Còn %1$d phút</string>
-    <string name="loop_status_tbr_continues">Tiếp tục liều Basal tạm thời</string>
-    <string name="loop_status_tbr_cancel">Đang thiết lập basal thường</string>
+    <string name="loop_status_tbr_continues">Tiếp tục liều nền tạm thời</string>
+    <string name="loop_status_tbr_cancel">Đang thiết lập liều nền thường</string>
     <string name="loop_status_smb">%1$.2f U</string>
     <string name="loop_status_no_last_run">N/A</string>
     <string name="loop_status_closed">Vòng lặp kín</string>
