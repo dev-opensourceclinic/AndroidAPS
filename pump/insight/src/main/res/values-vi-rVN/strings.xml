@@ -14,8 +14,8 @@
     <string name="operating_mode">Chế độ hoạt động</string>
     <string name="description_pump_insight_local">Tích hợp Pump cho các Pump Accu-Chek Insight</string>
     <string name="not_inserted">Chưa được lắp</string>
-    <string name="tdd_bolus">Tổng liều Bolus hàng ngày</string>
-    <string name="tdd_basal">Tổng liều Basal hàng ngày (TDD)</string>
+    <string name="tdd_bolus">Tổng liều Bolus</string>
+    <string name="tdd_basal">Tổng liều nền</string>
     <string name="tbr_formatter">%1$d%% trong %2$d / %3$d phút</string>
     <string name="multiwave_bolus">Bolus nhiều đợt</string>
     <string name="eb_formatter">%1$.2f / %2$.2f U trong %3$d phút</string>
@@ -32,7 +32,7 @@
     <string name="disable_vibration">Tắt rung khi tiêm bolus thủ công</string>
     <string name="disable_vibration_summary">Dành cho bolus và bolus mở rộng (chỉ khả dụng với firmware Insight 3.x)</string>
     <string name="disable_vibration_auto">Tắt rung khi tiêm bolus tự động</string>
-    <string name="disable_vibration_auto_summary">Dành cho SMB và Basal tạm thời với mô phỏng TBR (chỉ khả dụng với firmware Insight 3.x)</string>
+    <string name="disable_vibration_auto_summary">Dành cho SMB và liều nền tạm thời với mô phỏng TBR (chỉ khả dụng với firmware Insight 3.x)</string>
     <string name="timeout_during_handshake">Hết thời gian chờ trong quá trình trao đổi – đặt lại Bluetooth</string>
     <string name="pump_stopped">Đã dừng Pump</string>
     <string name="pump_started">Đã khởi động Pump</string>
