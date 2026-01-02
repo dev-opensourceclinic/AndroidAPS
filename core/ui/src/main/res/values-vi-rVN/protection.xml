@@ -11,7 +11,7 @@
     <string name="application_pin">Mã PIN ứng dụng</string>
     <string name="bolus_password">Mật khẩu liều Bolus</string>
     <string name="bolus_pin">Mã PIN liều Bolus</string>
-    <string name="protection_timeout_title">Thời gian lưu giữ mật khẩu và mã PIN [giây]</string>
+    <string name="protection_timeout_title">Thời gian lưu mật khẩu và mã PIN [giây]</string>
     <string name="protection_timeout_summary">Thời gian trước khi phải nhập mật khẩu hoặc mã PIN</string>
     <string name="biometric">Sinh trắc học</string>
     <string name="custom_password">Mật khẩu tùy chọn</string>
