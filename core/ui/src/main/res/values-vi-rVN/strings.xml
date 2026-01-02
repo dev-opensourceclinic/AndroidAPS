@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--    General-->
-    <string name="refresh">Làm tươi</string>
+    <string name="refresh">Làm mới</string>
     <string name="error">Lỗi</string>
-    <string name="profile_set_ok">Đã cập nhật cấu hình Basal trong bơm</string>
+    <string name="profile_set_ok">Đã cập nhật cấu hình liều nền trong bơm</string>
     <string name="invalid_input">Dữ liệu đầu vào không hợp lệ</string>
     <string name="constraint_applied">Đã áp dụng giới hạn!</string>
     <string name="tempbasals_iobtotal_label_string">Total IOB:</string>
