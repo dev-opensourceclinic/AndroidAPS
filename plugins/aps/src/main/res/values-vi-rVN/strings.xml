@@ -35,7 +35,7 @@
     <string name="openapsma_last_run_label">Lần chạy gần nhất</string>
     <string name="openapsma_input_parameters_label">Tham số đầu vào</string>
     <string name="openapsma_glucose_status_label">Trạng thái đường huyết</string>
-    <string name="openapsma_current_temp_label">Current temp</string>
+    <string name="openapsma_current_temp_label">Liều tạm thời hiện tại</string>
     <string name="openapsma_iob_data_label">Dữ liệu IOB</string>
     <string name="openapsma_profile_label">Cấu hình</string>
     <string name="openapsma_meal_data_label">Dữ liệu bữa ăn</string>
