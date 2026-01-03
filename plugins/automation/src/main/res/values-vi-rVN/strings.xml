@@ -75,8 +75,8 @@
     <string name="autosenscompared">Autosens %1$s %2$s %%</string>
     <string name="autosenslabel">Autosens %</string>
     <string name="deltacompared">%3$s %1$s %2$s</string>
-    <string name="deltalabel">BG difference</string>
-    <string name="deltalabel_u">BG difference [%1$s]</string>
+    <string name="deltalabel">Chênh lệch đường huyết</string>
+    <string name="deltalabel_u">Chênh lệch đường huyết [%1$s]</string>
     <string name="currentlocation">Vị trí hiện tại</string>
     <string name="choose_from_map">Chọn từ bản đồ</string>
     <string name="location">Vị trí</string>
