@@ -61,8 +61,8 @@
     <string name="pref_show_iob">Hiển thị IOB</string>
     <string name="pref_show_detailed_iob">Hiển thị chi tiết IOB</string>
     <string name="pref_show_cob">Hiển thị COB</string>
-    <string name="pref_show_delta">Hiển thị Delta</string>
-    <string name="pref_show_detailed_delta">Hiển thị chi tiết Delta</string>
+    <string name="pref_show_delta">Hiển thị độ lệch</string>
+    <string name="pref_show_detailed_delta">Hiển thị chi tiết độ lệch</string>
     <string name="pref_show_avgdelta">Hiển thị AvgDelta</string>
     <string name="pref_show_tempTarget">Hiển thị mục tiêu tạm thời</string>
     <string name="pref_show_reservoir_level">Hiển thị mức ống chứa</string>
