@@ -165,8 +165,8 @@
     <string name="site_rotation">Chuyển vị trí tiêm</string>
     <string name="nav_history_browser">Trình xem lịch sử</string>
     <string name="sensor_label">Cảm biến</string>
-    <string name="age_label">tuổi:</string>
-    <string name="level_label">mức độ:</string>
+    <string name="age_label">đã dùng:</string>
+    <string name="level_label">còn lại:</string>
     <string name="insulin_label">Insulin</string>
     <string name="pb_label">Pin Pump</string>
     <string name="cannula">Kim truyền</string>
@@ -297,7 +297,7 @@
     <string name="buttonson_description">Các nút luôn được hiển thị ở phía dưới màn hình</string>
     <string name="largedisplay_description">Màn hình lớn</string>
     <string name="skin">Giao diện</string>
-    <string name="cannula_usage">cách sử dụng:</string>
+    <string name="cannula_usage">đã sử dụng:</string>
     <!--    Iob-->
     <!--    PersistentNotification-->
     <string name="description_persistent_notification">Hiển thị thông báo liên tục với tóm tắt ngắn gọn về hoạt động của vòng lặp</string>
