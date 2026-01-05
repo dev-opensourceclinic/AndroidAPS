@@ -24,7 +24,7 @@
     <string name="invalid_weight">Cân nặng không hợp lệ</string>
     <string name="id">ID:</string>
     <string name="submit">Áp dụng</string>
-    <string name="age">Tuổi</string>
+    <string name="age">Đã dùng</string>
     <string name="weight_label">Cân nặng</string>
     <string name="most_common_profile">Cấu hình phổ biến:</string>
     <string name="survey_comment">Lưu ý: Chỉ những dữ liệu trên màn hình này sẽ được tải lên ẩn danh. Mỗi cài đặt AAPS sẽ có một ID riêng. Bạn có thể gửi lại dữ liệu nếu thay đổi Cấu hình chính, nhưng hãy để ứng dụng chạy ít nhất một tuần để kết quả về thời gian trong phạm vi được hiển thị. Cảm ơn bạn đã đóng góp dữ liệu.</string>
