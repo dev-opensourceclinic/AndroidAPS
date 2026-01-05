@@ -162,8 +162,8 @@
     <string name="extended_bolus_button">Bolus mở rộng</string>
     <string name="extended_bolus_cancel_button">Hủy liều Bolus mở rộng</string>
     <string name="tools">Công cụ</string>
-    <string name="site_rotation">Chuyển vị trí tiêm</string>
-    <string name="nav_history_browser">Trình xem lịch sử</string>
+    <string name="site_rotation">Chuyển vị trí</string>
+    <string name="nav_history_browser">Xem lịch sử</string>
     <string name="sensor_label">Cảm biến</string>
     <string name="age_label">đã dùng:</string>
     <string name="level_label">còn lại:</string>
