@@ -144,9 +144,9 @@
     <string name="breadgrams_hint2">https://wiki.aaps.app/en/latest/SettingUpAaps/YourAapsProfile.html</string>
     <string name="extendedcarbs_label">e-carbs</string>
     <string name="extendedcarbs_handling">Bạn có thể sử dụng e-carbs (carb mở rộng) cho mục đích gì?</string>
-    <string name="extendedcarbs_future">Để lên lịch nạp carbs trong tương lai, có thể phân bổ theo khoảng thời gian (tương tự như bolus mở rộng phân phối insulin trong một khoảng thời gian).</string>
+    <string name="extendedcarbs_future">Để lên lịch nạp carbs trong dự kiến, có thể phân bổ theo khoảng thời gian (tương tự như bolus mở rộng phân phối insulin trong một khoảng thời gian).</string>
     <string name="extendedcarbs_free">Để ghi lại lượng carb dùng cho vận động ‘carbs tự do’ mà bạn muốn ẩn khỏi AAPS.</string>
-    <string name="extendedcarbs_fat">e-carbs (được phân bổ trong tương lai) có thể hỗ trợ AAPS trong việc xử lý các bữa ăn nhiều chất béo/đạm.</string>
+    <string name="extendedcarbs_fat">e-carbs (được phân bổ trong dự kiến) có thể hỗ trợ AAPS trong việc xử lý các bữa ăn nhiều chất béo/đạm.</string>
     <string name="extendedcarbs_rescue">Để ghi lại lượng carbs cứu nguy được dùng để xử lý khi hạ đường huyết.</string>
     <string name="extendedcarbs_hint1">https://wiki.aaps.app/en/latest/DailyLifeWithAaps/ExtendedCarbs.html</string>
     <string name="nsclient_label">Giám sát từ xa</string>
