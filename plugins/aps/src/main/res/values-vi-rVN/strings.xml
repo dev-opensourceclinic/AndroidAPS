@@ -12,7 +12,7 @@
     <string name="openapssmb">OpenAPS SMB</string>
     <string name="openaps_smb_dynamic_isf">Dynamic ISF</string>
     <string name="openaps_auto_isf">Auto ISF</string>
-    <string name="smb_interval_summary">Tần suất SMB sẽ được bơm (tính bằng phút)</string>
+    <string name="smb_interval_summary">Tần suất SMB sẽ được bơm (phút)</string>
     <string name="resistance_lowers_target_title">Kháng insulin làm giảm mục tiêu</string>
     <string name="resistance_lowers_target_summary">Khi phát hiện kháng insulin, hãy hạ thấp mức đường huyết mục tiêu</string>
     <string name="sensitivity_raises_target_title">Độ nhạy tăng mục tiêu</string>
@@ -113,11 +113,11 @@
     <string name="loop_aps_label">APS</string>
     <string name="request_label">Yêu cầu</string>
     <string name="loop_constraints_processed_label">Đã áp dụng giới hạn an toàn</string>
-    <string name="loop_tbr_request_time_label">Thời gian yêu cầu liều nền tạm thời</string>
-    <string name="loop_tbr_execution_time_label">Thời gian thực hiện liều nền tạm thời</string>
-    <string name="loop_tbr_set_by_pump_label">Liều nền tạm thời được cài đặt bởi bơm</string>
-    <string name="loop_smb_request_time_label">Thời gian yêu cầu SMB</string>
-    <string name="loop_smb_execution_time_label">Thời gian thực hiện SMB</string>
+    <string name="loop_tbr_request_time_label">Yêu cầu liều nền tạm thời lúc</string>
+    <string name="loop_tbr_execution_time_label">Thực hiện liều nền tạm thời lúc</string>
+    <string name="loop_tbr_set_by_pump_label">Liều nền tạm thời bởi bơm</string>
+    <string name="loop_smb_request_time_label">Yêu cầu SMB lúc</string>
+    <string name="loop_smb_execution_time_label">Thực hiện SMB lúc</string>
     <string name="loop_smb_set_by_pump_label">SMB được cài đặt bởi bơm</string>
     <string name="loop_open_mode_min_change">Thay đổi yêu cầu tối thiểu [%]</string>
     <string name="loop_open_mode_min_change_summary" formatted="false">Open Loop sẽ chỉ hiển thị yêu cầu thay đổi mới nếu thay đổi lớn hơn giá trị này theo %. Giá trị mặc định là 20%</string>
