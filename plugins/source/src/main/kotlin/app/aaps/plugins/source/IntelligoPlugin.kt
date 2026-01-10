@@ -15,6 +15,7 @@ import app.aaps.core.data.model.TrendArrow
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Sources
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -36,6 +37,7 @@ class IntelligoPlugin @Inject constructor(
     resourceHelper: ResourceHelper,
     aapsLogger: AAPSLogger,
     preferences: Preferences,
+    config: Config,
     private val context: Context,
     private val persistenceLayer: PersistenceLayer,
     private val dateUtil: DateUtil,
@@ -44,7 +46,6 @@ class IntelligoPlugin @Inject constructor(
 ) : AbstractBgSourcePlugin(
     pluginDescription = PluginDescription()
         .mainType(PluginType.BGSOURCE)
-        .fragmentClass(BGSourceFragment::class.java.name)
         .composeContent {
             BgSourceComposeContent(
                 persistenceLayer = persistenceLayer,
@@ -62,7 +63,7 @@ class IntelligoPlugin @Inject constructor(
         .preferencesVisibleInSimpleMode(false)
         .description(R.string.description_source_intelligo),
     ownPreferences = listOf(IntelligoLongKey::class.java),
-    aapsLogger, resourceHelper, preferences
+    aapsLogger, resourceHelper, preferences, config
 ), BgSource {
 
     @VisibleForTesting

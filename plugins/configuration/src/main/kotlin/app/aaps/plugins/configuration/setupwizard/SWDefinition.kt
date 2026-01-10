@@ -192,29 +192,29 @@ class SWDefinition @Inject constructor(
             .add(swInfoTextProvider.get().label(rh.gs(R.string.need_system_window_permission)))
             .add(
                 swButtonProvider.get()
-                     .text(R.string.askforpermission)
+                    .text(R.string.askforpermission)
                     .visibility { !Settings.canDrawOverlays(requireActivity()) }
                     .action { requireActivity().startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, ("package:" + requireActivity().packageName).toUri())) })
             .add(swBreakProvider.get())
             .add(swInfoTextProvider.get().label(rh.gs(R.string.need_whitelisting, rh.gs(config.appName))))
             .add(
                 swButtonProvider.get()
-                     .text(R.string.askforpermission)
-                     .visibility { androidPermission.permissionNotGranted(context, Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) }
+                    .text(R.string.askforpermission)
+                    .visibility { androidPermission.permissionNotGranted(context, Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) }
                     .action { androidPermission.askForPermission(requireActivity(), Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) })
             .add(swBreakProvider.get())
             .add(swInfoTextProvider.get().label(rh.gs(R.string.need_storage_permission)))
             .add(
                 swButtonProvider.get()
-                     .text(R.string.askforpermission)
+                    .text(R.string.askforpermission)
                     .visibility { androidPermission.permissionNotGranted(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) }
                     .action { androidPermission.askForPermission(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) })
             .add(swBreakProvider.get())
             .add(swInfoTextProvider.get().label(rh.gs(R.string.select_aaps_directory)))
             .add(
                 swButtonProvider.get()
-                     .text(R.string.aaps_directory)
-                     .visibility { preferences.getIfExists(StringKey.AapsDirectoryUri) == null }
+                    .text(R.string.aaps_directory)
+                    .visibility { preferences.getIfExists(StringKey.AapsDirectoryUri) == null }
                     .action { maintenancePlugin.selectAapsDirectory(requireActivity() as DaggerAppCompatActivityWithResult) })
             .add(swBreakProvider.get())
             .add(swEventListenerProvider.get().with(EventAAPSDirectorySelected::class.java, this).label(app.aaps.core.ui.R.string.settings).initialStatus(preferences.get(StringKey.AapsDirectoryUri)))
@@ -239,7 +239,7 @@ class SWDefinition @Inject constructor(
             .add(swBreakProvider.get())
             .add(
                 swButtonProvider.get()
-                     .text(R.string.askforpermission)
+                    .text(R.string.askforpermission)
                     .visibility { androidPermission.permissionNotGranted(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) }
                     .action { androidPermission.askForPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) })
             .add(swBreakProvider.get())
@@ -247,7 +247,7 @@ class SWDefinition @Inject constructor(
             .add(swBreakProvider.get())
             .add(
                 swButtonProvider.get()
-                     .text(R.string.askforpermission)
+                    .text(R.string.askforpermission)
                     .visibility { androidPermission.permissionNotGranted(requireActivity(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) }
                     .action { androidPermission.askForPermission(requireActivity(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) })
             .visibility { androidPermission.permissionNotGranted(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) || androidPermission.permissionNotGranted(requireActivity(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) }
@@ -261,7 +261,7 @@ class SWDefinition @Inject constructor(
             .visibility { importExportPrefs.prefsFileExists() && !androidPermission.permissionNotGranted(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) }
 
     private val screenNsClient
-        get() = swScreenProvider.get().with(R.string.configbuilder_sync)
+        get() = swScreenProvider.get().with(app.aaps.core.ui.R.string.configbuilder_sync)
             .skippable(true)
             .add(swPluginProvider.get().option(PluginType.SYNC, R.string.configbuilder_sync_description))
             .add(swBreakProvider.get())
@@ -271,15 +271,15 @@ class SWDefinition @Inject constructor(
             .validator { activePlugin.activeNsClient?.connected == true && activePlugin.activeNsClient?.hasWritePermission == true }
 
     private val screenPatientName
-        get() = swScreenProvider.get().with(R.string.patient_name)
+        get() = swScreenProvider.get().with(app.aaps.core.keys.R.string.pref_title_patient_name)
             .skippable(true)
-            .add(swInfoTextProvider.get().label(R.string.patient_name_summary))
+            .add(swInfoTextProvider.get().label(app.aaps.core.keys.R.string.pref_summary_patient_name))
             .add(swEditStringProvider.get().validator(String::isNotEmpty).preference(StringKey.GeneralPatientName))
 
     private val screenMasterPassword
-        get() = swScreenProvider.get().with(app.aaps.core.ui.R.string.master_password)
+        get() = swScreenProvider.get().with(app.aaps.core.keys.R.string.master_password)
             .skippable(false)
-            .add(swInfoTextProvider.get().label(app.aaps.core.ui.R.string.master_password))
+            .add(swInfoTextProvider.get().label(app.aaps.core.keys.R.string.master_password))
             .add(swEditEncryptedPasswordProvider.get().preference(StringKey.ProtectionMasterPassword))
             .add(swBreakProvider.get())
             .add(swInfoTextProvider.get().label(R.string.master_password_summary))
@@ -325,7 +325,7 @@ class SWDefinition @Inject constructor(
             .add(swInfoTextProvider.get().label(R.string.diawarning))
 
     private val screenBgSource
-        get() = swScreenProvider.get().with(R.string.configbuilder_bgsource)
+        get() = swScreenProvider.get().with(app.aaps.core.ui.R.string.configbuilder_bgsource)
             .skippable(false)
             .add(swPluginProvider.get().option(PluginType.BGSOURCE, R.string.configbuilder_bgsource_description))
             .add(swBreakProvider.get())
@@ -346,13 +346,13 @@ class SWDefinition @Inject constructor(
             .add(swInfoTextProvider.get().label(app.aaps.core.ui.R.string.profileswitch_ismissing))
             .add(
                 swButtonProvider.get()
-                     .text(R.string.doprofileswitch)
+                    .text(R.string.doprofileswitch)
                     .action { uiInteraction.runProfileSwitchDialog(requireActivity().supportFragmentManager) })
             .validator { profileFunction.getRequestedProfile() != null }
             .visibility { profileFunction.getRequestedProfile() == null }
 
     private val screenPump
-        get() = swScreenProvider.get().with(R.string.configbuilder_pump)
+        get() = swScreenProvider.get().with(app.aaps.core.ui.R.string.configbuilder_pump)
             .skippable(false)
             .add(swPluginProvider.get().option(PluginType.PUMP, R.string.configbuilder_pump_description))
             .add(swBreakProvider.get())
@@ -368,16 +368,16 @@ class SWDefinition @Inject constructor(
                     .visibility { activePlugin.activePump is OmnipodEros })
             .add(
                 swButtonProvider.get()
-                     .text(R.string.readstatus)
-                     .action { commandQueue.readStatus(rh.gs(app.aaps.core.ui.R.string.clicked_connect_to_pump), null) }
-                     .visibility {
-                         // Hide for Omnipod and Medtrum, because as we don't require a Pod/Patch to be paired in the setup wizard,
-                         // Getting the status might not be possible
-                         activePlugin.activePump !is OmnipodEros && activePlugin.activePump !is OmnipodDash && activePlugin.activePump !is Medtrum
-                     })
+                    .text(R.string.readstatus)
+                    .action { commandQueue.readStatus(rh.gs(app.aaps.core.ui.R.string.clicked_connect_to_pump), null) }
+                    .visibility {
+                        // Hide for Omnipod and Medtrum, because as we don't require a Pod/Patch to be paired in the setup wizard,
+                        // Getting the status might not be possible
+                        activePlugin.activePump !is OmnipodEros && activePlugin.activePump !is OmnipodDash && activePlugin.activePump !is Medtrum
+                    })
             .add(
                 swEventListenerProvider.get().with(EventPumpStatusChanged::class.java, this)
-                     .visibility { activePlugin.activePump !is OmnipodEros && activePlugin.activePump !is OmnipodDash && activePlugin.activePump !is Medtrum })
+                    .visibility { activePlugin.activePump !is OmnipodEros && activePlugin.activePump !is OmnipodDash && activePlugin.activePump !is Medtrum })
             .validator { isPumpInitialized() }
 
     private fun isPumpInitialized(): Boolean {
@@ -393,7 +393,7 @@ class SWDefinition @Inject constructor(
     }
 
     private val screenAps
-        get() = swScreenProvider.get().with(R.string.configbuilder_aps)
+        get() = swScreenProvider.get().with(app.aaps.core.ui.R.string.configbuilder_aps)
             .skippable(false)
             .add(swInfoTextProvider.get().label(R.string.setupwizard_aps_description))
             .add(swBreakProvider.get())
@@ -403,7 +403,7 @@ class SWDefinition @Inject constructor(
             .add(swBreakProvider.get())
 
     private val screenSensitivity
-        get() = swScreenProvider.get().with(R.string.configbuilder_sensitivity)
+        get() = swScreenProvider.get().with(app.aaps.core.ui.R.string.configbuilder_sensitivity)
             .skippable(false)
             .add(swInfoTextProvider.get().label(R.string.setupwizard_sensitivity_description))
             .add(swHtmlLinkProvider.get().label(R.string.setupwizard_sensitivity_url))

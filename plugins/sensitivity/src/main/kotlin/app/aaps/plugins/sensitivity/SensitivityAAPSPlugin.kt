@@ -9,6 +9,7 @@ import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.interfaces.aps.AutosensDataStore
 import app.aaps.core.interfaces.aps.AutosensResult
 import app.aaps.core.interfaces.aps.Sensitivity.SensitivityType
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -21,6 +22,7 @@ import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.extensions.put
 import app.aaps.core.objects.extensions.store
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.utils.MidnightUtils
 import app.aaps.core.utils.Percentile
 import app.aaps.core.validators.preferences.AdaptiveDoublePreference
@@ -41,11 +43,12 @@ class SensitivityAAPSPlugin @Inject constructor(
     preferences: Preferences,
     private val profileFunction: ProfileFunction,
     private val dateUtil: DateUtil,
-    private val persistenceLayer: PersistenceLayer
+    private val persistenceLayer: PersistenceLayer,
+    private val config: Config
 ) : AbstractSensitivityPlugin(
     PluginDescription()
         .mainType(PluginType.SENSITIVITY)
-        .pluginIcon(app.aaps.core.ui.R.drawable.ic_generic_icon)
+        .pluginIcon(app.aaps.core.objects.R.drawable.ic_swap_vert_black_48dp_green)
         .pluginName(R.string.sensitivity_aaps)
         .shortName(R.string.sensitivity_shortname)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)
@@ -162,6 +165,25 @@ class SensitivityAAPSPlugin @Inject constructor(
             .store(DoubleKey.AbsorptionMaxTime, preferences)
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "sensitivity_aaps_settings",
+        titleResId = R.string.absorption_settings_title,
+        items = listOf(
+            DoubleKey.AbsorptionMaxTime,
+            IntKey.AutosensPeriod,
+            PreferenceSubScreenDef(
+                key = "absorption_aaps_advanced",
+                titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                items = listOf(
+                    DoubleKey.AutosensMax,
+                    DoubleKey.AutosensMin
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "absorption_aaps_advanced") return
         val category = PreferenceCategory(context)

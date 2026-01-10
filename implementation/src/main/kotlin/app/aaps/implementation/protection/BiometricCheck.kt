@@ -42,7 +42,7 @@ object BiometricCheck {
                     ERROR_USER_CANCELED        -> {
                         ToastUtils.errorToast(activity.baseContext, errString.toString())
                         // fallback to master password
-                        passwordCheck.queryPassword(activity, R.string.master_password, StringKey.ProtectionMasterPassword, { ok?.run() }, { cancel?.run() }, { fail?.run() })
+                        passwordCheck.queryPassword(activity, app.aaps.core.keys.R.string.master_password, StringKey.ProtectionMasterPassword, { ok?.run() }, { cancel?.run() }, { fail?.run() })
                     }
 
                     ERROR_NEGATIVE_BUTTON      ->
@@ -52,14 +52,14 @@ object BiometricCheck {
                         ToastUtils.errorToast(activity.baseContext, errString.toString())
                         // no pin set
                         // fallback to master password
-                        passwordCheck.queryPassword(activity, R.string.master_password, StringKey.ProtectionMasterPassword, { ok?.run() }, { cancel?.run() }, { fail?.run() })
+                        passwordCheck.queryPassword(activity, app.aaps.core.keys.R.string.master_password, StringKey.ProtectionMasterPassword, { ok?.run() }, { cancel?.run() }, { fail?.run() })
                     }
 
                     ERROR_NO_SPACE,
                     ERROR_HW_UNAVAILABLE,
                     ERROR_HW_NOT_PRESENT,
                     ERROR_NO_BIOMETRICS        ->
-                        passwordCheck.queryPassword(activity, R.string.master_password, StringKey.ProtectionMasterPassword, { ok?.run() }, { cancel?.run() }, { fail?.run() })
+                        passwordCheck.queryPassword(activity, app.aaps.core.keys.R.string.master_password, StringKey.ProtectionMasterPassword, { ok?.run() }, { cancel?.run() }, { fail?.run() })
                 }
             }
 

@@ -45,6 +45,7 @@ import app.aaps.core.interfaces.rx.events.EventRunningModeChange
 import app.aaps.core.interfaces.rx.events.EventSWSyncStatus
 import app.aaps.core.interfaces.rx.events.EventTempTargetChange
 import app.aaps.core.interfaces.rx.events.EventTherapyEventChange
+import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.source.NSClientSource
 import app.aaps.core.interfaces.sync.DataSyncSelector
 import app.aaps.core.interfaces.sync.NsClient
@@ -62,6 +63,7 @@ import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.nssdk.NSAndroidClientImpl
 import app.aaps.core.nssdk.interfaces.NSAndroidClient
 import app.aaps.core.nssdk.remotemodel.LastModified
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.DefaultEditTextValidator
 import app.aaps.core.validators.EditTextValidator
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
@@ -111,6 +113,7 @@ class NSClientV3Plugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val sp: SP,
     private val aapsSchedulers: AapsSchedulers,
     private val rxBus: RxBus,
     private val context: Context,
@@ -813,6 +816,7 @@ class NSClientV3Plugin @Inject constructor(
         return false
     }
 
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "ns_client_synchronization" && requiredKey != "ns_client_alarm_options" && requiredKey != "ns_client_connection_options" && requiredKey != "ns_client_advanced") return
         val category = PreferenceCategory(context)
@@ -823,13 +827,13 @@ class NSClientV3Plugin @Inject constructor(
             initialExpandedChildrenCount = 0
             addPreference(
                 AdaptiveStringPreference(
-                    ctx = context, stringKey = StringKey.NsClientUrl, dialogMessage = R.string.ns_client_url_dialog_message, title = R.string.ns_client_url_title,
+                    ctx = context, stringKey = StringKey.NsClientUrl, dialogMessage = app.aaps.core.keys.R.string.ns_client_url_summary, title = app.aaps.core.keys.R.string.ns_client_url_title,
                     validatorParams = DefaultEditTextValidator.Parameters(testType = EditTextValidator.TEST_HTTPS_URL)
                 )
             )
             addPreference(
                 AdaptiveStringPreference(
-                    ctx = context, stringKey = StringKey.NsClientAccessToken, dialogMessage = R.string.nsclient_token_dialog_message, title = R.string.nsclient_token_title,
+                    ctx = context, stringKey = StringKey.NsClientAccessToken, dialogMessage = app.aaps.core.keys.R.string.nsclient_token_summary, title = app.aaps.core.keys.R.string.nsclient_token_title,
                     validatorParams = DefaultEditTextValidator.Parameters(testType = EditTextValidator.TEST_MIN_LENGTH, minLength = 17)
                 )
             )
@@ -865,7 +869,7 @@ class NSClientV3Plugin @Inject constructor(
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.NsClientUseWifi, title = R.string.ns_wifi))
                 addPreference(
                     AdaptiveStringPreference(
-                        ctx = context, stringKey = StringKey.NsClientWifiSsids, dialogMessage = R.string.ns_wifi_allowed_ssids, title = R.string.ns_wifi_ssids,
+                        ctx = context, stringKey = StringKey.NsClientWifiSsids, dialogMessage = app.aaps.core.keys.R.string.ns_wifi_ssids_summary, title = app.aaps.core.keys.R.string.ns_wifi_ssids,
                         validatorParams = DefaultEditTextValidator.Parameters(emptyAllowed = true)
                     )
                 )
@@ -896,4 +900,64 @@ class NSClientV3Plugin @Inject constructor(
             })
         }
     }
+
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "ns_client_v3_settings",
+        titleResId = R.string.ns_client_v3_title,
+        items = listOf(
+            StringKey.NsClientUrl,
+            StringKey.NsClientAccessToken,
+            BooleanKey.NsClient3UseWs,
+            PreferenceSubScreenDef(
+                key = "ns_client_synchronization",
+                titleResId = R.string.ns_sync_options,
+                items = listOf(
+                    BooleanKey.NsClientUploadData,
+                    BooleanKey.BgSourceUploadToNs,
+                    BooleanKey.NsClientAcceptCgmData,
+                    BooleanKey.NsClientAcceptProfileStore,
+                    BooleanKey.NsClientAcceptTempTarget,
+                    BooleanKey.NsClientAcceptProfileSwitch,
+                    BooleanKey.NsClientAcceptInsulin,
+                    BooleanKey.NsClientAcceptCarbs,
+                    BooleanKey.NsClientAcceptTherapyEvent,
+                    BooleanKey.NsClientAcceptRunningMode,
+                    BooleanKey.NsClientAcceptTbrEb
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "ns_client_alarm_options",
+                titleResId = R.string.ns_alarm_options,
+                items = listOf(
+                    BooleanKey.NsClientNotificationsFromAlarms,
+                    BooleanKey.NsClientNotificationsFromAnnouncements,
+                    IntKey.NsClientAlarmStaleData,
+                    IntKey.NsClientUrgentAlarmStaleData
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "ns_client_connection_options",
+                titleResId = R.string.connection_settings_title,
+                items = listOf(
+                    BooleanKey.NsClientUseCellular,
+                    BooleanKey.NsClientUseRoaming,
+                    BooleanKey.NsClientUseWifi,
+                    StringKey.NsClientWifiSsids,
+                    BooleanKey.NsClientUseOnBattery,
+                    BooleanKey.NsClientUseOnCharging
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "ns_client_advanced",
+                titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                items = listOf(
+                    BooleanKey.NsClientLogAppStart,
+                    BooleanKey.NsClientCreateAnnouncementsFromErrors,
+                    BooleanKey.NsClientCreateAnnouncementsFromCarbsReq,
+                    BooleanKey.NsClientSlowSync
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
 }

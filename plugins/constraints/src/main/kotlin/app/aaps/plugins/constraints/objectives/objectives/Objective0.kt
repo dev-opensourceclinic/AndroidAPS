@@ -87,7 +87,7 @@ class Objective0 @Inject constructor(
                     ToastUtils.errorToast(context, app.aaps.core.ui.R.string.master_password_not_set)
                 } else {
                     passwordCheck.queryPassword(
-                        context, app.aaps.core.ui.R.string.master_password, StringKey.ProtectionMasterPassword,
+                        context, app.aaps.core.keys.R.string.master_password, StringKey.ProtectionMasterPassword,
                         ok = {
                             task.answered = true
                             callback.run()

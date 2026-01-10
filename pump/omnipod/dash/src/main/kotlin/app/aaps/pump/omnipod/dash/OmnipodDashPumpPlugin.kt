@@ -11,6 +11,7 @@ import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
 import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
@@ -41,6 +42,7 @@ import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.utils.DateTimeUtil
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.core.validators.preferences.AdaptiveSwitchPreference
@@ -97,6 +99,7 @@ class OmnipodDashPumpPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val config: Config,
     commandQueue: CommandQueue,
     private val omnipodManager: OmnipodDashManager,
     private val podStateManager: OmnipodDashPodStateManager,
@@ -1475,6 +1478,51 @@ class OmnipodDashPumpPlugin @Inject constructor(
 
     override fun clearAllTables() = dashHistoryDatabase.clearAllTables()
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "omnipod_dash_settings",
+        titleResId = R.string.omnipod_dash_name,
+        items = listOf(
+            // Beeps subscreen
+            PreferenceSubScreenDef(
+                key = "omnipod_dash_beeps",
+                titleResId = app.aaps.pump.omnipod.common.R.string.omnipod_common_preferences_category_confirmation_beeps,
+                items = listOf(
+                    OmnipodBooleanPreferenceKey.BolusBeepsEnabled,
+                    OmnipodBooleanPreferenceKey.BasalBeepsEnabled,
+                    OmnipodBooleanPreferenceKey.SmbBeepsEnabled,
+                    OmnipodBooleanPreferenceKey.TbrBeepsEnabled,
+                    DashBooleanPreferenceKey.UseBonding
+                )
+            ),
+            // Alerts subscreen
+            PreferenceSubScreenDef(
+                key = "omnipod_dash_alerts",
+                titleResId = app.aaps.pump.omnipod.common.R.string.omnipod_common_preferences_category_alerts,
+                items = listOf(
+                    OmnipodBooleanPreferenceKey.ExpirationReminder,
+                    OmnipodIntPreferenceKey.ExpirationReminderHours,
+                    OmnipodBooleanPreferenceKey.ExpirationAlarm,
+                    OmnipodIntPreferenceKey.ExpirationAlarmHours,
+                    OmnipodBooleanPreferenceKey.LowReservoirAlert,
+                    OmnipodIntPreferenceKey.LowReservoirAlertUnits
+                )
+            ),
+            // Notifications subscreen
+            PreferenceSubScreenDef(
+                key = "omnipod_dash_notifications",
+                titleResId = app.aaps.pump.omnipod.common.R.string.omnipod_common_preferences_category_notifications,
+                items = listOf(
+                    OmnipodBooleanPreferenceKey.SoundUncertainTbrNotification,
+                    OmnipodBooleanPreferenceKey.SoundUncertainSmbNotification,
+                    OmnipodBooleanPreferenceKey.SoundUncertainBolusNotification,
+                    DashBooleanPreferenceKey.SoundDeliverySuspendedNotification
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
 

@@ -3,6 +3,7 @@ package app.aaps.pump.danar
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.Constraint
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.constraints.PluginConstraints
@@ -55,6 +56,7 @@ abstract class AbstractDanaRPlugin protected constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    protected val config: Config,
     commandQueue: CommandQueue,
     protected var constraintChecker: ConstraintsChecker,
     protected var aapsSchedulers: AapsSchedulers,
@@ -70,7 +72,7 @@ abstract class AbstractDanaRPlugin protected constructor(
     pluginDescription = PluginDescription()
         .mainType(PluginType.PUMP)
         .fragmentClass(DanaFragment::class.java.name)
-        .pluginIcon(app.aaps.core.ui.R.drawable.ic_danars_128)
+        .pluginIcon(app.aaps.core.ui.R.drawable.ic_danai_128)
         .pluginName(app.aaps.pump.dana.R.string.danarspump)
         .shortName(app.aaps.pump.dana.R.string.danarpump_shortname)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)

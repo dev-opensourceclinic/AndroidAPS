@@ -44,6 +44,7 @@ import app.aaps.core.interfaces.smsCommunicator.SmsCommunicator
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.BooleanKey
+import app.aaps.core.keys.BooleanNonKey
 import app.aaps.core.keys.StringKey
 import app.aaps.core.objects.crypto.CryptoUtil
 import app.aaps.core.ui.UIRunnable
@@ -105,7 +106,7 @@ class MainActivity : DaggerAppCompatActivityWithResult() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
-        actionBarDrawerToggle = ActionBarDrawerToggle(this, binding.mainDrawerLayout, R.string.open_navigation, R.string.close_navigation).also {
+        actionBarDrawerToggle = ActionBarDrawerToggle(this, binding.mainDrawerLayout, app.aaps.core.ui.R.string.open_navigation, R.string.close_navigation).also {
             binding.mainDrawerLayout.addDrawerListener(it)
             it.syncState()
         }
@@ -252,7 +253,7 @@ class MainActivity : DaggerAppCompatActivityWithResult() {
     }
 
     private fun startWizard(): Boolean =
-        !preferences.get(BooleanKey.GeneralSetupWizardProcessed)
+        !preferences.get(BooleanNonKey.GeneralSetupWizardProcessed)
 
     override fun onPostCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onPostCreate(savedInstanceState, persistentState)
@@ -326,27 +327,18 @@ class MainActivity : DaggerAppCompatActivityWithResult() {
         binding.mainPager.offscreenPageLimit = 8 // This may cause more memory consumption
 
         // Tabs
-        if (preferences.get(BooleanKey.OverviewShortTabTitles)) {
-            binding.tabsNormal.visibility = View.GONE
-            binding.tabsCompact.visibility = View.VISIBLE
-            binding.toolbar.layoutParams = LinearLayout.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, resources.getDimension(app.aaps.core.ui.R.dimen.compact_height).toInt())
-            TabLayoutMediator(binding.tabsCompact, binding.mainPager) { tab, position ->
-                tab.text = (binding.mainPager.adapter as TabPageAdapter).getPluginAt(position).nameShort
-            }.attach()
-        } else {
-            binding.tabsNormal.visibility = View.VISIBLE
-            binding.tabsCompact.visibility = View.GONE
-            val typedValue = TypedValue()
-            if (theme.resolveAttribute(android.R.attr.actionBarSize, typedValue, true)) {
-                binding.toolbar.layoutParams = LinearLayout.LayoutParams(
-                    Toolbar.LayoutParams.MATCH_PARENT,
-                    TypedValue.complexToDimensionPixelSize(typedValue.data, resources.displayMetrics)
-                )
-            }
-            TabLayoutMediator(binding.tabsNormal, binding.mainPager) { tab, position ->
-                tab.text = (binding.mainPager.adapter as TabPageAdapter).getPluginAt(position).name
-            }.attach()
+        binding.tabsNormal.visibility = View.VISIBLE
+        binding.tabsCompact.visibility = View.GONE
+        val typedValue = TypedValue()
+        if (theme.resolveAttribute(android.R.attr.actionBarSize, typedValue, true)) {
+            binding.toolbar.layoutParams = LinearLayout.LayoutParams(
+                Toolbar.LayoutParams.MATCH_PARENT,
+                TypedValue.complexToDimensionPixelSize(typedValue.data, resources.displayMetrics)
+            )
         }
+        TabLayoutMediator(binding.tabsNormal, binding.mainPager) { tab, position ->
+            tab.text = (binding.mainPager.adapter as TabPageAdapter).getPluginAt(position).name
+        }.attach()
 
         // FAB to switch to Compose UI
         binding.fabSwitchUi.setOnClickListener {

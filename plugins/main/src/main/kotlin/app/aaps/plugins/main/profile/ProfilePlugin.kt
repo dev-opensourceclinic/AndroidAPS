@@ -67,7 +67,7 @@ class ProfilePlugin @Inject constructor(
         .enableByDefault(true)
         .simpleModePosition(PluginDescription.Position.TAB)
         .pluginIcon(app.aaps.core.objects.R.drawable.ic_local_profile)
-        .pluginName(R.string.localprofile)
+        .pluginName(app.aaps.core.ui.R.string.localprofile)
         .shortName(R.string.localprofile_shortname)
         .description(R.string.description_profile_local)
         .visibleByDefault(true)

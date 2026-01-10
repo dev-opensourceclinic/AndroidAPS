@@ -4,7 +4,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpSync
-import app.aaps.core.keys.StringKey
+import app.aaps.core.keys.StringNonKey
 import app.aaps.core.keys.interfaces.Preferences
 import com.thoughtworks.xstream.XStream
 import com.thoughtworks.xstream.security.AnyTypePermission
@@ -37,7 +37,7 @@ class PumpSyncStorage @Inject constructor(
 
         xstream.addPermission(AnyTypePermission.ANY)
 
-        preferences.getIfExists(StringKey.PumpCommonBolusStorage)?.let { jsonData ->
+        preferences.getIfExists(StringNonKey.PumpCommonBolusStorage)?.let { jsonData ->
             if (jsonData.isNotBlank()) {
                 @Suppress("UNCHECKED_CAST")
                 pumpSyncStorageBolus = try {
@@ -51,7 +51,7 @@ class PumpSyncStorage @Inject constructor(
             }
         }
 
-        preferences.getIfExists(StringKey.PumpCommonTbrStorage)?.let { jsonData ->
+        preferences.getIfExists(StringNonKey.PumpCommonTbrStorage)?.let { jsonData ->
             if (jsonData.isNotBlank()) {
                 @Suppress("UNCHECKED_CAST")
                 pumpSyncStorageTBR = try {
@@ -69,16 +69,16 @@ class PumpSyncStorage @Inject constructor(
 
     fun saveStorageBolus() {
         if (pumpSyncStorageBolus.isNotEmpty()) {
-            preferences.put(StringKey.PumpCommonBolusStorage, xstream.toXML(pumpSyncStorageBolus))
+            preferences.put(StringNonKey.PumpCommonBolusStorage, xstream.toXML(pumpSyncStorageBolus))
             aapsLogger.debug(LTag.PUMP, "Saving Pump Sync Storage: boluses=${pumpSyncStorageBolus.size}")
-        } else preferences.remove(StringKey.PumpCommonBolusStorage)
+        } else preferences.remove(StringNonKey.PumpCommonBolusStorage)
     }
 
     fun saveStorageTBR() {
         if (pumpSyncStorageTBR.isNotEmpty()) {
-            preferences.put(StringKey.PumpCommonTbrStorage, xstream.toXML(pumpSyncStorageTBR))
+            preferences.put(StringNonKey.PumpCommonTbrStorage, xstream.toXML(pumpSyncStorageTBR))
             aapsLogger.debug(LTag.PUMP, "Saving Pump Sync Storage: tbr=${pumpSyncStorageTBR.size}")
-        } else preferences.remove(StringKey.PumpCommonTbrStorage)
+        } else preferences.remove(StringNonKey.PumpCommonTbrStorage)
     }
 
     fun getBoluses(): MutableList<PumpDbEntryBolus> {

@@ -34,6 +34,7 @@ import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.preferences.AdaptiveListPreference
 import app.aaps.plugins.automation.actions.Action
 import app.aaps.plugins.automation.actions.ActionAlarm
@@ -100,6 +101,7 @@ class AutomationPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val sp: app.aaps.core.interfaces.sharedPreferences.SP,
     private val context: Context,
     private val fabricPrivacy: FabricPrivacy,
     private val loop: Loop,
@@ -558,6 +560,17 @@ class AutomationPlugin @Inject constructor(
         removeIfExists(event)
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "automation_settings",
+        titleResId = app.aaps.core.ui.R.string.automation,
+        items = listOf(
+            StringKey.AutomationLocation
+
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
         val entries = arrayOf<CharSequence>(

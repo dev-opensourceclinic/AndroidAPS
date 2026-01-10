@@ -4,7 +4,6 @@
     <string name="setupwizard_units_prompt">Select units you want to display values in</string>
     <string name="next_button">Next</string>
     <string name="previous_button">Prev</string>
-    <string name="nav_setupwizard">Setup Wizard</string>
     <string name="setupwizard_finish">FINISH</string>
     <string name="welcome">Welcome</string>
     <string name="welcometosetupwizard">Welcome to setup wizard. It will guide you through the setup process\n</string>
@@ -25,12 +24,10 @@
     <string name="need_whitelisting">%1$s needs battery optimization whitelisting for proper performance</string>
     <string name="storedsettingsfound">Stored settings found</string>
     <string name="master_password_summary">Master password is used for backup encryption and to override security in application. Remember it or store on a safe place.</string>
-    <string name="current_master_password">Current master password</string>
+    <!-- current_master_password moved to core/ui/protection.xml -->
     <string name="common_values">Use values of your largest food you usually eat\n</string>
     <string name="syncinfotext">Synchronize data to the cloud. You can skip this part now but you will not be able to pass objectives until you set up Nightscout or Tidepool client.</string>
     <string name="status">Status:</string>
-    <string name="patient_name">Patient name</string>
-    <string name="patient_name_summary">Please provide patient name or nickname to differentiate among multiple setups</string>
     <string name="diawarning">Please remember: new insulin profiles require DIA at least 5h. DIA 5–6h on new profile is equal to DIA 3h on old insulin profiles.</string>
     <string name="profile">Profile</string>
     <string name="doprofileswitch">Do Profile Switch</string>
@@ -55,24 +52,16 @@
 
     <!--    ConfigBuilder-->
     <string name="config_builder">Config Builder</string>
-    <string name="configbuilder_pump">Pump</string>
     <string name="configbuilder_pump_description">Which pump would you like to use with AAPS?</string>
     <string name="configbuilder_profile">Profile</string>
-    <string name="configbuilder_aps">APS</string>
     <string name="configbuilder_aps_description">Which APS algorithm should make therapy adjustments?</string>
-    <string name="configbuilder_general">General</string>
     <string name="configbuilder_general_description">These are some general plugins you might find useful.</string>
-    <string name="configbuilder_sync">Synchronization</string>
     <string name="configbuilder_sync_description">Data upload and synchronization plugins.</string>
     <string name="configbuilder_constraints_description">Which constraints are applied?</string>
-    <string name="configbuilder_loop">Loop</string>
     <string name="configbuilder_loop_description">Use this to activate AAPS\' loop integration.</string>
     <string name="configbuilder_insulin_description">Which type of insulin are you using?</string>
-    <string name="configbuilder_bgsource">BG Source</string>
     <string name="configbuilder_bgsource_description">Where should AAPS gain  it\'s data from?</string>
-    <string name="configbuilder_smoothing">Smoothing</string>
     <string name="configbuilder_smoothing_description">Choose smoothing algorithm</string>
-    <string name="configbuilder_sensitivity">Sensitivity detection</string>
     <string name="configbuilder_sensitivity_description">Which sensitivity algorithm should be used?</string>
     <string name="config_builder_shortname">CONF</string>
     <string name="description_config_builder">Used for configuring the active plugins</string>
@@ -110,7 +99,6 @@
     <string name="goto_main_try_again">Please go back to main screen and try again.</string>
     <string name="restartingapp">Exiting application to apply settings.</string>
     <string name="ue_exported">User Entries exported</string>
-    <string name="protection">Protection</string>
     <string name="master_password_missing">Master password is not set!\n\nPlease set your Master password in Preferences (%1$s)</string>
 
 
@@ -170,5 +158,6 @@
     <string name="metadata_format_other">Unknown export format</string>
     <string name="reset_aps_results">Reset APS results</string>
     <string name="error_accessing_filesystem_select_aaps_directory_properly">Error accessing filesystem. Select AAPS directory properly.</string>
+    <!-- maintenance_email moved to core:keys module -->
 
 </resources>

@@ -35,6 +35,7 @@ import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.extensions.pureProfileFromJson
 import app.aaps.core.objects.profile.ProfileSealed
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.elements.WeekDay
 import app.aaps.core.utils.JsonHelper
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
@@ -472,6 +473,20 @@ class AutotunePlugin @Inject constructor(
         autotuneFS.atLog(message)
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "autotune_settings",
+        titleResId = app.aaps.core.ui.R.string.autotune,
+        items = listOf(
+            BooleanKey.AutotuneAutoSwitchProfile,
+            BooleanKey.AutotuneCategorizeUamAsBasal,
+            IntKey.AutotuneDefaultTuneDays,
+            BooleanKey.AutotuneCircadianIcIsf
+
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
         val category = PreferenceCategory(context)

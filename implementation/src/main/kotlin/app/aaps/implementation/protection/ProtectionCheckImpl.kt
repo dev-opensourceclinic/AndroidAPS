@@ -6,6 +6,7 @@ import app.aaps.core.interfaces.protection.PasswordCheck
 import app.aaps.core.interfaces.protection.ProtectionCheck
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.keys.IntKey
+import app.aaps.core.keys.ProtectionType
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
 import dagger.Reusable
@@ -52,15 +53,19 @@ class ProtectionCheckImpl @Inject constructor(
     )
 
     override fun isLocked(protection: ProtectionCheck.Protection): Boolean {
+        // No master password = no protection at all
+        if (preferences.get(StringKey.ProtectionMasterPassword).isEmpty()) {
+            return false
+        }
         if (activeSession(protection)) {
             return false
         }
-        return when (ProtectionCheck.ProtectionType.entries[preferences.get(protectionTypeResourceIDs[protection.ordinal])]) {
-            ProtectionCheck.ProtectionType.NONE            -> false
-            ProtectionCheck.ProtectionType.BIOMETRIC       -> true
-            ProtectionCheck.ProtectionType.MASTER_PASSWORD -> preferences.get(StringKey.ProtectionMasterPassword) != ""
-            ProtectionCheck.ProtectionType.CUSTOM_PASSWORD -> preferences.get(passwordsResourceIDs[protection.ordinal]) != ""
-            ProtectionCheck.ProtectionType.CUSTOM_PIN      -> preferences.get(pinsResourceIDs[protection.ordinal]) != ""
+        return when (ProtectionType.entries[preferences.get(protectionTypeResourceIDs[protection.ordinal])]) {
+            ProtectionType.NONE            -> false
+            ProtectionType.BIOMETRIC       -> true
+            ProtectionType.MASTER_PASSWORD -> true
+            ProtectionType.CUSTOM_PASSWORD -> preferences.get(passwordsResourceIDs[protection.ordinal]).isNotEmpty()
+            ProtectionType.CUSTOM_PIN      -> preferences.get(pinsResourceIDs[protection.ordinal]).isNotEmpty()
         }
     }
 
@@ -83,29 +88,34 @@ class ProtectionCheckImpl @Inject constructor(
 
     @UiThread
     override fun queryProtection(activity: FragmentActivity, protection: ProtectionCheck.Protection, ok: Runnable?, cancel: Runnable?, fail: Runnable?) {
+        // No master password = no protection at all
+        if (preferences.get(StringKey.ProtectionMasterPassword).isEmpty()) {
+            ok?.run()
+            return
+        }
         if (activeSession(protection)) {
             onOk(protection)
             ok?.run()
             return
         }
 
-        when (ProtectionCheck.ProtectionType.entries[preferences.get(protectionTypeResourceIDs[protection.ordinal])]) {
-            ProtectionCheck.ProtectionType.NONE            ->
+        when (ProtectionType.entries[preferences.get(protectionTypeResourceIDs[protection.ordinal])]) {
+            ProtectionType.NONE            ->
                 ok?.run()
 
-            ProtectionCheck.ProtectionType.BIOMETRIC       ->
+            ProtectionType.BIOMETRIC       ->
                 BiometricCheck.biometricPrompt(activity, titlePassResourceIDs[protection.ordinal], { onOk(protection); ok?.run() }, cancel, fail, passwordCheck)
 
-            ProtectionCheck.ProtectionType.MASTER_PASSWORD ->
+            ProtectionType.MASTER_PASSWORD ->
                 passwordCheck.queryPassword(
                     activity,
-                    app.aaps.core.ui.R.string.master_password,
+                    app.aaps.core.keys.R.string.master_password,
                     StringKey.ProtectionMasterPassword,
                     { onOk(protection); ok?.run() },
                     { cancel?.run() },
                     { fail?.run() })
 
-            ProtectionCheck.ProtectionType.CUSTOM_PASSWORD ->
+            ProtectionType.CUSTOM_PASSWORD ->
                 passwordCheck.queryPassword(
                     activity,
                     titlePassResourceIDs[protection.ordinal],
@@ -114,7 +124,7 @@ class ProtectionCheckImpl @Inject constructor(
                     { cancel?.run() },
                     { fail?.run() })
 
-            ProtectionCheck.ProtectionType.CUSTOM_PIN      ->
+            ProtectionType.CUSTOM_PIN      ->
                 passwordCheck.queryPassword(
                     activity,
                     titlePinResourceIDs[protection.ordinal],

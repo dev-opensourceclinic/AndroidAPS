@@ -43,11 +43,11 @@ import app.aaps.core.ui.R
 import app.aaps.core.ui.compose.AapsTheme
 import app.aaps.core.ui.compose.LocalPreferences
 import app.aaps.core.ui.compose.LocalRxBus
-import app.aaps.ui.compose.ProfileCompareContent
-import app.aaps.ui.compose.ProfileCompareRow
-import app.aaps.ui.compose.ProfileSingleContent
-import app.aaps.ui.compose.ProfileViewerData
-import app.aaps.ui.compose.ProfileViewerScreen
+import app.aaps.ui.compose.profileViewer.ProfileCompareContent
+import app.aaps.ui.compose.profileViewer.ProfileCompareRow
+import app.aaps.ui.compose.profileViewer.ProfileSingleContent
+import app.aaps.ui.compose.profileViewer.ProfileViewerData
+import app.aaps.ui.compose.profileViewer.ProfileViewerScreen
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -166,10 +166,6 @@ class ProfileViewerActivity : DaggerAppCompatActivity() {
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground
-                    ),
                     scrollBehavior = scrollBehavior
                 )
             }

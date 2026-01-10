@@ -21,6 +21,7 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.defs.determineCorrectBolusSize
 import app.aaps.core.interfaces.pump.defs.determineCorrectExtendedBolusSize
 import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.DecimalFormatter
@@ -30,9 +31,11 @@ import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.keys.interfaces.withEntries
 import app.aaps.core.objects.constraints.ConstraintObject
 import app.aaps.core.objects.extensions.put
 import app.aaps.core.objects.extensions.store
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.preferences.AdaptiveDoublePreference
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.core.validators.preferences.AdaptiveListPreference
@@ -47,6 +50,7 @@ class SafetyPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     private val preferences: Preferences,
+    private val sp: SP,
     private val constraintChecker: ConstraintsChecker,
     private val activePlugin: ActivePlugin,
     private val hardLimits: HardLimits,
@@ -62,6 +66,7 @@ class SafetyPlugin @Inject constructor(
         .alwaysEnabled(true)
         .showInList { false }
         .pluginName(R.string.safety)
+        .pluginIcon(app.aaps.core.ui.R.drawable.ic_header_warning)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN),
     aapsLogger, rh
 ), PluginConstraints, Safety {
@@ -182,6 +187,7 @@ class SafetyPlugin @Inject constructor(
             .store(IntKey.SafetyMaxCarbs, preferences)
     }
 
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
         val category = PreferenceCategory(context)
@@ -204,4 +210,17 @@ class SafetyPlugin @Inject constructor(
             addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.SafetyMaxCarbs, title = app.aaps.core.ui.R.string.max_carbs_title))
         }
     }
+
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "safety_settings",
+        titleResId = R.string.safety,
+        items = listOf(
+            StringKey.SafetyAge.withEntries(
+                hardLimits.ageEntryValues().zip(hardLimits.ageEntries()).associate { it.first.toString() to it.second.toString() }
+            ),
+            DoubleKey.SafetyMaxBolus,
+            IntKey.SafetyMaxCarbs
+        ),
+        iconResId = menuIcon
+    )
 }

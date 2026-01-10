@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -155,18 +154,12 @@ private fun MapPickerScreen(
                             imageVector = Icons.Default.Check,
                             contentDescription = stringResource(app.aaps.core.ui.R.string.ok),
                             tint = if (selectedCoordinates != null)
-                                MaterialTheme.colorScheme.onPrimary
+                                MaterialTheme.colorScheme.onSurface
                             else
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                }
             )
         }
     ) { paddingValues ->

@@ -9,6 +9,7 @@ import app.aaps.core.data.model.SourceSensor
 import app.aaps.core.data.model.TrendArrow
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.ue.Sources
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -30,13 +31,13 @@ class MM640gPlugin @Inject constructor(
     rh: ResourceHelper,
     aapsLogger: AAPSLogger,
     preferences: Preferences,
+    config: Config,
     persistenceLayer: PersistenceLayer,
     dateUtil: DateUtil,
     profileUtil: ProfileUtil
 ) : AbstractBgSourcePlugin(
     pluginDescription = PluginDescription()
         .mainType(PluginType.BGSOURCE)
-        .fragmentClass(BGSourceFragment::class.java.name)
         .composeContent {
             BgSourceComposeContent(
                 persistenceLayer = persistenceLayer,
@@ -53,7 +54,7 @@ class MM640gPlugin @Inject constructor(
         .preferencesVisibleInSimpleMode(false)
         .description(R.string.description_source_mm640g),
     ownPreferences = emptyList(),
-    aapsLogger, rh, preferences
+    aapsLogger, rh, preferences, config
 ), BgSource {
 
     // cannot be inner class because of needed injection

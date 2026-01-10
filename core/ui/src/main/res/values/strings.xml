@@ -39,8 +39,17 @@
     <string name="statuslights">Status lights</string>
     <string name="do_ns_upload_title">Upload BG data to NS</string>
     <string name="configbuilder_insulin">Insulin</string>
+    <string name="configbuilder_bgsource">BG Source</string>
+    <string name="configbuilder_smoothing">Smoothing</string>
+    <string name="configbuilder_pump">Pump</string>
+    <string name="configbuilder_sensitivity">Sensitivity detection</string>
+    <string name="configbuilder_aps">APS</string>
+    <string name="configbuilder_loop">Loop</string>
+    <string name="configbuilder_sync">Synchronization</string>
+    <string name="configbuilder_general">General</string>
+    <string name="protection">Protection</string>
     <string name="value_unavailable_short">n/a</string>
-    <string name="master_password">Master password</string>
+    <!-- master_password moved to core/keys/strings.xml -->
     <string name="ue_export_to_csv">Export User Entries to Excel (csv)</string>
     <string name="confirm">Confirm</string>
     <string name="pump">Pump</string>
@@ -88,8 +97,6 @@
     <string name="shortgram">g</string>
     <string name="shortpercent">%</string>
     <string name="bluetooth">Bluetooth</string>
-    <string name="btwatchdog_title">BT Watchdog</string>
-    <string name="btwatchdog_summary">Switches off the phone\'s bluetooth for one second if no connection to the pump is possible. This may help on some phones where the bluetooth stack freezes.</string>
     <string name="virtualpump_resultok">OK</string>
     <string name="pump_time_updated">Pump time updated</string>
     <string name="exit">Exit</string>
@@ -198,6 +205,7 @@
     <string name="not_available_full">Not available</string>
     <string name="engineering_mode_enabled">Engineering mode enabled</string>
     <string name="back">Back</string>
+    <string name="show_hide_records">Hide loop records</string>
 
     <!--    Protection-->
     <string name="wrongpassword">Wrong password</string>
@@ -508,7 +516,6 @@
 
 
     <!-- Alerts -->
-    <string name="raise_notifications_as_android_notifications">Use system notifications for alerts and notifications</string>
     <string name="urgent_alarm">Urgent Alarm</string>
     <string name="info">INFO</string>
 
@@ -654,6 +661,32 @@
     <!-- SmsCommunicator -->
     <string name="smscommunicator_missingsmspermission">Missing SMS permission</string>
 
+    <!-- Navigation -->
+    <string name="nav_about">About</string>
+    <string name="nav_exit">Exit</string>
+    <string name="open_navigation">Open navigation</string>
+    <string name="nav_history_browser">History browser</string>
+    <string name="overview">Overview</string>
+    <string name="manage">Manage</string>
+    <string name="localprofile">Profile</string>
+    <string name="nav_setupwizard">Setup Wizard</string>
+
+    <!-- Alerts -->
+    <string name="localalertsettings_title">Local alerts</string>
+
+    <!-- Actions Screen -->
+    <string name="actions">Actions</string>
+    <string name="status">Status</string>
+    <string name="pump_actions">Pump actions</string>
+    <string name="tempbasal_button">TempBasal</string>
+    <string name="extended_bolus_button">Extended Bolus</string>
+    <string name="tools">Tools</string>
+    <string name="sensor_label">Sensor</string>
+    <string name="insulin_label">Insulin</string>
+    <string name="pb_label">Pump battery</string>
+    <string name="cannula">Cannula</string>
+    <string name="patch_pump">Patch pump</string>
+
     <!-- About -->
     <string name="cta_dont_kill_my_app_info">Don\'t kill my app?</string>
     <string name="fabric_upload_disabled">Crash logs upload disabled!</string>
@@ -705,4 +738,5 @@
 
     <!--    Playback-->
     <string name="audio_playback_attribution">"AAPS plays audio"</string>
+
 </resources>

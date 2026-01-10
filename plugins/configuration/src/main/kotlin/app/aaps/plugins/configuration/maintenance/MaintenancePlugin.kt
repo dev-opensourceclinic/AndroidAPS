@@ -15,6 +15,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LoggerUtils
 import app.aaps.core.interfaces.logging.UserEntryLogger
 import app.aaps.core.interfaces.maintenance.FileListProvider
+import app.aaps.core.interfaces.maintenance.Maintenance
 import app.aaps.core.interfaces.nsclient.NSSettingsStatus
 import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.core.interfaces.plugin.PluginDescription
@@ -23,6 +24,7 @@ import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.DefaultEditTextValidator
 import app.aaps.core.validators.EditTextValidator
@@ -66,7 +68,7 @@ class MaintenancePlugin @Inject constructor(
         .preferencesVisibleInSimpleMode(false)
         .description(R.string.description_maintenance),
     aapsLogger, rh
-) {
+), Maintenance {
 
     fun sendLogs() {
         val recipient = preferences.get(StringKey.MaintenanceEmail)
@@ -244,6 +246,32 @@ class MaintenancePlugin @Inject constructor(
         }
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "maintenance_settings",
+        titleResId = R.string.maintenance,
+        items = listOf(
+            StringKey.MaintenanceEmail,
+            IntKey.MaintenanceLogsAmount,
+            PreferenceSubScreenDef(
+                key = "data_choice_setting",
+                titleResId = R.string.data_choices,
+                items = listOf(
+                    BooleanKey.MaintenanceEnableFabric,
+                    StringKey.MaintenanceIdentification
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "unattended_export_setting",
+                titleResId = R.string.unattended_settings_export,
+                items = listOf(
+                    BooleanKey.MaintenanceEnableExportSettingsAutomation
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && !(requiredKey == "data_choice_setting" || requiredKey == "unattended_export_setting")) return
         val category = PreferenceCategory(context)
@@ -254,7 +282,7 @@ class MaintenancePlugin @Inject constructor(
             initialExpandedChildrenCount = 0
             addPreference(
                 AdaptiveStringPreference(
-                    ctx = context, stringKey = StringKey.MaintenanceEmail, dialogMessage = R.string.maintenance_email, title = R.string.maintenance_email,
+                    ctx = context, stringKey = StringKey.MaintenanceEmail, dialogMessage = app.aaps.core.keys.R.string.maintenance_email, title = app.aaps.core.keys.R.string.maintenance_email,
                     validatorParams = DefaultEditTextValidator.Parameters(testType = EditTextValidator.TEST_EMAIL)
                 )
             )

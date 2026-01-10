@@ -15,7 +15,6 @@ import app.aaps.core.interfaces.rx.events.EventThemeSwitch
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.ui.UiMode
-import app.aaps.plugins.main.R
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import javax.inject.Inject
@@ -33,7 +32,7 @@ class ThemeSwitcherPlugin @Inject constructor(
         .neverVisible(true)
         .alwaysEnabled(true)
         .showInList { false }
-        .pluginName(R.string.theme_switcher),
+        .pluginName(app.aaps.core.keys.R.string.theme_switcher),
     aapsLogger, rh
 ) {
 

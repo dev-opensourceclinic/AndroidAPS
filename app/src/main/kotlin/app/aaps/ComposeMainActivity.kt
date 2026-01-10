@@ -14,37 +14,45 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.aaps.activities.HistoryBrowseActivity
-import app.aaps.activities.PreferencesActivity
-import app.aaps.compose.actions.ActionsViewModel
-import app.aaps.compose.main.MainMenuItem
-import app.aaps.compose.main.MainScreen
-import app.aaps.compose.main.MainViewModel
 import app.aaps.compose.navigation.AppRoute
 import app.aaps.core.data.ue.Sources
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.configuration.ConfigBuilder
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.profile.ProfileUtil
+import app.aaps.core.interfaces.protection.PasswordCheck
 import app.aaps.core.interfaces.protection.ProtectionCheck
 import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.events.EventPreferenceChange
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.BooleanKey
+import app.aaps.core.keys.StringKey
+import app.aaps.core.keys.interfaces.PreferenceVisibilityContext
 import app.aaps.core.ui.UIRunnable
 import app.aaps.core.ui.compose.AapsTheme
 import app.aaps.core.ui.compose.LocalPreferences
 import app.aaps.core.ui.compose.LocalRxBus
+import app.aaps.core.ui.compose.preference.PluginPreferencesScreen
 import app.aaps.plugins.configuration.activities.DaggerAppCompatActivityWithResult
 import app.aaps.plugins.configuration.activities.SingleFragmentActivity
 import app.aaps.plugins.configuration.setupwizard.SetupWizardActivity
-import app.aaps.plugins.main.profile.ProfileScreen
-import app.aaps.plugins.main.profile.ProfileViewModel
-import app.aaps.ui.compose.ProfileHelperScreen
-import app.aaps.ui.compose.StatsScreen
-import app.aaps.ui.compose.TreatmentsScreen
-import app.aaps.ui.viewmodels.ProfileHelperViewModel
-import app.aaps.ui.viewmodels.StatsViewModel
-import app.aaps.ui.viewmodels.TreatmentsViewModel
+import app.aaps.plugins.main.profile.ProfileEditorScreen
+import app.aaps.plugins.main.profile.ProfileEditorViewModel
+import app.aaps.plugins.main.skins.SkinProvider
+import app.aaps.ui.compose.actions.ActionsViewModel
+import app.aaps.ui.compose.main.MainMenuItem
+import app.aaps.ui.compose.main.MainNavDestination
+import app.aaps.ui.compose.main.MainScreen
+import app.aaps.ui.compose.main.MainViewModel
+import app.aaps.ui.compose.preferences.AllPreferencesScreen
+import app.aaps.ui.compose.profileHelper.ProfileHelperScreen
+import app.aaps.ui.compose.profileViewer.viewmodels.ProfileHelperViewModel
+import app.aaps.ui.compose.stats.StatsScreen
+import app.aaps.ui.compose.stats.viewmodels.StatsViewModel
+import app.aaps.ui.compose.treatments.TreatmentsScreen
+import app.aaps.ui.compose.treatments.viewmodels.TreatmentsViewModel
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.plusAssign
 import kotlinx.coroutines.launch
@@ -55,9 +63,14 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
     @Inject lateinit var aapsSchedulers: AapsSchedulers
     @Inject lateinit var fabricPrivacy: FabricPrivacy
     @Inject lateinit var protectionCheck: ProtectionCheck
+    @Inject lateinit var passwordCheck: PasswordCheck
     @Inject lateinit var activePlugin: ActivePlugin
     @Inject lateinit var configBuilder: ConfigBuilder
+    @Inject lateinit var config: Config
     @Inject lateinit var uiInteraction: UiInteraction
+    @Inject lateinit var skinProvider: SkinProvider
+    @Inject lateinit var profileUtil: ProfileUtil
+    @Inject lateinit var visibilityContext: PreferenceVisibilityContext
 
     // ViewModels
     @Inject lateinit var mainViewModel: MainViewModel
@@ -65,7 +78,7 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
     @Inject lateinit var treatmentsViewModel: TreatmentsViewModel
     @Inject lateinit var statsViewModel: StatsViewModel
     @Inject lateinit var profileHelperViewModel: ProfileHelperViewModel
-    @Inject lateinit var profileViewModel: ProfileViewModel
+    @Inject lateinit var profileEditorViewModel: ProfileEditorViewModel
 
     private val disposable = CompositeDisposable()
 
@@ -107,10 +120,7 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
                             onMenuClick = { mainViewModel.openDrawer() },
                             onPreferencesClick = {
                                 protectionCheck.queryProtection(this@ComposeMainActivity, ProtectionCheck.Protection.PREFERENCES, {
-                                    startActivity(
-                                        Intent(this@ComposeMainActivity, PreferencesActivity::class.java)
-                                            .setAction("app.aaps.ComposeMainActivity")
-                                    )
+                                    navController.navigate(AppRoute.Preferences.route)
                                 })
                             },
                             onMenuItemClick = { menuItem ->
@@ -128,12 +138,14 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
                                 mainViewModel.togglePluginEnabled(plugin, type, enabled)
                             },
                             onPluginPreferencesClick = { plugin ->
-                                handlePluginPreferencesClick(plugin)
+                                protectionCheck.queryProtection(this@ComposeMainActivity, ProtectionCheck.Protection.PREFERENCES, {
+                                    navController.navigate(AppRoute.PluginPreferences.createRoute(plugin.javaClass.simpleName))
+                                })
                             },
                             onDrawerClosed = { mainViewModel.closeDrawer() },
                             onNavDestinationSelected = { destination ->
                                 mainViewModel.setNavDestination(destination)
-                                if (destination == app.aaps.compose.main.MainNavDestination.Manage) {
+                                if (destination == MainNavDestination.Manage) {
                                     actionsViewModel.refreshState()
                                 }
                             },
@@ -215,9 +227,12 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
                     }
 
                     composable(AppRoute.Profile.route) {
-                        ProfileScreen(
-                            viewModel = profileViewModel,
-                            onBackClick = { navController.popBackStack() }
+                        ProfileEditorScreen(
+                            viewModel = profileEditorViewModel,
+                            onBackClick = { navController.popBackStack() },
+                            onActivateProfile = { profileName ->
+                                uiInteraction.runProfileSwitchDialog(supportFragmentManager, profileName)
+                            }
                         )
                     }
 
@@ -241,6 +256,36 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
                             onBackClick = { navController.popBackStack() }
                         )
                     }
+
+                    composable(AppRoute.Preferences.route) {
+                        AllPreferencesScreen(
+                            activePlugin = activePlugin,
+                            preferences = preferences,
+                            config = config,
+                            rh = rh,
+                            passwordCheck = passwordCheck,
+                            visibilityContext = visibilityContext,
+                            profileUtil = profileUtil,
+                            skinEntries = skinProvider.list.associate { skin -> skin.javaClass.name to rh.gs(skin.description) },
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(AppRoute.PluginPreferences.route) { backStackEntry ->
+                        val pluginKey = backStackEntry.arguments?.getString("pluginKey")
+                        val plugin = activePlugin.getPluginsList().find {
+                            it.javaClass.simpleName == pluginKey
+                        }
+                        if (plugin != null) {
+                            PluginPreferencesScreen(
+                                plugin = plugin,
+                                config = config,
+                                profileUtil = profileUtil,
+                                visibilityContext = visibilityContext,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -262,8 +307,13 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
             .toObservable(EventPreferenceChange::class.java)
             .observeOn(aapsSchedulers.main)
             .subscribe({ event ->
+                           // Handle screen wake lock
                            if (event.isChanged(BooleanKey.OverviewKeepScreenOn.key)) {
                                setupWakeLock()
+                           }
+                           // Language change requires full restart to reload resources
+                           if (event.isChanged(StringKey.GeneralLanguage.key)) {
+                               finish()
                            }
                        }, fabricPrivacy::logException)
     }
@@ -286,15 +336,15 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
         when (menuItem) {
             is MainMenuItem.Preferences -> {
                 protectionCheck.queryProtection(this, ProtectionCheck.Protection.PREFERENCES, {
-                    startActivity(
-                        Intent(this, PreferencesActivity::class.java)
-                            .setAction("app.aaps.ComposeMainActivity")
-                    )
+                    navController.navigate(AppRoute.Preferences.route)
                 })
             }
 
             is MainMenuItem.PluginPreferences -> {
-                // No-op: Compose UI doesn't have plugin tabs
+                // Navigate to plugin preferences if a plugin is specified
+                protectionCheck.queryProtection(this, ProtectionCheck.Protection.PREFERENCES, {
+                    navController.navigate(AppRoute.Preferences.route)
+                })
             }
 
             is MainMenuItem.Profile -> {
@@ -356,9 +406,4 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
         }
     }
 
-    private fun handlePluginPreferencesClick(plugin: PluginBase) {
-        protectionCheck.queryProtection(this, ProtectionCheck.Protection.PREFERENCES, {
-            uiInteraction.runPreferencesForPlugin(this, plugin.javaClass.simpleName)
-        })
-    }
 }

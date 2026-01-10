@@ -103,6 +103,9 @@
     <string name="danar_password_title">Pump password</string>
     <string name="danar_useextended_title">Use extended boluses for >200%</string>
     <string name="bolusspeed">Bolus speed</string>
+    <string name="bolus_speed_12">12 s/U</string>
+    <string name="bolus_speed_30">30 s/U</string>
+    <string name="bolus_speed_60">60 s/U</string>
     <string name="selectedpump">Selected pump</string>
     <string name="rs_loginsulinchange_title">Log reservoir change</string>
     <string name="rs_loginsulinchange_summary">Add \"Insulin Change\" event to careportal when detected in history</string>

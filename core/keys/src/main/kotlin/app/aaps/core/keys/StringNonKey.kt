@@ -16,5 +16,7 @@ enum class StringNonKey(
     ActivePumpType(key = "active_pump_type", defaultValue = ""),
     ActivePumpSerialNumber(key = "active_pump_serial_number", defaultValue = ""),
     SmsOtpSecret("smscommunicator_otp_secret", defaultValue = ""),
-    TotalBaseBasal("TBB", defaultValue = "10.00")
+    TotalBaseBasal("TBB", defaultValue = "10.00"),
+    PumpCommonBolusStorage(key = "pump_sync_storage_bolus", defaultValue = ""),
+    PumpCommonTbrStorage(key = "pump_sync_storage_tbr", defaultValue = ""),
 }

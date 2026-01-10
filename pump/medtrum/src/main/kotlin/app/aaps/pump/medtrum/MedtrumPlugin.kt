@@ -18,6 +18,7 @@ import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
 import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -40,13 +41,16 @@ import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventAppExit
 import app.aaps.core.interfaces.rx.events.EventDismissNotification
+import app.aaps.core.interfaces.rx.events.EventPreferenceChange
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.keys.interfaces.withEntriesProvider
 import app.aaps.core.objects.constraints.ConstraintObject
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.core.validators.preferences.AdaptiveListPreference
@@ -77,6 +81,7 @@ class MedtrumPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val config: Config,
     commandQueue: CommandQueue,
     private val constraintChecker: ConstraintsChecker,
     private val aapsSchedulers: AapsSchedulers,
@@ -118,6 +123,15 @@ class MedtrumPlugin @Inject constructor(
             .toObservable(EventAppExit::class.java)
             .observeOn(aapsSchedulers.io)
             .subscribe({ context.unbindService(mConnection) }, fabricPrivacy::logException)
+        disposable += rxBus
+            .toObservable(EventPreferenceChange::class.java)
+            .observeOn(aapsSchedulers.io)
+            .subscribe({ event ->
+                           // Update max insulin limits when serial number changes (determines pump type)
+                           if (event.isChanged(MedtrumStringKey.MedtrumSnInput.key)) {
+                               updateMaxInsulinLimitsForPumpType()
+                           }
+                       }, fabricPrivacy::logException)
 
         // Force enable pump unreachable alert due to some failure modes of Medtrum pump
         preferences.put(BooleanKey.AlertPumpUnreachable, true)
@@ -147,6 +161,9 @@ class MedtrumPlugin @Inject constructor(
         return medtrumService
     }
 
+    // MIGRATED TO COMPOSE: MedtrumPreferencesCompose handles serial number enabled state
+    // via enabledCondition on MedtrumStringKey.MedtrumSnInput using isPumpInitialized from visibilityContext.
+    // Note: Serial validation and connection alert custom summaries remain in legacy code (UI-specific).
     override fun preprocessPreferences(preferenceFragment: PreferenceFragmentCompat) {
         super.preprocessPreferences(preferenceFragment)
 
@@ -180,7 +197,7 @@ class MedtrumPlugin @Inject constructor(
                 val newDeviceType = MedtrumSnUtil().getDeviceTypeFromSerial(newSN)
 
                 when {
-                    newDeviceType == ModelType.INVALID                               -> {
+                    newDeviceType == ModelType.INVALID -> {
                         uiInteraction.showOkDialog(
                             context = preferenceFragment.requireActivity(),
                             title = rh.gs(R.string.sn_input_title),
@@ -198,7 +215,7 @@ class MedtrumPlugin @Inject constructor(
                         false
                     }
 
-                    else                                                             -> true
+                    else -> true
                 }
             }
         }
@@ -455,6 +472,79 @@ class MedtrumPlugin @Inject constructor(
         return pumpEnactResultProvider.get().success(connectionOK)
     }
 
+    override fun getPreferenceScreenContent(): PreferenceSubScreenDef {
+        // Update max values based on pump type (same as legacy addPreferenceScreen)
+        updateMaxInsulinLimitsForPumpType()
+
+        return PreferenceSubScreenDef(
+            key = "medtrum_settings",
+            titleResId = R.string.medtrum_pump_setting,
+            items = listOf(
+                MedtrumStringKey.MedtrumSnInput,
+                MedtrumStringKey.MedtrumAlarmSettings.withEntriesProvider(
+                    provider = { context -> getAlarmEntriesForPumpType(context) }
+                ),
+                MedtrumBooleanKey.MedtrumWarningNotification,
+                MedtrumBooleanKey.MedtrumPatchExpiration,
+                MedtrumIntKey.MedtrumPumpExpiryWarningHours,
+                MedtrumIntKey.MedtrumHourlyMaxInsulin,
+                MedtrumIntKey.MedtrumDailyMaxInsulin,
+                PreferenceSubScreenDef(
+                    key = "medtrum_advanced",
+                    titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                    items = listOf(
+                        MedtrumBooleanKey.MedtrumScanOnConnectionErrors
+                    )
+                )
+            )
+        )
+    }
+
+    private fun updateMaxInsulinLimitsForPumpType() {
+        when (medtrumPump.pumpType()) {
+            PumpType.MEDTRUM_NANO -> {
+                MedtrumIntKey.MedtrumHourlyMaxInsulin.max = 40
+                MedtrumIntKey.MedtrumDailyMaxInsulin.max = 180
+            }
+
+            PumpType.MEDTRUM_300U -> {
+                MedtrumIntKey.MedtrumHourlyMaxInsulin.max = 60
+                MedtrumIntKey.MedtrumDailyMaxInsulin.max = 270
+            }
+
+            else                  -> {
+                // Default values (same as NANO)
+                MedtrumIntKey.MedtrumHourlyMaxInsulin.max = 40
+                MedtrumIntKey.MedtrumDailyMaxInsulin.max = 180
+            }
+        }
+        // Clamp current values to new max limits
+        preferences.put(MedtrumIntKey.MedtrumHourlyMaxInsulin, min(preferences.get(MedtrumIntKey.MedtrumHourlyMaxInsulin), MedtrumIntKey.MedtrumHourlyMaxInsulin.max))
+        preferences.put(MedtrumIntKey.MedtrumDailyMaxInsulin, min(preferences.get(MedtrumIntKey.MedtrumDailyMaxInsulin), MedtrumIntKey.MedtrumDailyMaxInsulin.max))
+    }
+
+    private fun getAlarmEntriesForPumpType(context: Context): Map<String, String> {
+        // For NANO and 300U pumps, only Beep and Silent options are available
+        return when (medtrumPump.pumpType()) {
+            PumpType.MEDTRUM_NANO, PumpType.MEDTRUM_300U -> mapOf(
+                "6" to context.getString(R.string.alarm_setting_beep),
+                "7" to context.getString(R.string.alarm_setting_silent)
+            )
+
+            else                                         -> mapOf(
+                "0" to context.getString(R.string.alarm_setting_light_vibrate_beep),
+                "1" to context.getString(R.string.alarm_setting_light_vibrate),
+                "2" to context.getString(R.string.alarm_setting_light_beep),
+                "3" to context.getString(R.string.alarm_setting_light),
+                "4" to context.getString(R.string.alarm_setting_vibrate_beep),
+                "5" to context.getString(R.string.alarm_setting_vibrate),
+                "6" to context.getString(R.string.alarm_setting_beep),
+                "7" to context.getString(R.string.alarm_setting_silent)
+            )
+        }
+    }
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "medtrum_advanced") return
 

@@ -34,7 +34,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.ActivePlugin
-import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
@@ -51,7 +51,6 @@ import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
-import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.constraints.ConstraintObject
@@ -62,6 +61,7 @@ import app.aaps.core.objects.extensions.put
 import app.aaps.core.objects.extensions.store
 import app.aaps.core.objects.extensions.target
 import app.aaps.core.objects.profile.ProfileSealed
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.utils.MidnightUtils
 import app.aaps.core.utils.extensions.put
 import app.aaps.core.validators.preferences.AdaptiveDoublePreference
@@ -73,6 +73,7 @@ import app.aaps.plugins.aps.OpenAPSFragment
 import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.events.EventOpenAPSUpdateGui
 import app.aaps.plugins.aps.events.EventResetOpenAPSGui
+import app.aaps.plugins.aps.keys.ApsIntentKey
 import app.aaps.plugins.aps.openAPS.TddStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -92,11 +93,11 @@ open class OpenAPSSMBPlugin @Inject constructor(
     rh: ResourceHelper,
     private val profileFunction: ProfileFunction,
     private val profileUtil: ProfileUtil,
-    config: Config,
+    private val config: Config,
     private val activePlugin: ActivePlugin,
     private val iobCobCalculator: IobCobCalculator,
     private val hardLimits: HardLimits,
-    private val preferences: Preferences,
+    preferences: Preferences,
     protected val dateUtil: DateUtil,
     private val processedTbrEbData: ProcessedTbrEbData,
     private val persistenceLayer: PersistenceLayer,
@@ -108,11 +109,11 @@ open class OpenAPSSMBPlugin @Inject constructor(
     private val profiler: Profiler,
     private val glucoseStatusCalculatorSMB: GlucoseStatusCalculatorSMB,
     private val apsResultProvider: Provider<APSResult>
-) : PluginBase(
+) : PluginBaseWithPreferences(
     PluginDescription()
         .mainType(PluginType.APS)
         .fragmentClass(OpenAPSFragment::class.java.name)
-        .pluginIcon(app.aaps.core.ui.R.drawable.ic_generic_icon)
+        .pluginIcon(app.aaps.core.objects.R.drawable.ic_calculator)
         .pluginName(R.string.openapssmb)
         .shortName(app.aaps.core.ui.R.string.smb_shortname)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)
@@ -120,7 +121,8 @@ open class OpenAPSSMBPlugin @Inject constructor(
         .showInList(showInList = { config.APS })
         .description(R.string.description_smb)
         .setDefault(),
-    aapsLogger, rh
+    ownPreferences = listOf(ApsIntentKey::class.java),
+    aapsLogger, rh, preferences
 ), APS, PluginConstraints {
 
     override fun onStart() {
@@ -192,6 +194,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
         }
     }
 
+    // MIGRATED to OpenAPSSMBPreferencesCompose - kept for legacy XML preferences support
     override fun preprocessPreferences(preferenceFragment: PreferenceFragmentCompat) {
         super.preprocessPreferences(preferenceFragment)
 
@@ -588,6 +591,45 @@ open class OpenAPSSMBPlugin @Inject constructor(
             .store(IntKey.ApsDynIsfAdjustmentFactor, preferences)
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "openapssmb_settings",
+        titleResId = R.string.openapssmb,
+        items = listOf(
+            DoubleKey.ApsMaxBasal,
+            DoubleKey.ApsSmbMaxIob,
+            BooleanKey.ApsUseDynamicSensitivity,
+            BooleanKey.ApsUseAutosens,
+            IntKey.ApsDynIsfAdjustmentFactor,
+            UnitDoubleKey.ApsLgsThreshold,
+            BooleanKey.ApsDynIsfAdjustSensitivity,
+            BooleanKey.ApsSensitivityRaisesTarget,
+            BooleanKey.ApsResistanceLowersTarget,
+            BooleanKey.ApsUseSmb,
+            BooleanKey.ApsUseSmbWithHighTt,
+            BooleanKey.ApsUseSmbAlways,
+            BooleanKey.ApsUseSmbWithCob,
+            BooleanKey.ApsUseSmbWithLowTt,
+            BooleanKey.ApsUseSmbAfterCarbs,
+            IntKey.ApsMaxSmbFrequency,
+            IntKey.ApsMaxMinutesOfBasalToLimitSmb,
+            IntKey.ApsUamMaxMinutesOfBasalToLimitSmb,
+            BooleanKey.ApsUseUam,
+            IntKey.ApsCarbsRequestThreshold,
+            PreferenceSubScreenDef(
+                key = "absorption_smb_advanced",
+                titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                items = listOf(
+                    ApsIntentKey.LinkToDocs,
+                    BooleanKey.ApsAlwaysUseShortDeltas,
+                    DoubleKey.ApsMaxDailyMultiplier,
+                    DoubleKey.ApsMaxCurrentBasalMultiplier
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "absorption_smb_advanced") return
         val category = PreferenceCategory(context)
@@ -622,7 +664,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
                 addPreference(
                     AdaptiveIntentPreference(
                         ctx = context,
-                        intentKey = IntentKey.ApsLinkToDocs,
+                        intentKey = ApsIntentKey.LinkToDocs,
                         intent = Intent().apply { action = Intent.ACTION_VIEW; data = rh.gs(R.string.openapsama_link_to_preference_json_doc).toUri() },
                         summary = R.string.openapsama_link_to_preference_json_doc_txt
                     )

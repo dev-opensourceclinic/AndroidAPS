@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
@@ -22,6 +23,7 @@ import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.preferences.AdaptiveStringPreference
 import app.aaps.core.validators.preferences.AdaptiveSwitchPreference
 import app.aaps.plugins.sync.R
@@ -60,11 +62,13 @@ class TidepoolPlugin @Inject constructor(
     private val receiverDelegate: ReceiverDelegate,
     private val authFlowOut: AuthFlowOut,
     private val tidepoolMvvmRepository: TidepoolMvvmRepository,
+    private val config: Config,
 ) : Sync, Tidepool, PluginBaseWithPreferences(
     PluginDescription()
         .mainType(PluginType.SYNC)
         .pluginName(R.string.tidepool)
         .shortName(R.string.tidepool_shortname)
+        .pluginIcon(app.aaps.core.ui.R.drawable.ic_tidepool)
         .fragmentClass(TidepoolFragment::class.qualifiedName)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)
         .description(R.string.description_tidepool),
@@ -150,6 +154,34 @@ class TidepoolPlugin @Inject constructor(
     override val connected: Boolean
         get() = authFlowOut.connectionStatus == AuthFlowOut.ConnectionStatus.SESSION_ESTABLISHED
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "tidepool_settings",
+        titleResId = R.string.tidepool,
+        items = listOf(
+            PreferenceSubScreenDef(
+                key = "tidepool_connection_options",
+                titleResId = R.string.connection_settings_title,
+                items = listOf(
+                    BooleanKey.NsClientUseCellular,
+                    BooleanKey.NsClientUseRoaming,
+                    BooleanKey.NsClientUseWifi,
+                    StringKey.NsClientWifiSsids,
+                    BooleanKey.NsClientUseOnBattery,
+                    BooleanKey.NsClientUseOnCharging
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "tidepool_advanced",
+                titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                items = listOf(
+                    TidepoolBooleanKey.UseTestServers
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "tidepool_connection_options" && requiredKey != "tidepool_advanced") return
         val category = PreferenceCategory(context)
@@ -164,7 +196,7 @@ class TidepoolPlugin @Inject constructor(
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.NsClientUseCellular, title = R.string.ns_cellular))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.NsClientUseRoaming, title = R.string.ns_allow_roaming))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.NsClientUseWifi, title = R.string.ns_wifi))
-                addPreference(AdaptiveStringPreference(ctx = context, stringKey = StringKey.NsClientWifiSsids, dialogMessage = R.string.ns_wifi_allowed_ssids, title = R.string.ns_wifi_ssids))
+                addPreference(AdaptiveStringPreference(ctx = context, stringKey = StringKey.NsClientWifiSsids, dialogMessage = app.aaps.core.keys.R.string.ns_wifi_ssids_summary, title = app.aaps.core.keys.R.string.ns_wifi_ssids))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.NsClientUseOnBattery, title = R.string.ns_battery))
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.NsClientUseOnCharging, title = R.string.ns_charging))
             })

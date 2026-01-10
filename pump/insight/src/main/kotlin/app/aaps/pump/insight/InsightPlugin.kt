@@ -18,6 +18,7 @@ import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.Constraint
 import app.aaps.core.interfaces.constraints.PluginConstraints
 import app.aaps.core.interfaces.logging.AAPSLogger
@@ -46,6 +47,8 @@ import app.aaps.core.interfaces.rx.events.EventOverviewBolusProgress
 import app.aaps.core.interfaces.rx.events.EventRefreshOverview
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.keys.interfaces.withActivity
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.core.validators.preferences.AdaptiveIntentPreference
 import app.aaps.core.validators.preferences.AdaptiveSwitchPreference
@@ -136,6 +139,7 @@ class InsightPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val config: Config,
     commandQueue: CommandQueue,
     private val rxBus: RxBus,
     private val profileFunction: ProfileFunction,
@@ -476,7 +480,7 @@ class InsightPlugin @Inject constructor(
     }
 
     override val lastDataTime: Long get() = if (connectionService == null || alertService == null) dateUtil.now() else connectionService?.lastDataTime ?: 0
-    override val lastBolusTime: Long? get() = lastBolusTimestamp
+    override val lastBolusTime: Long get() = lastBolusTimestamp
 
     override val baseBasalRate: Double
         get() {
@@ -1535,6 +1539,28 @@ class InsightPlugin @Inject constructor(
         insightDatabase.clearAllTables()
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "insight_settings",
+        titleResId = R.string.insight_local,
+        items = listOf(
+            InsightIntentKey.InsightPairing.withActivity(InsightPairingInformationActivity::class.java),
+            InsightBooleanKey.LogReservoirChanges,
+            InsightBooleanKey.LogTubeChanges,
+            InsightBooleanKey.LogSiteChanges,
+            InsightBooleanKey.LogBatteryChanges,
+            InsightBooleanKey.LogOperatingModeChanges,
+            InsightBooleanKey.LogAlerts,
+            InsightBooleanKey.EnableTbrEmulation,
+            InsightBooleanKey.DisableVibration,
+            InsightBooleanKey.DisableVibrationAuto,
+            InsightIntKey.MinRecoveryDuration,
+            InsightIntKey.MaxRecoveryDuration,
+            InsightIntKey.DisconnectDelay
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
 

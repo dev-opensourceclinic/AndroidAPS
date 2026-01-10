@@ -9,6 +9,7 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
 import app.aaps.core.data.plugin.PluginType
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -38,6 +39,7 @@ import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.StringKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.extensions.toJson
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.DefaultEditTextValidator
 import app.aaps.core.validators.EditTextValidator
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
@@ -64,6 +66,7 @@ class NSClientPlugin @Inject constructor(
     private val context: Context,
     private val fabricPrivacy: FabricPrivacy,
     private val preferences: Preferences,
+    private val config: Config,
     private val receiverDelegate: ReceiverDelegate,
     private val dataSyncSelectorV1: DataSyncSelectorV1,
     private val dateUtil: DateUtil,
@@ -244,6 +247,66 @@ class NSClientPlugin @Inject constructor(
         return true
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "ns_client_settings",
+        titleResId = R.string.ns_client_title,
+        items = listOf(
+            StringKey.NsClientUrl,
+            StringKey.NsClientApiSecret,
+            PreferenceSubScreenDef(
+                key = "ns_client_synchronization",
+                titleResId = R.string.ns_sync_options,
+                items = listOf(
+                    BooleanKey.NsClientUploadData,
+                    BooleanKey.BgSourceUploadToNs,
+                    BooleanKey.NsClientAcceptCgmData,
+                    BooleanKey.NsClientAcceptProfileStore,
+                    BooleanKey.NsClientAcceptTempTarget,
+                    BooleanKey.NsClientAcceptProfileSwitch,
+                    BooleanKey.NsClientAcceptInsulin,
+                    BooleanKey.NsClientAcceptCarbs,
+                    BooleanKey.NsClientAcceptTherapyEvent,
+                    BooleanKey.NsClientAcceptRunningMode,
+                    BooleanKey.NsClientAcceptTbrEb
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "ns_client_alarm_options",
+                titleResId = R.string.ns_alarm_options,
+                items = listOf(
+                    BooleanKey.NsClientNotificationsFromAlarms,
+                    BooleanKey.NsClientNotificationsFromAnnouncements,
+                    IntKey.NsClientAlarmStaleData,
+                    IntKey.NsClientUrgentAlarmStaleData
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "ns_client_connection_options",
+                titleResId = R.string.connection_settings_title,
+                items = listOf(
+                    BooleanKey.NsClientUseCellular,
+                    BooleanKey.NsClientUseRoaming,
+                    BooleanKey.NsClientUseWifi,
+                    StringKey.NsClientWifiSsids,
+                    BooleanKey.NsClientUseOnBattery,
+                    BooleanKey.NsClientUseOnCharging
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "ns_client_advanced",
+                titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                items = listOf(
+                    BooleanKey.NsClientLogAppStart,
+                    BooleanKey.NsClientCreateAnnouncementsFromErrors,
+                    BooleanKey.NsClientCreateAnnouncementsFromCarbsReq,
+                    BooleanKey.NsClientSlowSync
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "ns_client_synchronization" && requiredKey != "ns_client_alarm_options" && requiredKey != "ns_client_connection_options" && requiredKey != "ns_client_advanced") return
         val category = PreferenceCategory(context)
@@ -254,13 +317,13 @@ class NSClientPlugin @Inject constructor(
             initialExpandedChildrenCount = 0
             addPreference(
                 AdaptiveStringPreference(
-                    ctx = context, stringKey = StringKey.NsClientUrl, dialogMessage = R.string.ns_client_url_dialog_message, title = R.string.ns_client_url_title,
+                    ctx = context, stringKey = StringKey.NsClientUrl, dialogMessage = app.aaps.core.keys.R.string.ns_client_url_summary, title = app.aaps.core.keys.R.string.ns_client_url_title,
                     validatorParams = DefaultEditTextValidator.Parameters(testType = EditTextValidator.TEST_HTTPS_URL)
                 )
             )
             addPreference(
                 AdaptiveStringPreference(
-                    ctx = context, stringKey = StringKey.NsClientApiSecret, dialogMessage = R.string.ns_client_secret_dialog_message, title = R.string.ns_client_secret_title,
+                    ctx = context, stringKey = StringKey.NsClientApiSecret, dialogMessage = app.aaps.core.keys.R.string.ns_client_secret_summary, title = app.aaps.core.keys.R.string.ns_client_secret_title,
                     validatorParams = DefaultEditTextValidator.Parameters(testType = EditTextValidator.TEST_MIN_LENGTH, minLength = 12)
                 )
             )
@@ -295,7 +358,7 @@ class NSClientPlugin @Inject constructor(
                 addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.NsClientUseWifi, title = R.string.ns_wifi))
                 addPreference(
                     AdaptiveStringPreference(
-                        ctx = context, stringKey = StringKey.NsClientWifiSsids, dialogMessage = R.string.ns_wifi_allowed_ssids, title = R.string.ns_wifi_ssids,
+                        ctx = context, stringKey = StringKey.NsClientWifiSsids, dialogMessage = app.aaps.core.keys.R.string.ns_wifi_ssids_summary, title = app.aaps.core.keys.R.string.ns_wifi_ssids,
                         validatorParams = DefaultEditTextValidator.Parameters(emptyAllowed = true)
                     )
                 )

@@ -29,7 +29,10 @@ data class GeneralColors(
     val activeInsulinText: Color,
     val calculator: Color,
     val futureRecord: Color,
-    val invalidatedRecord: Color
+    val invalidatedRecord: Color,
+    val statusNormal: Color,
+    val statusWarning: Color,
+    val statusCritical: Color
 )
 
 /**
@@ -39,8 +42,11 @@ data class GeneralColors(
 internal val LightGeneralColors = GeneralColors(
     activeInsulinText = Color(0xFF1E88E5),  // iob color
     calculator = Color(0xFF66BB6A),          // colorCalculatorButton
-    futureRecord = Color(0xFF66BB6A),              // green for scheduled/future items
-    invalidatedRecord = Color(0xFFE53935)          // red for invalid/deleted items
+    futureRecord = Color(0xFF66BB6A),        // green for scheduled/future items
+    invalidatedRecord = Color(0xFFE53935),   // red for invalid/deleted items
+    statusNormal = Color(0xFF4CAF50),        // green for normal status
+    statusWarning = Color(0xFFFFC107),       // amber for warning status
+    statusCritical = Color(0xFFF44336)       // red for critical status
 )
 
 /**
@@ -50,8 +56,11 @@ internal val LightGeneralColors = GeneralColors(
 internal val DarkGeneralColors = GeneralColors(
     activeInsulinText = Color(0xFF1E88E5),  // iob color (same in both modes)
     calculator = Color(0xFF67E86A),          // colorCalculatorButton (night)
-    futureRecord = Color(0xFF6AE86D),              // green for scheduled/future items (night)
-    invalidatedRecord = Color(0xFFEF5350)          // red for invalid/deleted items (night)
+    futureRecord = Color(0xFF6AE86D),        // green for scheduled/future items (night)
+    invalidatedRecord = Color(0xFFEF5350),   // red for invalid/deleted items (night)
+    statusNormal = Color(0xFF81C784),        // lighter green for dark mode
+    statusWarning = Color(0xFFFFD54F),       // lighter amber for dark mode
+    statusCritical = Color(0xFFE57373)       // lighter red for dark mode
 )
 
 /**

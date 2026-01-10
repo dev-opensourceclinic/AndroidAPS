@@ -35,7 +35,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.plugin.ActivePlugin
-import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
@@ -51,7 +51,6 @@ import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.IntKey
-import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.constraints.ConstraintObject
@@ -62,6 +61,7 @@ import app.aaps.core.objects.extensions.put
 import app.aaps.core.objects.extensions.store
 import app.aaps.core.objects.extensions.target
 import app.aaps.core.objects.profile.ProfileSealed
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.utils.MidnightUtils
 import app.aaps.core.validators.preferences.AdaptiveDoublePreference
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
@@ -71,6 +71,7 @@ import app.aaps.plugins.aps.OpenAPSFragment
 import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.events.EventOpenAPSUpdateGui
 import app.aaps.plugins.aps.events.EventResetOpenAPSGui
+import app.aaps.plugins.aps.keys.ApsIntentKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -96,7 +97,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     private val activePlugin: ActivePlugin,
     private val iobCobCalculator: IobCobCalculator,
     private val hardLimits: HardLimits,
-    private val preferences: Preferences,
+    preferences: Preferences,
     protected val dateUtil: DateUtil,
     private val processedTbrEbData: ProcessedTbrEbData,
     private val persistenceLayer: PersistenceLayer,
@@ -107,18 +108,19 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
     private val profiler: Profiler,
     private val glucoseStatusCalculatorAutoIsf: GlucoseStatusCalculatorAutoIsf,
     private val apsResultProvider: Provider<APSResult>
-) : PluginBase(
+) : PluginBaseWithPreferences(
     PluginDescription()
         .mainType(PluginType.APS)
         .fragmentClass(OpenAPSFragment::class.java.name)
-        .pluginIcon(app.aaps.core.ui.R.drawable.ic_generic_icon)
+        .pluginIcon(app.aaps.core.objects.R.drawable.ic_calculator)
         .pluginName(R.string.openaps_auto_isf)
         .shortName(R.string.autoisf_shortname)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)
         .preferencesVisibleInSimpleMode(false)
         .showInList { config.APS && config.isEngineeringMode() && config.isDev() }
         .description(R.string.description_auto_isf),
-    aapsLogger, rh
+    ownPreferences = listOf(ApsIntentKey::class.java),
+    aapsLogger, rh, preferences
 ), APS, PluginConstraints {
 
     // last values
@@ -218,6 +220,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         }
     }
 
+    // MIGRATED to OpenAPSAutoISFPreferencesCompose - kept for legacy XML preferences support
     override fun preprocessPreferences(preferenceFragment: PreferenceFragmentCompat) {
         super.preprocessPreferences(preferenceFragment)
         val smbAlwaysEnabled = preferences.get(BooleanKey.ApsUseSmbAlways)
@@ -939,6 +942,72 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
         return new_SMB
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "openapsautoisf_settings",
+        titleResId = R.string.openaps_auto_isf,
+        items = listOf(
+            DoubleKey.ApsMaxBasal,
+            DoubleKey.ApsSmbMaxIob,
+            BooleanKey.ApsUseAutosens,
+            BooleanKey.ApsSensitivityRaisesTarget,
+            BooleanKey.ApsResistanceLowersTarget,
+            BooleanKey.ApsAutoIsfHighTtRaisesSens,
+            BooleanKey.ApsAutoIsfLowTtLowersSens,
+            IntKey.ApsAutoIsfHalfBasalExerciseTarget,
+            BooleanKey.ApsUseSmb,
+            BooleanKey.ApsUseSmbWithHighTt,
+            BooleanKey.ApsUseSmbAlways,
+            BooleanKey.ApsUseSmbWithCob,
+            BooleanKey.ApsUseSmbWithLowTt,
+            BooleanKey.ApsUseSmbAfterCarbs,
+            BooleanKey.ApsUseUam,
+            IntKey.ApsMaxSmbFrequency,
+            IntKey.ApsMaxMinutesOfBasalToLimitSmb,
+            IntKey.ApsUamMaxMinutesOfBasalToLimitSmb,
+            IntKey.ApsCarbsRequestThreshold,
+            PreferenceSubScreenDef(
+                key = "absorption_smb_advanced",
+                titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                items = listOf(
+                    ApsIntentKey.LinkToDocs,
+                    BooleanKey.ApsAlwaysUseShortDeltas,
+                    DoubleKey.ApsMaxDailyMultiplier,
+                    DoubleKey.ApsMaxCurrentBasalMultiplier
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "auto_isf_settings",
+                titleResId = R.string.autoISF_settings_title,
+                items = listOf(
+                    BooleanKey.ApsUseAutoIsfWeights,
+                    DoubleKey.ApsAutoIsfMin,
+                    DoubleKey.ApsAutoIsfMax,
+                    DoubleKey.ApsAutoIsfBgAccelWeight,
+                    DoubleKey.ApsAutoIsfBgBrakeWeight,
+                    DoubleKey.ApsAutoIsfLowBgWeight,
+                    DoubleKey.ApsAutoIsfHighBgWeight,
+                    DoubleKey.ApsAutoIsfPpWeight,
+                    DoubleKey.ApsAutoIsfDuraWeight,
+                    IntKey.ApsAutoIsfIobThPercent
+                )
+            ),
+            PreferenceSubScreenDef(
+                key = "smb_delivery_settings",
+                titleResId = R.string.smb_delivery_settings_title,
+                items = listOf(
+                    DoubleKey.ApsAutoIsfSmbDeliveryRatio,
+                    DoubleKey.ApsAutoIsfSmbDeliveryRatioMin,
+                    DoubleKey.ApsAutoIsfSmbDeliveryRatioMax,
+                    DoubleKey.ApsAutoIsfSmbDeliveryRatioBgRange,
+                    DoubleKey.ApsAutoIsfSmbMaxRangeExtension,
+                    BooleanKey.ApsAutoIsfSmbOnEvenTarget
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null &&
             requiredKey != "absorption_smb_advanced" &&
@@ -977,7 +1046,7 @@ open class OpenAPSAutoISFPlugin @Inject constructor(
                 addPreference(
                     AdaptiveIntentPreference(
                         ctx = context,
-                        intentKey = IntentKey.ApsLinkToDocs,
+                        intentKey = ApsIntentKey.LinkToDocs,
                         intent = Intent().apply { action = Intent.ACTION_VIEW; data = rh.gs(R.string.openapsama_link_to_preference_json_doc).toUri() },
                         summary = R.string.openapsama_link_to_preference_json_doc_txt
                     )

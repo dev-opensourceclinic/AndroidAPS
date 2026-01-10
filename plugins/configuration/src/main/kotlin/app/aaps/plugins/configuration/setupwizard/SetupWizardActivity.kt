@@ -18,7 +18,7 @@ import app.aaps.core.interfaces.rx.events.EventSWSyncStatus
 import app.aaps.core.interfaces.rx.events.EventSWUpdate
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
-import app.aaps.core.keys.BooleanKey
+import app.aaps.core.keys.BooleanNonKey
 import app.aaps.core.ui.locale.LocaleHelper.update
 import app.aaps.plugins.configuration.R
 import app.aaps.plugins.configuration.activities.DaggerAppCompatActivityWithResult
@@ -54,7 +54,7 @@ class SetupWizardActivity : DaggerAppCompatActivityWithResult() {
         binding = ActivitySetupwizardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        title = rh.gs(R.string.nav_setupwizard)
+        title = rh.gs(app.aaps.core.ui.R.string.nav_setupwizard)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
@@ -78,7 +78,7 @@ class SetupWizardActivity : DaggerAppCompatActivityWithResult() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
                 when (menuItem.itemId) {
                     android.R.id.home -> {
-                        preferences.put(BooleanKey.GeneralSetupWizardProcessed, true)
+                        preferences.put(BooleanNonKey.GeneralSetupWizardProcessed, true)
                         uiInteraction.showOkCancelDialog(context = this@SetupWizardActivity, message = rh.gs(R.string.exitwizard), ok = { finish() })
                         true
                     }
@@ -154,7 +154,7 @@ class SetupWizardActivity : DaggerAppCompatActivityWithResult() {
 
     // Go back to overview
     fun finishSetupWizard() {
-        preferences.put(BooleanKey.GeneralSetupWizardProcessed, true)
+        preferences.put(BooleanNonKey.GeneralSetupWizardProcessed, true)
         val intent = Intent(this, uiInteraction.mainActivity).setAction("SetupWizardActivity")
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)

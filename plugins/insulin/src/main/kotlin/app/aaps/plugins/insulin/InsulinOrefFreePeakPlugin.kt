@@ -17,6 +17,7 @@ import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.extensions.put
 import app.aaps.core.objects.extensions.store
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import kotlinx.serialization.json.JsonObject
 import javax.inject.Inject
@@ -32,7 +33,7 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
     profileFunction: ProfileFunction,
     rxBus: RxBus,
     aapsLogger: AAPSLogger,
-    config: Config,
+    private val config: Config,
     hardLimits: HardLimits,
     uiInteraction: UiInteraction
 ) : InsulinOrefBasePlugin(rh, profileFunction, rxBus, aapsLogger, config, hardLimits, uiInteraction) {
@@ -65,6 +66,17 @@ class InsulinOrefFreePeakPlugin @Inject constructor(
             .description(R.string.description_insulin_free_peak)
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "insulin_free_peak_settings",
+        titleResId = R.string.insulin_oref_peak,
+        items = listOf(
+            IntKey.InsulinOrefPeak
+
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
         val category = PreferenceCategory(context)

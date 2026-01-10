@@ -43,17 +43,18 @@ import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.BooleanKey
-import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.extensions.generateCOBString
 import app.aaps.core.objects.extensions.round
 import app.aaps.core.objects.extensions.toStringShort
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.preferences.AdaptiveIntentPreference
 import app.aaps.core.validators.preferences.AdaptiveSwitchPreference
 import app.aaps.plugins.sync.R
 import app.aaps.plugins.sync.nsclient.extensions.toJson
 import app.aaps.plugins.sync.xdrip.extensions.toXdripJson
+import app.aaps.plugins.sync.xdrip.keys.XdripIntentKey
 import app.aaps.plugins.sync.xdrip.keys.XdripLongKey
 import app.aaps.plugins.sync.xdrip.mvvm.XdripMvvmRepository
 import app.aaps.plugins.sync.xdrip.workers.XdripDataSyncWorker
@@ -101,7 +102,7 @@ class XdripPlugin @Inject constructor(
         .shortName(R.string.xdrip_shortname)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)
         .description(R.string.description_xdrip),
-    ownPreferences = listOf(XdripLongKey::class.java),
+    ownPreferences = listOf(XdripLongKey::class.java, XdripIntentKey::class.java),
     aapsLogger, rh, preferences
 ) {
 
@@ -377,6 +378,25 @@ class XdripPlugin @Inject constructor(
         }
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "xdrip_settings",
+        titleResId = R.string.xdrip,
+        items = listOf(
+            XdripIntentKey.Info,
+            BooleanKey.XdripSendStatus,
+            PreferenceSubScreenDef(
+                key = "xdrip_advanced",
+                titleResId = R.string.xdrip_status_settings,
+                items = listOf(
+                    BooleanKey.XdripSendDetailedIob,
+                    BooleanKey.XdripSendBgi
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "xdrip_advanced") return
         val category = PreferenceCategory(context)
@@ -385,7 +405,7 @@ class XdripPlugin @Inject constructor(
             key = "xdrip_settings"
             title = rh.gs(R.string.xdrip)
             initialExpandedChildrenCount = 0
-            addPreference(AdaptiveIntentPreference(ctx = context, intentKey = IntentKey.XdripInfo, summary = R.string.xdrip_local_broadcasts_summary, title = R.string.xdrip_local_broadcasts_title))
+            addPreference(AdaptiveIntentPreference(ctx = context, intentKey = XdripIntentKey.Info, summary = R.string.xdrip_local_broadcasts_summary, title = R.string.xdrip_local_broadcasts_title))
             addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.XdripSendStatus, title = R.string.xdrip_send_status_title))
             addPreference(preferenceManager.createPreferenceScreen(context).apply {
                 key = "xdrip_advanced"

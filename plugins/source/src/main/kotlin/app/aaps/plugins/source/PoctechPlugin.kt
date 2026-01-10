@@ -11,6 +11,7 @@ import app.aaps.core.data.model.SourceSensor
 import app.aaps.core.data.model.TrendArrow
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.ue.Sources
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -33,13 +34,13 @@ class PoctechPlugin @Inject constructor(
     rh: ResourceHelper,
     aapsLogger: AAPSLogger,
     preferences: Preferences,
+    config: Config,
     persistenceLayer: PersistenceLayer,
     dateUtil: DateUtil,
     profileUtil: ProfileUtil
 ) : AbstractBgSourcePlugin(
     PluginDescription()
         .mainType(PluginType.BGSOURCE)
-        .fragmentClass(BGSourceFragment::class.java.name)
         .composeContent {
             BgSourceComposeContent(
                 persistenceLayer = persistenceLayer,
@@ -56,7 +57,7 @@ class PoctechPlugin @Inject constructor(
         .preferencesVisibleInSimpleMode(false)
         .description(R.string.description_source_poctech),
     ownPreferences = emptyList(),
-    aapsLogger, rh, preferences
+    aapsLogger, rh, preferences, config
 ), BgSource {
 
     // cannot be inner class because of needed injection

@@ -10,6 +10,7 @@ import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -36,6 +37,7 @@ import app.aaps.core.interfaces.rx.events.EventPreferenceChange
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.DoubleKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.preferences.AdaptiveListIntPreference
 import app.aaps.core.validators.preferences.AdaptiveSwitchPreference
@@ -70,6 +72,7 @@ class EquilPumpPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val config: Config,
     commandQueue: CommandQueue,
     private val aapsSchedulers: AapsSchedulers,
     private val rxBus: RxBus,
@@ -457,6 +460,18 @@ class EquilPumpPlugin @Inject constructor(
         fun toDuration(dateTime: DateTime): Duration = Duration(dateTime.toLocalTime().millisOfDay.toLong())
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "equil_settings",
+        titleResId = R.string.equil_name,
+        items = listOf(
+            EquilBooleanPreferenceKey.EquilAlarmBattery,
+            EquilBooleanPreferenceKey.EquilAlarmInsulin,
+            EquilIntPreferenceKey.EquilTone
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(
         preferenceManager: PreferenceManager,
         parent: PreferenceScreen,

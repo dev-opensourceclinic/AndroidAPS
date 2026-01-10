@@ -2,23 +2,20 @@
 
 package app.aaps.plugins.sync.nsclient.data
 
-import android.content.Context
-import app.aaps.core.data.ue.Action
-import app.aaps.core.data.ue.Sources
 import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.logging.UserEntryLogger
 import app.aaps.core.interfaces.notifications.Notification
 import app.aaps.core.interfaces.nsclient.NSSettingsStatus
+import app.aaps.core.interfaces.overview.Overview
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventDismissNotification
 import app.aaps.core.interfaces.ui.UiInteraction
-import app.aaps.core.keys.IntKey
-import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.utils.JsonHelper
 import app.aaps.plugins.sync.R
+import dagger.Lazy
 import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
@@ -119,10 +116,10 @@ class NSSettingsStatusImpl @Inject constructor(
     private val aapsLogger: AAPSLogger,
     private val rh: ResourceHelper,
     private val rxBus: RxBus,
-    private val preferences: Preferences,
     private val config: Config,
     private val uel: UserEntryLogger,
-    private val uiInteraction: UiInteraction
+    private val uiInteraction: UiInteraction,
+    private val overview: Lazy<Overview>
 ) : NSSettingsStatus {
 
     // ***** PUMP STATUS ******
@@ -155,7 +152,7 @@ class NSSettingsStatusImpl @Inject constructor(
         }
         data = status
         aapsLogger.debug(LTag.NSCLIENT, "Received status: $status")
-        if (config.AAPSCLIENT) copyStatusLightsNsSettings(null)
+        if (config.AAPSCLIENT) overview.get().applyStatusLightsFromNs(null)
     }
 
     override fun getVersion(): String =
@@ -172,7 +169,7 @@ class NSSettingsStatusImpl @Inject constructor(
 
     // valid property is "warn" or "urgent"
     // plugins "iage" "sage" "cage" "pbage"
-    private fun getExtendedWarnValue(plugin: String, property: String): Double? {
+    override fun getExtendedWarnValue(plugin: String, property: String): Double? {
         val extendedSettings = getExtendedSettings() ?: return null
         val pluginJson = extendedSettings.optJSONObject(plugin) ?: return null
         return try {
@@ -218,21 +215,4 @@ class NSSettingsStatusImpl @Inject constructor(
 
     override fun pumpExtendedSettingsFields(): String =
         JsonHelper.safeGetString(extendedPumpSettings(), "fields", "")
-
-    override fun copyStatusLightsNsSettings(context: Context?) {
-        val action = {
-            getExtendedWarnValue("cage", "warn")?.let { preferences.put(IntKey.OverviewCageWarning, it.toInt()) }
-            getExtendedWarnValue("cage", "urgent")?.let { preferences.put(IntKey.OverviewCageCritical, it.toInt()) }
-            getExtendedWarnValue("iage", "warn")?.let { preferences.put(IntKey.OverviewIageWarning, it.toInt()) }
-            getExtendedWarnValue("iage", "urgent")?.let { preferences.put(IntKey.OverviewIageCritical, it.toInt()) }
-            getExtendedWarnValue("sage", "warn")?.let { preferences.put(IntKey.OverviewSageWarning, it.toInt()) }
-            getExtendedWarnValue("sage", "urgent")?.let { preferences.put(IntKey.OverviewSageCritical, it.toInt()) }
-            getExtendedWarnValue("bage", "warn")?.let { preferences.put(IntKey.OverviewBageWarning, it.toInt()) }
-            getExtendedWarnValue("bage", "urgent")?.let { preferences.put(IntKey.OverviewBageCritical, it.toInt()) }
-            uel.log(Action.NS_SETTINGS_COPIED, Sources.NSClient)
-        }
-
-        if (context != null) uiInteraction.showOkCancelDialog(context = context, title = app.aaps.core.ui.R.string.statuslights, message = R.string.copy_existing_values, ok = action)
-        else action.invoke()
-    }
 }

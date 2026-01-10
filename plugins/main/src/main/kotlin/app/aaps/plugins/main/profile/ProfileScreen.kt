@@ -67,22 +67,21 @@ import app.aaps.core.ui.compose.OkDialog
 import app.aaps.core.ui.compose.SliderWithButtons
 import app.aaps.core.ui.compose.ValueInputDialog
 import app.aaps.plugins.main.R
-import app.aaps.plugins.main.profile.ui.TargetValueList
-import app.aaps.plugins.main.profile.ui.TimeValueList
 import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
-    viewModel: ProfileViewModel,
-    onBackClick: () -> Unit
+fun ProfileEditorScreen(
+    viewModel: ProfileEditorViewModel,
+    onBackClick: () -> Unit,
+    onActivateProfile: (profileName: String) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.localprofile)) },
+                title = { Text(stringResource(app.aaps.core.ui.R.string.localprofile)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -125,7 +124,7 @@ fun ProfileScreen(
                     } else if (state.isValid) {
                         // Activate profile button (when not edited and valid)
                         FilledTonalButton(
-                            onClick = { /* Open profile switch dialog */ },
+                            onClick = { state.currentProfile?.name?.let { onActivateProfile(it) } },
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Icon(
@@ -544,7 +543,7 @@ private fun DiaContent(
 
 @Composable
 private fun IcContent(
-    viewModel: ProfileViewModel,
+    viewModel: ProfileEditorViewModel,
     profile: SingleProfileState,
     state: ProfileUiState,
     supportsDynamic: Boolean
@@ -601,7 +600,7 @@ private fun IcContent(
 
 @Composable
 private fun IsfContent(
-    viewModel: ProfileViewModel,
+    viewModel: ProfileEditorViewModel,
     profile: SingleProfileState,
     state: ProfileUiState,
     supportsDynamic: Boolean
@@ -658,7 +657,7 @@ private fun IsfContent(
 
 @Composable
 private fun BasalContent(
-    viewModel: ProfileViewModel,
+    viewModel: ProfileEditorViewModel,
     profile: SingleProfileState,
     state: ProfileUiState
 ) {
@@ -724,7 +723,7 @@ private fun BasalContent(
 
 @Composable
 private fun TargetContent(
-    viewModel: ProfileViewModel,
+    viewModel: ProfileEditorViewModel,
     profile: SingleProfileState,
     state: ProfileUiState
 ) {

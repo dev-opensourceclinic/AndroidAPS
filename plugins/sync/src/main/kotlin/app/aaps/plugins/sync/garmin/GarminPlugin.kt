@@ -8,6 +8,7 @@ import androidx.preference.PreferenceScreen
 import app.aaps.core.data.model.GV
 import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.plugin.PluginType
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
@@ -17,6 +18,7 @@ import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventNewBG
 import app.aaps.core.interfaces.rx.events.EventPreferenceChange
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.DefaultEditTextValidator
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.core.validators.preferences.AdaptiveStringPreference
@@ -59,11 +61,12 @@ class GarminPlugin @Inject constructor(
     preferences: Preferences,
     private val context: Context,
     private val loopHub: LoopHub,
-    private val rxBus: RxBus
+    private val rxBus: RxBus,
+    private val config: Config
 ) : PluginBaseWithPreferences(
     pluginDescription = PluginDescription()
         .mainType(PluginType.SYNC)
-        .pluginIcon(app.aaps.core.objects.R.drawable.ic_watch)
+        .pluginIcon(app.aaps.core.ui.R.drawable.ic_garmin_triangle)
         .pluginName(R.string.garmin)
         .shortName(R.string.garmin)
         .description(R.string.garmin_description)
@@ -476,6 +479,19 @@ class GarminPlugin @Inject constructor(
         return joa.toString()
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "garmin_settings",
+        titleResId = R.string.garmin,
+        items = listOf(
+            GarminBooleanKey.LocalHttpServer,
+            GarminIntKey.LocalHttpPort,
+            GarminStringKey.RequestKey
+
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
         val category = PreferenceCategory(context)

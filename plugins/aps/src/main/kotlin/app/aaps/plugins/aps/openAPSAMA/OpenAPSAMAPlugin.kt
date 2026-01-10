@@ -26,7 +26,7 @@ import app.aaps.core.interfaces.iob.IobCobCalculator
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.ActivePlugin
-import app.aaps.core.interfaces.plugin.PluginBase
+import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileFunction
@@ -38,13 +38,13 @@ import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.DoubleKey
-import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.objects.constraints.ConstraintObject
 import app.aaps.core.objects.extensions.convertedToAbsolute
 import app.aaps.core.objects.extensions.getPassedDurationToTimeInMinutes
 import app.aaps.core.objects.extensions.plannedRemainingMinutes
 import app.aaps.core.objects.extensions.target
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.utils.MidnightUtils
 import app.aaps.core.validators.preferences.AdaptiveDoublePreference
 import app.aaps.core.validators.preferences.AdaptiveIntentPreference
@@ -53,6 +53,7 @@ import app.aaps.plugins.aps.OpenAPSFragment
 import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.events.EventOpenAPSUpdateGui
 import app.aaps.plugins.aps.events.EventResetOpenAPSGui
+import app.aaps.plugins.aps.keys.ApsIntentKey
 import app.aaps.plugins.aps.openAPSSMB.GlucoseStatusCalculatorSMB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -69,7 +70,7 @@ class OpenAPSAMAPlugin @Inject constructor(
     private val rxBus: RxBus,
     private val constraintsChecker: ConstraintsChecker,
     rh: ResourceHelper,
-    config: Config,
+    private val config: Config,
     private val profileFunction: ProfileFunction,
     private val activePlugin: ActivePlugin,
     private val iobCobCalculator: IobCobCalculator,
@@ -78,22 +79,23 @@ class OpenAPSAMAPlugin @Inject constructor(
     private val dateUtil: DateUtil,
     private val persistenceLayer: PersistenceLayer,
     private val glucoseStatusProvider: GlucoseStatusProvider,
-    private val preferences: Preferences,
+    preferences: Preferences,
     private val determineBasalAMA: DetermineBasalAMA,
     private val glucoseStatusCalculatorSMB: GlucoseStatusCalculatorSMB,
     private val apsResultProvider: Provider<APSResult>
-) : PluginBase(
+) : PluginBaseWithPreferences(
     PluginDescription()
         .mainType(PluginType.APS)
         .fragmentClass(OpenAPSFragment::class.java.name)
-        .pluginIcon(app.aaps.core.ui.R.drawable.ic_generic_icon)
+        .pluginIcon(app.aaps.core.objects.R.drawable.ic_calculator)
         .pluginName(R.string.openapsama)
         .shortName(R.string.oaps_shortname)
         .preferencesId(PluginDescription.PREFERENCE_SCREEN)
         .preferencesVisibleInSimpleMode(false)
         .showInList { config.APS }
         .description(R.string.description_ama),
-    aapsLogger, rh
+    ownPreferences = listOf(ApsIntentKey::class.java),
+    aapsLogger, rh, preferences
 ), APS, PluginConstraints {
 
     // last values
@@ -313,6 +315,31 @@ class OpenAPSAMAPlugin @Inject constructor(
     override fun configuration(): JsonObject = JsonObject(emptyMap())
     override fun applyConfiguration(configuration: JsonObject) {}
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "openapsma_settings",
+        titleResId = R.string.openapsama,
+        items = listOf(
+            DoubleKey.ApsMaxBasal,
+            DoubleKey.ApsAmaMaxIob,
+            BooleanKey.ApsUseAutosens,
+            BooleanKey.ApsAmaAutosensAdjustTargets,
+            DoubleKey.ApsAmaMin5MinCarbsImpact,
+            PreferenceSubScreenDef(
+                key = "absorption_ama_advanced",
+                titleResId = app.aaps.core.ui.R.string.advanced_settings_title,
+                items = listOf(
+                    ApsIntentKey.LinkToDocs,
+                    BooleanKey.ApsAlwaysUseShortDeltas,
+                    DoubleKey.ApsMaxDailyMultiplier,
+                    DoubleKey.ApsMaxCurrentBasalMultiplier,
+                    DoubleKey.ApsAmaBolusSnoozeDivisor
+                )
+            )
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null && requiredKey != "absorption_ama_advanced") return
         val category = PreferenceCategory(context)
@@ -332,7 +359,7 @@ class OpenAPSAMAPlugin @Inject constructor(
                 addPreference(
                     AdaptiveIntentPreference(
                         ctx = context,
-                        intentKey = IntentKey.ApsLinkToDocs,
+                        intentKey = ApsIntentKey.LinkToDocs,
                         intent = Intent().apply { action = Intent.ACTION_VIEW; data = rh.gs(R.string.openapsama_link_to_preference_json_doc).toUri() },
                         summary = R.string.openapsama_link_to_preference_json_doc_txt
                     )

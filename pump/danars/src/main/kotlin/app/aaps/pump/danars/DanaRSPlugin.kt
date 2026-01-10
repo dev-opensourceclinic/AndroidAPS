@@ -14,6 +14,7 @@ import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.Constraint
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.constraints.PluginConstraints
@@ -47,7 +48,9 @@ import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.keys.interfaces.withActivity
 import app.aaps.core.objects.constraints.ConstraintObject
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.DefaultEditTextValidator
 import app.aaps.core.validators.EditTextValidator
@@ -81,6 +84,7 @@ class DanaRSPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val config: Config,
     commandQueue: CommandQueue,
     private val aapsSchedulers: AapsSchedulers,
     private val rxBus: RxBus,
@@ -588,6 +592,20 @@ class DanaRSPlugin @Inject constructor(
 
     override fun clearAllTables() = danaHistoryDatabase.clearAllTables()
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "danars_settings",
+        titleResId = app.aaps.pump.dana.R.string.danarspump,
+        items = listOf(
+            DanaIntentKey.BtSelector.withActivity(BLEScanActivity::class.java),
+            DanaStringKey.Password,
+            DanaIntKey.BolusSpeed,
+            DanaBooleanKey.LogInsulinChange,
+            DanaBooleanKey.LogCannulaChange
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
 

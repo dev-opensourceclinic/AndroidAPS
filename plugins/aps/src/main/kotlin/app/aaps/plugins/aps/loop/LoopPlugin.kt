@@ -83,6 +83,7 @@ import app.aaps.core.objects.extensions.convertedToAbsolute
 import app.aaps.core.objects.extensions.convertedToPercent
 import app.aaps.core.objects.extensions.json
 import app.aaps.core.objects.extensions.plannedRemainingMinutes
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.plugins.aps.R
@@ -106,6 +107,7 @@ class LoopPlugin @Inject constructor(
     private val aapsSchedulers: AapsSchedulers,
     private val rxBus: RxBus,
     private val preferences: Preferences,
+    private val sp: app.aaps.core.interfaces.sharedPreferences.SP,
     private val config: Config,
     private val constraintChecker: ConstraintsChecker,
     rh: ResourceHelper,
@@ -1059,6 +1061,16 @@ class LoopPlugin @Inject constructor(
         )
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "loop_settings",
+        titleResId = app.aaps.core.ui.R.string.loop,
+        items = listOf(
+            IntKey.LoopOpenModeMinChange
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
         val category = PreferenceCategory(context)

@@ -24,6 +24,7 @@ import androidx.work.WorkManager
 import app.aaps.core.data.model.HasIDs
 import app.aaps.core.data.model.data.Block
 import app.aaps.core.data.plugin.PluginType
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
@@ -34,6 +35,7 @@ import app.aaps.core.interfaces.rx.events.EventPreferenceChange
 import app.aaps.core.interfaces.sync.Sync
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.validators.preferences.AdaptiveSwitchPreference
 import app.aaps.plugins.sync.R
 import app.aaps.plugins.sync.openhumans.delegates.OHAppIDDelegate
@@ -67,6 +69,7 @@ class OpenHumansUploaderPlugin @Inject internal constructor(
     rh: ResourceHelper,
     aapsLogger: AAPSLogger,
     preferences: Preferences,
+    private val config: Config,
     private val context: Context,
     private val persistenceLayer: PersistenceLayer,
     private val openHumansAPI: OpenHumansAPI,
@@ -689,6 +692,17 @@ class OpenHumansUploaderPlugin @Inject internal constructor(
         const val UPLOAD_NOTIFICATION_ID = 3126
     }
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "open_humans_settings",
+        titleResId = R.string.open_humans,
+        items = listOf(
+            BooleanKey.OpenHumansWifiOnly,
+            BooleanKey.OpenHumansChargingOnly
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
         val category = PreferenceCategory(context)

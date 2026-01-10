@@ -14,6 +14,7 @@ import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.pump.defs.TimeChangeType
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.notifications.Notification
@@ -38,6 +39,7 @@ import app.aaps.core.interfaces.rx.events.EventSWRLStatus
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.utils.DateTimeUtil
 import app.aaps.core.validators.DefaultEditTextValidator
 import app.aaps.core.validators.EditTextValidator
@@ -116,6 +118,7 @@ class MedtronicPumpPlugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val config: Config,
     commandQueue: CommandQueue,
     rxBus: RxBus,
     context: Context,
@@ -1247,6 +1250,28 @@ class MedtronicPumpPlugin @Inject constructor(
 
     private val pumpFreqEntries = arrayOf<CharSequence>(rh.gs(RileyLinkTargetFrequency.MedtronicUS.friendlyName!!), rh.gs(RileyLinkTargetFrequency.MedtronicWorldWide.friendlyName!!))
 
+    // TODO: Remove after full migration to new Compose preferences - replace with PreferenceSubScreenDef
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "medtronic_settings",
+        titleResId = R.string.medtronic_name,
+        items = listOf(
+            MedtronicStringPreferenceKey.Serial,
+            MedtronicStringPreferenceKey.PumpType,
+            MedtronicStringPreferenceKey.PumpFrequency,
+            MedtronicIntPreferenceKey.MaxBasal,
+            MedtronicIntPreferenceKey.MaxBolus,
+            MedtronicIntPreferenceKey.BolusDelay,
+            RileyLinkStringPreferenceKey.Encoding,
+            MedtronicStringPreferenceKey.BatteryType,
+            RileyLinkIntentPreferenceKey.MacAddressSelector,
+            RileylinkBooleanPreferenceKey.OrangeUseScanning,
+            RileylinkBooleanPreferenceKey.ShowReportedBatteryLevel,
+            MedtronicBooleanPreferenceKey.SetNeutralTemp
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
 

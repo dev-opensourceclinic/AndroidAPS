@@ -9,11 +9,13 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.IBinder
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T.Companion.mins
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -40,7 +42,9 @@ import app.aaps.core.interfaces.utils.Round.floorTo
 import app.aaps.core.interfaces.utils.Round.roundTo
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.keys.interfaces.withEntriesProvider
 import app.aaps.core.objects.constraints.ConstraintObject
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.DefaultEditTextValidator
 import app.aaps.core.validators.EditTextValidator
@@ -80,6 +84,7 @@ class DanaRv2Plugin @Inject constructor(
     private val fabricPrivacy: FabricPrivacy,
     pumpSync: PumpSync,
     preferences: Preferences,
+    config: Config,
     uiInteraction: UiInteraction,
     danaHistoryDatabase: DanaHistoryDatabase,
     decimalFormatter: DecimalFormatter,
@@ -89,6 +94,7 @@ class DanaRv2Plugin @Inject constructor(
     aapsLogger,
     rh,
     preferences,
+    config,
     commandQueue,
     constraintChecker,
     aapsSchedulers,
@@ -369,6 +375,37 @@ class DanaRv2Plugin @Inject constructor(
     override fun setUserOptions(): PumpEnactResult =
         executionService?.setUserOptions() ?: error("Execution service is null")
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "danar_v2_settings",
+        titleResId = R.string.danar_pump_settings,
+        items = listOf(
+            DanaStringKey.RName.withEntriesProvider(
+                provider = { context -> getBondedBluetoothDevices(context).associateWith { it } },
+                emptyEntriesMessageResId = app.aaps.core.ui.R.string.need_connect_permission
+            ),
+            DanaIntKey.Password,
+            DanaIntKey.BolusSpeed
+        ),
+        iconResId = menuIcon
+    )
+
+    private fun getBondedBluetoothDevices(context: Context): List<String> {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            return emptyList()
+        }
+
+        return try {
+            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+            bluetoothManager?.adapter?.bondedDevices
+                ?.mapNotNull { it.name }
+                ?.sorted()
+                ?: emptyList()
+        } catch (_: SecurityException) {
+            emptyList()
+        }
+    }
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
 

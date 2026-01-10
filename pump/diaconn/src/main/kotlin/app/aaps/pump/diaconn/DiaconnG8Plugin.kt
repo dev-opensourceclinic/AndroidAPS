@@ -13,6 +13,7 @@ import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.data.time.T
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.constraints.Constraint
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.constraints.PluginConstraints
@@ -47,7 +48,9 @@ import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.Round
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
+import app.aaps.core.keys.interfaces.withActivity
 import app.aaps.core.objects.constraints.ConstraintObject
+import app.aaps.core.ui.compose.preference.PreferenceSubScreenDef
 import app.aaps.core.ui.toast.ToastUtils
 import app.aaps.core.validators.preferences.AdaptiveIntentPreference
 import app.aaps.core.validators.preferences.AdaptiveListIntPreference
@@ -74,6 +77,7 @@ class DiaconnG8Plugin @Inject constructor(
     aapsLogger: AAPSLogger,
     rh: ResourceHelper,
     preferences: Preferences,
+    private val config: Config,
     commandQueue: CommandQueue,
     private val rxBus: RxBus,
     private val context: Context,
@@ -267,8 +271,8 @@ class DiaconnG8Plugin @Inject constructor(
         return true
     }
 
-    override val lastBolusTime: Long? get() = diaconnG8Pump.lastBolusTime
-    override val lastBolusAmount: Double? get() = diaconnG8Pump.lastBolusAmount
+    override val lastBolusTime: Long get() = diaconnG8Pump.lastBolusTime
+    override val lastBolusAmount: Double get() = diaconnG8Pump.lastBolusAmount
     override val lastDataTime: Long get() = diaconnG8Pump.lastConnection
     override val baseBasalRate: Double get() = diaconnG8Pump.baseAmount
     override val reservoirLevel: Double get() = diaconnG8Pump.systemRemainInsulin
@@ -509,6 +513,22 @@ class DiaconnG8Plugin @Inject constructor(
 
     override fun clearAllTables() = diaconnHistoryDatabase.clearAllTables()
 
+    override fun getPreferenceScreenContent() = PreferenceSubScreenDef(
+        key = "diaconn_settings",
+        titleResId = R.string.diaconn_g8_pump,
+        items = listOf(
+            DiaconnIntentKey.BtSelector.withActivity(DiaconnG8BLEScanActivity::class.java),
+            DiaconnIntKey.BolusSpeed,
+            DiaconnBooleanKey.LogInsulinChange,
+            DiaconnBooleanKey.LogCannulaChange,
+            DiaconnBooleanKey.LogTubeChange,
+            DiaconnBooleanKey.LogBatteryChange,
+            DiaconnBooleanKey.SendLogsToCloud
+        ),
+        iconResId = menuIcon
+    )
+
+    // TODO: Remove after full migration to Compose preferences (getPreferenceScreenContent)
     override fun addPreferenceScreen(preferenceManager: PreferenceManager, parent: PreferenceScreen, context: Context, requiredKey: String?) {
         if (requiredKey != null) return
 

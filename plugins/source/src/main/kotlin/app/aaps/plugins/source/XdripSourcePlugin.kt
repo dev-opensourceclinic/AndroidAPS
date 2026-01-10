@@ -13,6 +13,7 @@ import app.aaps.core.data.model.TrendArrow
 import app.aaps.core.data.plugin.PluginType
 import app.aaps.core.data.time.T
 import app.aaps.core.data.ue.Sources
+import app.aaps.core.interfaces.configuration.Config
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
@@ -37,13 +38,14 @@ import kotlin.math.round
 class XdripSourcePlugin @Inject constructor(
     rh: ResourceHelper,
     aapsLogger: AAPSLogger,
+    preferences: Preferences,
+    config: Config,
     persistenceLayer: PersistenceLayer,
     dateUtil: DateUtil,
     profileUtil: ProfileUtil
 ) : AbstractBgSourceWithSensorInsertLogPlugin(
-    PluginDescription()
+    pluginDescription = PluginDescription()
         .mainType(PluginType.BGSOURCE)
-        .fragmentClass(BGSourceFragment::class.java.name)
         .composeContent {
             BgSourceComposeContent(
                 persistenceLayer = persistenceLayer,
@@ -59,7 +61,9 @@ class XdripSourcePlugin @Inject constructor(
         .pluginName(R.string.source_xdrip)
         .preferencesVisibleInSimpleMode(false)
         .description(R.string.description_source_xdrip),
-    aapsLogger, rh
+    aapsLogger = aapsLogger,
+    rh = rh,
+    preferences = preferences
 ), BgSource, XDripSource {
 
     @VisibleForTesting
