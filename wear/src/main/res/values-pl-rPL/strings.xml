@@ -262,4 +262,25 @@
     <string name="loop_status_tbr_cancel">Ustawianie zwykłej bazy</string>
     <string name="loop_status_smb">%1$.2f U</string>
     <string name="loop_status_no_last_run">BRAK</string>
+    <string name="loop_status_closed">Zamknięta pętla</string>
+    <string name="loop_status_open">Otwarta pętla</string>
+    <string name="loop_status_lgs">Zawieszenie przy niskiej glikemii</string>
+    <string name="loop_status_disabled">Pętla wyłączona</string>
+    <string name="loop_status_suspended">Pętla wstrzymana</string>
+    <string name="loop_status_disconnected">Pompa odłączona</string>
+    <string name="loop_status_superbolus">Superbolus</string>
+    <string name="loop_status_unknown">Nieznany</string>
+    <string name="loop_status_result">Wynik pętli</string>
+    <string name="loop_status_last_run_enact">Ostatni przebieg &amp; działanie</string>
+    <string name="loop_status_last_run">Ostatni przebieg</string>
+    <string name="loop_status_last_enact">Ostatnie działanie</string>
+    <string name="loop_status_smb_text">SMB</string>
+    <string name="loop_status_basal_rate">Dawka</string>
+    <string name="loop_status_duration">Czas trwania</string>
+    <string name="loop_status_oaps_reason">Powód OpenAPS</string>
+    <string name="loop_status_targets">Cele</string>
+    <string name="loop_status_temp_target">Cel tymczasowy</string>
+    <string name="loop_status_target_range">Zakres</string>
+    <string name="loop_status_target">Cel</string>
+    <string name="loop_status">Status pętli</string>
 </resources>
