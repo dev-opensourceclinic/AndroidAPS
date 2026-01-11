@@ -14,7 +14,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -41,13 +40,14 @@ import app.aaps.core.objects.extensions.pureProfileFromJson
 import app.aaps.core.objects.profile.ProfileSealed
 import app.aaps.core.ui.R
 import app.aaps.core.ui.compose.AapsTheme
+import app.aaps.core.ui.compose.AapsTopAppBar
 import app.aaps.core.ui.compose.LocalPreferences
 import app.aaps.core.ui.compose.LocalRxBus
-import app.aaps.ui.compose.profileViewer.ProfileCompareContent
-import app.aaps.ui.compose.profileViewer.ProfileCompareRow
-import app.aaps.ui.compose.profileViewer.ProfileSingleContent
-import app.aaps.ui.compose.profileViewer.ProfileViewerData
-import app.aaps.ui.compose.profileViewer.ProfileViewerScreen
+import app.aaps.ui.compose.profileManagement.ProfileCompareContent
+import app.aaps.ui.compose.profileManagement.ProfileCompareRow
+import app.aaps.ui.compose.profileManagement.ProfileSingleContent
+import app.aaps.ui.compose.profileManagement.ProfileViewerData
+import app.aaps.ui.compose.profileManagement.ProfileViewerScreen
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -156,7 +156,7 @@ class ProfileViewerActivity : DaggerAppCompatActivity() {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
-                TopAppBar(
+                AapsTopAppBar(
                     title = { Text(text = viewerData.profileName ?: stringResource(R.string.profile)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {

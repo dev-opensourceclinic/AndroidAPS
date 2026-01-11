@@ -1,4 +1,4 @@
-package app.aaps.ui.compose.profileViewer.viewmodels
+package app.aaps.ui.compose.profileManagement.viewmodels
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -8,6 +8,7 @@ import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.time.T
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.LocalProfileManager
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.profile.PureProfile
@@ -19,9 +20,9 @@ import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.objects.profile.ProfileSealed
 import app.aaps.ui.R
 import app.aaps.ui.compose.profileHelper.ProfileType
+import app.aaps.ui.compose.profileHelper.defaultProfile.DefaultProfile
+import app.aaps.ui.compose.profileHelper.defaultProfile.DefaultProfileDPV
 import app.aaps.ui.compose.stats.TddStatsData
-import app.aaps.ui.defaultProfile.DefaultProfile
-import app.aaps.ui.defaultProfile.DefaultProfileDPV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +39,7 @@ import javax.inject.Inject
 class ProfileHelperViewModel @Inject constructor(
     private val persistenceLayer: PersistenceLayer,
     private val activePlugin: ActivePlugin,
+    private val localProfileManager: LocalProfileManager,
     private val profileFunction: ProfileFunction,
     val profileUtil: ProfileUtil,
     val rh: ResourceHelper,
@@ -59,7 +61,7 @@ class ProfileHelperViewModel @Inject constructor(
     private fun loadInitialData() {
         viewModelScope.launch {
             val currentProfileName = profileFunction.getProfileName()
-            val availableProfiles = activePlugin.activeProfileSource.profile?.getProfileList() ?: ArrayList()
+            val availableProfiles = localProfileManager.profile?.getProfileList() ?: ArrayList()
             val profileSwitches = withContext(Dispatchers.IO) {
                 persistenceLayer.getEffectiveProfileSwitchesFromTime(
                     dateUtil.now() - T.months(2).msecs(),
@@ -118,9 +120,9 @@ class ProfileHelperViewModel @Inject constructor(
                 ProfileType.CURRENT           -> profileFunction.getProfile()?.convertToNonCustomizedProfile(dateUtil)
 
                 ProfileType.AVAILABLE_PROFILE -> {
-                    val list = activePlugin.activeProfileSource.profile?.getProfileList()
+                    val list = localProfileManager.profile?.getProfileList()
                     if (list != null && profileIndex < list.size)
-                        activePlugin.activeProfileSource.profile?.getSpecificProfile(list[profileIndex].toString())
+                        localProfileManager.profile?.getSpecificProfile(list[profileIndex].toString())
                     else null
                 }
 
@@ -160,7 +162,7 @@ class ProfileHelperViewModel @Inject constructor(
             ProfileType.CURRENT           -> profileFunction.getProfileName()
 
             ProfileType.AVAILABLE_PROFILE -> {
-                val list = activePlugin.activeProfileSource.profile?.getProfileList()
+                val list = localProfileManager.profile?.getProfileList()
                 if (list != null && profileIndex < list.size) list[profileIndex].toString() else ""
             }
 
@@ -196,8 +198,8 @@ class ProfileHelperViewModel @Inject constructor(
                 title = rh.gs(app.aaps.core.ui.R.string.careportal_profileswitch),
                 message = rh.gs(app.aaps.core.ui.R.string.copytolocalprofile),
                 ok = {
-                    activePlugin.activeProfileSource.addProfile(
-                        activePlugin.activeProfileSource.copyFrom(
+                    localProfileManager.addProfile(
+                        localProfileManager.copyFrom(
                             it,
                             "DefaultProfile " + dateUtil.dateAndTimeAndSecondsString(dateUtil.now()).replace(".", "/")
                         )

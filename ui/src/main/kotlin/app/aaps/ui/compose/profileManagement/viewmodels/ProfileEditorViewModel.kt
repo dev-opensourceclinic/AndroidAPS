@@ -1,4 +1,4 @@
-package app.aaps.plugins.main.profile
+package app.aaps.ui.compose.profileManagement.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,14 +6,14 @@ import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.ActivePlugin
+import app.aaps.core.interfaces.profile.LocalProfileManager
+import app.aaps.core.interfaces.profile.ProfileErrorType
 import app.aaps.core.interfaces.profile.ProfileFunction
-import app.aaps.core.interfaces.profile.ProfileSource
 import app.aaps.core.interfaces.protection.ProtectionCheck
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventLocalProfileChanged
-import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.HardLimits
 import app.aaps.core.objects.profile.ProfileSealed
@@ -64,21 +64,22 @@ data class ProfileUiState(
     val isfMin: Double = 2.0,
     val isfMax: Double = 1000.0,
     val targetMin: Double = 72.0,
-    val targetMax: Double = 180.0
+    val targetMax: Double = 180.0,
+    /** Map of error type to error message for tabs with validation errors */
+    val tabErrors: Map<ProfileErrorType, String> = emptyMap()
 )
 
 class ProfileEditorViewModel @Inject constructor(
     private val aapsLogger: AAPSLogger,
     private val rxBus: RxBus,
     private val rh: ResourceHelper,
-    private val profilePlugin: ProfilePlugin,
+    private val localProfileManager: LocalProfileManager,
     private val profileFunction: ProfileFunction,
     private val activePlugin: ActivePlugin,
     private val hardLimits: HardLimits,
     private val dateUtil: DateUtil,
     private val protectionCheck: ProtectionCheck,
-    private val aapsSchedulers: AapsSchedulers,
-    private val uiInteraction: UiInteraction
+    private val aapsSchedulers: AapsSchedulers
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -104,20 +105,26 @@ class ProfileEditorViewModel @Inject constructor(
     fun loadState() {
         val pumpDescription = activePlugin.activePump.pumpDescription
         val aps = activePlugin.activeAPS
-        val profiles = profilePlugin.profile?.getProfileList()?.map { it.toString() } ?: emptyList()
-        val currentProfile = profilePlugin.currentProfile()
+        val profiles = localProfileManager.profile?.getProfileList()?.map { it.toString() } ?: emptyList()
+        val currentProfile = localProfileManager.currentProfile()
         val isLocked = protectionCheck.isLocked(ProtectionCheck.Protection.PREFERENCES)
 
         val currentUnits = currentProfile?.mgdl?.let { if (it) GlucoseUnit.MGDL else GlucoseUnit.MMOL } ?: profileFunction.getUnits()
         val isMgdl = currentUnits == GlucoseUnit.MGDL
 
+        // Get structured validation errors and build tab error map
+        val validationErrors = localProfileManager.validateProfileStructured()
+        val tabErrors = validationErrors
+            .filter { it.type != ProfileErrorType.NAME || it.message != rh.gs(app.aaps.core.ui.R.string.profile_name_contains_dot) }
+            .associateBy({ it.type }, { it.message })
+
         _uiState.update { state ->
             state.copy(
                 profiles = profiles,
-                currentProfileIndex = profilePlugin.currentProfileIndex,
+                currentProfileIndex = localProfileManager.currentProfileIndex,
                 currentProfile = currentProfile?.toState(),
-                isEdited = profilePlugin.isEdited,
-                isValid = profilePlugin.numOfProfiles > 0 && profilePlugin.isValidEditState(null),
+                isEdited = localProfileManager.isEdited,
+                isValid = localProfileManager.numOfProfiles > 0 && tabErrors.isEmpty(),
                 isLocked = isLocked,
                 units = currentUnits.asText,
                 supportsDynamicIsf = aps.supportsDynamicIsf(),
@@ -131,7 +138,8 @@ class ProfileEditorViewModel @Inject constructor(
                 isfMin = if (isMgdl) HardLimits.MIN_ISF else HardLimits.MIN_ISF / 18.0,
                 isfMax = if (isMgdl) HardLimits.MAX_ISF else HardLimits.MAX_ISF / 18.0,
                 targetMin = if (isMgdl) HardLimits.LIMIT_MIN_BG[0] else HardLimits.LIMIT_MIN_BG[0] / 18.0,
-                targetMax = if (isMgdl) HardLimits.LIMIT_MAX_BG[1] else HardLimits.LIMIT_MAX_BG[1] / 18.0
+                targetMax = if (isMgdl) HardLimits.LIMIT_MAX_BG[1] else HardLimits.LIMIT_MAX_BG[1] / 18.0,
+                tabErrors = tabErrors
             )
         }
     }
@@ -140,54 +148,49 @@ class ProfileEditorViewModel @Inject constructor(
         _uiState.update { it.copy(selectedTab = index) }
     }
 
+    /**
+     * Select a profile by index for editing.
+     * Called when navigating to the editor from ProfileManagementScreen.
+     */
     fun selectProfile(index: Int) {
-        if (profilePlugin.isEdited) {
-            // Show confirmation dialog - handled by UI
-            return
-        }
-        profilePlugin.currentProfileIndex = index
-        loadState()
-    }
-
-    fun forceSelectProfile(index: Int) {
-        profilePlugin.currentProfileIndex = index
-        profilePlugin.isEdited = false
+        localProfileManager.currentProfileIndex = index
+        localProfileManager.isEdited = false
         loadState()
     }
 
     fun updateProfileName(name: String) {
-        profilePlugin.currentProfile()?.name = name
+        localProfileManager.currentProfile()?.name = name
         markEdited()
     }
 
     fun updateDia(dia: Double) {
-        profilePlugin.currentProfile()?.dia = dia
+        localProfileManager.currentProfile()?.dia = dia
         markEdited()
     }
 
     fun updateIcEntry(index: Int, timeValue: TimeValue) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             updateJsonArrayEntry(profile.ic, index, timeValue)
             markEdited()
         }
     }
 
     fun updateIsfEntry(index: Int, timeValue: TimeValue) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             updateJsonArrayEntry(profile.isf, index, timeValue)
             markEdited()
         }
     }
 
     fun updateBasalEntry(index: Int, timeValue: TimeValue) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             updateJsonArrayEntry(profile.basal, index, timeValue)
             markEdited()
         }
     }
 
     fun updateTargetEntry(index: Int, low: TimeValue, high: TimeValue) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             updateJsonArrayEntry(profile.targetLow, index, low)
             updateJsonArrayEntry(profile.targetHigh, index, high)
             markEdited()
@@ -195,28 +198,28 @@ class ProfileEditorViewModel @Inject constructor(
     }
 
     fun addIcEntry(afterIndex: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             addJsonArrayEntry(profile.ic, afterIndex)
             markEdited()
         }
     }
 
     fun addIsfEntry(afterIndex: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             addJsonArrayEntry(profile.isf, afterIndex)
             markEdited()
         }
     }
 
     fun addBasalEntry(afterIndex: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             addJsonArrayEntry(profile.basal, afterIndex)
             markEdited()
         }
     }
 
     fun addTargetEntry(afterIndex: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             addJsonArrayEntry(profile.targetLow, afterIndex)
             addJsonArrayEntry(profile.targetHigh, afterIndex)
             markEdited()
@@ -224,7 +227,7 @@ class ProfileEditorViewModel @Inject constructor(
     }
 
     fun removeIcEntry(index: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             if (profile.ic.length() > 1 && index > 0) {
                 profile.ic.remove(index)
                 markEdited()
@@ -233,7 +236,7 @@ class ProfileEditorViewModel @Inject constructor(
     }
 
     fun removeIsfEntry(index: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             if (profile.isf.length() > 1 && index > 0) {
                 profile.isf.remove(index)
                 markEdited()
@@ -242,7 +245,7 @@ class ProfileEditorViewModel @Inject constructor(
     }
 
     fun removeBasalEntry(index: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             if (profile.basal.length() > 1 && index > 0) {
                 profile.basal.remove(index)
                 markEdited()
@@ -251,7 +254,7 @@ class ProfileEditorViewModel @Inject constructor(
     }
 
     fun removeTargetEntry(index: Int) {
-        profilePlugin.currentProfile()?.let { profile ->
+        localProfileManager.currentProfile()?.let { profile ->
             if (profile.targetLow.length() > 1 && index > 0) {
                 profile.targetLow.remove(index)
                 profile.targetHigh.remove(index)
@@ -311,51 +314,23 @@ class ProfileEditorViewModel @Inject constructor(
     }
 
     private fun markEdited() {
-        profilePlugin.isEdited = true
-        loadState()
-    }
-
-    fun addNewProfile() {
-        if (profilePlugin.isEdited) {
-            // Show dialog first
-            return
-        }
-        profilePlugin.addNewProfile()
-        loadState()
-    }
-
-    fun cloneProfile() {
-        if (profilePlugin.isEdited) {
-            // Show dialog first
-            return
-        }
-        profilePlugin.cloneProfile()
-        loadState()
-    }
-
-    fun removeCurrentProfile() {
-        profilePlugin.removeCurrentProfile()
+        localProfileManager.isEdited = true
         loadState()
     }
 
     fun saveProfile() {
         viewModelScope.launch {
-            profilePlugin.storeSettings(null, dateUtil.now())
+            localProfileManager.storeSettings(dateUtil.now())
             loadState()
         }
     }
 
     fun resetProfile() {
-        profilePlugin.loadSettings()
+        localProfileManager.loadSettings()
         loadState()
     }
 
-    fun unlockSettings(onUnlock: () -> Unit) {
-        // This needs to be called from Activity context
-        // The UI layer should handle this
-    }
-
-    fun getEditedProfile() = profilePlugin.getEditedProfile()
+    fun getEditedProfile() = localProfileManager.getEditedProfile()
 
     fun getActiveInsulin() = activePlugin.activeInsulin
 
@@ -364,7 +339,7 @@ class ProfileEditorViewModel @Inject constructor(
         disposable.clear()
     }
 
-    private fun ProfileSource.SingleProfile.toState(): SingleProfileState {
+    private fun LocalProfileManager.SingleProfile.toState(): SingleProfileState {
         return SingleProfileState(
             name = name,
             mgdl = mgdl,
@@ -397,7 +372,7 @@ class ProfileEditorViewModel @Inject constructor(
     }
 
     fun getBasalSum(): Double {
-        return profilePlugin.getEditedProfile()?.let {
+        return localProfileManager.getEditedProfile()?.let {
             ProfileSealed.Pure(it, null).baseBasalSum()
         } ?: 0.0
     }

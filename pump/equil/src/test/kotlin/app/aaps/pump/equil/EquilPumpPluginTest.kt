@@ -34,7 +34,7 @@ class EquilPumpPluginTest : TestBaseWithProfile() {
         whenever(rh.gs(anyInt())).thenReturn("")
         equilPumpPlugin =
             EquilPumpPlugin(
-                aapsLogger, rh, preferences, commandQueue, aapsSchedulers, rxBus, context,
+                aapsLogger, rh, preferences, config, commandQueue, aapsSchedulers, rxBus, context,
                 fabricPrivacy, pumpSync, equilManager, pumpEnactResultProvider, constraintsChecker
             )
     }

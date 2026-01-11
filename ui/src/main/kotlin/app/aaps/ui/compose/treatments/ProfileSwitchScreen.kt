@@ -1,4 +1,4 @@
-package app.aaps.ui.compose.profileSwitch
+package app.aaps.ui.compose.treatments
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,11 +38,13 @@ import app.aaps.core.data.ue.Action
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
 import app.aaps.core.interfaces.logging.UserEntryLogger
+import app.aaps.core.interfaces.profile.LocalProfileManager
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.objects.extensions.getCustomizedName
 import app.aaps.core.objects.profile.ProfileSealed
+import app.aaps.core.ui.compose.AapsCard
 import app.aaps.core.ui.compose.AapsTheme
 import app.aaps.core.ui.compose.OkCancelDialog
 import app.aaps.core.ui.compose.ToolbarConfig
@@ -53,14 +53,13 @@ import app.aaps.core.ui.compose.icons.Pump
 import app.aaps.ui.R
 import app.aaps.ui.compose.components.ContentContainer
 import app.aaps.ui.compose.components.ErrorSnackbar
-import app.aaps.ui.compose.profileSwitch.viewmodels.ProfileSwitchViewModel
-import app.aaps.ui.compose.treatments.TreatmentLazyColumn
+import app.aaps.ui.compose.treatments.viewmodels.ProfileSwitchViewModel
 
 /**
  * Composable screen displaying profile switches with delete and show hidden functionality.
  *
  * @param viewModel ViewModel managing state and business logic
- * @param activePlugin Active plugin for profile source
+ * @param localProfileManager Profile manager for profile operations
  * @param decimalFormatter Formatter for decimal values
  * @param uel User entry logger
  * @param setToolbarConfig Callback to set the toolbar configuration
@@ -70,7 +69,7 @@ import app.aaps.ui.compose.treatments.TreatmentLazyColumn
 @Composable
 fun ProfileSwitchScreen(
     viewModel: ProfileSwitchViewModel,
-    activePlugin: app.aaps.core.interfaces.plugin.ActivePlugin,
+    localProfileManager: LocalProfileManager,
     decimalFormatter: DecimalFormatter,
     uel: UserEntryLogger,
     setToolbarConfig: (ToolbarConfig) -> Unit,
@@ -188,8 +187,8 @@ fun ProfileSwitchScreen(
                                         )
                                     )
                                     val nonCustomized = ps.convertToNonCustomizedProfile(viewModel.dateUtil)
-                                    activePlugin.activeProfileSource.addProfile(
-                                        activePlugin.activeProfileSource.copyFrom(
+                                    localProfileManager.addProfile(
+                                        localProfileManager.copyFrom(
                                             nonCustomized,
                                             "$profileName ${timestampStr.replace(".", "_")}"
                                         )
@@ -230,7 +229,7 @@ private fun ProfileSwitchItem(
     dateUtil: DateUtil,
     decimalFormatter: DecimalFormatter
 ) {
-    Card(
+    AapsCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 2.dp)
@@ -238,13 +237,7 @@ private fun ProfileSwitchItem(
                 onClick = onClick,
                 onLongClick = onLongPress
             ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.secondaryContainer
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        )
+        selected = isSelected
     ) {
         // Single row with all info
         Row(
@@ -271,7 +264,7 @@ private fun ProfileSwitchItem(
                     if (profileSwitch.duration != null && profileSwitch.duration != 0L) {
                         append(" ")
                         append(T.msecs(profileSwitch.duration ?: 0L).mins().toInt())
-                        append(rh.gs(R.string.unit_minute_short))
+                        append(rh.gs(app.aaps.core.keys.R.string.units_min))
                     }
                 },
                 modifier = Modifier.padding(start = 4.dp),

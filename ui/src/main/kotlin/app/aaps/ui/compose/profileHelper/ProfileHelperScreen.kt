@@ -37,8 +37,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,11 +57,12 @@ import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.objects.profile.ProfileSealed
+import app.aaps.core.ui.compose.AapsTopAppBar
 import app.aaps.core.ui.compose.NumberInputRow
 import app.aaps.ui.R
-import app.aaps.ui.compose.profileViewer.ProfileCompareContent
-import app.aaps.ui.compose.profileViewer.ProfileCompareRow
-import app.aaps.ui.compose.profileViewer.viewmodels.ProfileHelperViewModel
+import app.aaps.ui.compose.profileManagement.ProfileCompareContent
+import app.aaps.ui.compose.profileManagement.ProfileCompareRow
+import app.aaps.ui.compose.profileManagement.viewmodels.ProfileHelperViewModel
 import app.aaps.ui.compose.stats.TddStatsCompose
 import java.text.DecimalFormat
 
@@ -138,7 +137,7 @@ fun ProfileHelperScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AapsTopAppBar(
                 title = { Text(stringResource(R.string.nav_profile_helper)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -169,10 +168,7 @@ fun ProfileHelperScreen(
                             Text(stringResource(R.string.clone_label))
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                }
             )
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
@@ -446,10 +442,42 @@ fun DefaultProfileContent(
 ) {
     Column(modifier = modifier) {
         Text(text = stringResource(R.string.profile_parameters), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 16.dp))
-        NumberInputRow(label = stringResource(R.string.age), value = age.toDouble(), onValueChange = { onAgeChange(it.toInt()) }, minValue = 1.0, maxValue = 99.0, step = 1.0)
-        if (showTdd) NumberInputRow(label = stringResource(app.aaps.core.ui.R.string.tdd_total), value = tdd, onValueChange = onTddChange, minValue = 0.0, maxValue = 200.0, step = 1.0)
-        if (showWeight) NumberInputRow(label = stringResource(R.string.weight_label), value = weight, onValueChange = onWeightChange, minValue = 0.0, maxValue = 150.0, step = 1.0)
-        if (showPct) NumberInputRow(label = stringResource(R.string.basal_pct_from_tdd_label), value = pct, onValueChange = onPctChange, minValue = 32.0, maxValue = 37.0, step = 1.0)
+        NumberInputRow(
+            label = stringResource(R.string.age),
+            value = age.toDouble(),
+            onValueChange = { onAgeChange(it.toInt()) },
+            minValue = 1.0,
+            maxValue = 99.0,
+            step = 1.0,
+            unitLabelResId = app.aaps.core.keys.R.string.units_years
+        )
+        if (showTdd) NumberInputRow(
+            label = stringResource(app.aaps.core.ui.R.string.tdd_total),
+            value = tdd,
+            onValueChange = onTddChange,
+            minValue = 0.0,
+            maxValue = 200.0,
+            step = 1.0,
+            unitLabelResId = app.aaps.core.keys.R.string.units_insulin
+        )
+        if (showWeight) NumberInputRow(
+            label = stringResource(R.string.weight_label),
+            value = weight,
+            onValueChange = onWeightChange,
+            minValue = 0.0,
+            maxValue = 150.0,
+            step = 1.0,
+            unitLabelResId = app.aaps.core.keys.R.string.units_kg
+        )
+        if (showPct) NumberInputRow(
+            label = stringResource(R.string.basal_pct_from_tdd_label),
+            value = pct,
+            onValueChange = onPctChange,
+            minValue = 32.0,
+            maxValue = 37.0,
+            step = 1.0,
+            unitLabelResId = app.aaps.core.keys.R.string.units_percent
+        )
     }
 }
 

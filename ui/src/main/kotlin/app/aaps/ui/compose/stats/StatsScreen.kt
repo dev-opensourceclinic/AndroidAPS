@@ -17,15 +17,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +32,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import app.aaps.core.ui.compose.AapsCard
+import app.aaps.core.ui.compose.AapsSmallFab
+import app.aaps.core.ui.compose.AapsTopAppBar
 import app.aaps.ui.R
 import app.aaps.ui.compose.stats.viewmodels.StatsViewModel
 
@@ -46,7 +45,6 @@ import app.aaps.ui.compose.stats.viewmodels.StatsViewModel
  * @param viewModel ViewModel containing all statistics state and business logic
  * @param onNavigateBack Callback when back navigation is requested
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
     viewModel: StatsViewModel,
@@ -57,7 +55,7 @@ fun StatsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AapsTopAppBar(
                 title = { Text(stringResource(R.string.statistics)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -82,7 +80,7 @@ fun StatsScreen(
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Card(
+                AapsCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -132,15 +130,14 @@ fun StatsScreen(
 
                 if (state.tddExpanded && !state.tddLoading) {
                     val recalculateLabel = stringResource(R.string.recalculate)
-                    SmallFloatingActionButton(
+                    AapsSmallFab(
                         onClick = { viewModel.recalculateTdd(context) },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
                             .semantics {
                                 contentDescription = recalculateLabel
-                            },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                            }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
@@ -151,7 +148,7 @@ fun StatsScreen(
             }
 
             // TIR Section
-            Card(
+            AapsCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -201,7 +198,7 @@ fun StatsScreen(
             }
 
             // Dexcom TIR Section
-            Card(
+            AapsCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -253,7 +250,7 @@ fun StatsScreen(
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Card(
+                AapsCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -302,15 +299,14 @@ fun StatsScreen(
 
                 if (state.activityExpanded && !state.activityLoading) {
                     val resetLabel = stringResource(app.aaps.core.ui.R.string.reset)
-                    SmallFloatingActionButton(
+                    AapsSmallFab(
                         onClick = { viewModel.resetActivityStats(context) },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
                             .semantics {
                                 contentDescription = resetLabel
-                            },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                            }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,

@@ -8,6 +8,7 @@ import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.profile.ProfileFunction
 import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.Preferences
@@ -38,6 +39,7 @@ class BolusTimerImplTest : TestBase() {
     @Mock lateinit var profileFunction: ProfileFunction
     @Mock lateinit var timerUtil: TimerUtil
     @Mock lateinit var preferences: Preferences
+    @Mock lateinit var sp: SP
 
     private val injector = HasAndroidInjector {
         AndroidInjector {
@@ -56,7 +58,7 @@ class BolusTimerImplTest : TestBase() {
         whenever(profileFunction.getUnits()).thenReturn(GlucoseUnit.MGDL)
         dateUtil = DateUtilImpl(context)
         automationPlugin = AutomationPlugin(
-            injector, aapsLogger, rh, preferences, context, fabricPrivacy, loop, rxBus, constraintChecker, aapsSchedulers, config, locationServiceHelper, dateUtil,
+            injector, aapsLogger, rh, preferences, sp, context, fabricPrivacy, loop, rxBus, constraintChecker, aapsSchedulers, config, locationServiceHelper, dateUtil,
             activePlugin, timerUtil
         )
     }

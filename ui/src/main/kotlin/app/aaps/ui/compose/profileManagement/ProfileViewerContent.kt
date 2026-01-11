@@ -1,4 +1,4 @@
-package app.aaps.ui.compose.profileViewer
+package app.aaps.ui.compose.profileManagement
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -71,33 +71,34 @@ fun ProfileSingleContent(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Units Card
-        ElevatedCard(
+        // Units & DIA Card (combined to save space)
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                ProfileRow(
-                    label = stringResource(R.string.units_label),
-                    value = profile.units.asText
-                )
+            ElevatedCard(
+                modifier = Modifier.weight(1f),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    ProfileRow(
+                        label = stringResource(R.string.units_label),
+                        value = profile.units.asText
+                    )
+                }
             }
-        }
-
-        // DIA Card
-        ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                ProfileRow(
-                    label = stringResource(R.string.dia_label),
-                    value = formatDia(profile.dia)
-                )
+            ElevatedCard(
+                modifier = Modifier.weight(1f),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    ProfileRow(
+                        label = stringResource(R.string.dia_label),
+                        value = formatDia(profile.dia)
+                    )
+                }
             }
         }
 
@@ -157,7 +158,17 @@ fun ProfileSingleContent(
             Column(modifier = Modifier.padding(16.dp)) {
                 ProfileRow(
                     label = stringResource(R.string.basal_label),
-                    value = "∑ " + formatBasalSum(profile.baseBasalSum()) + "\n" + getBasalList(profile)
+                    value = getBasalList(profile)
+                )
+                // Sum displayed above graph
+                Text(
+                    text = "∑ " + formatBasalSum(profile.baseBasalSum()),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    textAlign = TextAlign.Center
                 )
                 BasalProfileGraphCompose(
                     profile1 = profile,
@@ -165,7 +176,7 @@ fun ProfileSingleContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp)
-                        .padding(top = 16.dp)
+                        .padding(top = 8.dp)
                 )
             }
         }
@@ -486,28 +497,74 @@ fun ProfileCompareContent(
  */
 @Composable
 fun ProfileRow(label: String, value: String, showColon: Boolean = true) {
-    Row(
+    val lines = value.split("\n").filter { it.isNotBlank() }
+    val useColumns = lines.size > 3
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     ) {
-        Text(
-            text = label,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold
-        )
-        if (showColon) {
+        // Label row
+        Row {
             Text(
-                text = ": ",
-                style = MaterialTheme.typography.bodySmall
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold
             )
+            if (showColon) {
+                Text(
+                    text = ":",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
-        Text(
-            text = value,
-            modifier = Modifier.weight(2f),
-            style = MaterialTheme.typography.bodySmall
-        )
+
+        // Values - either 2 columns or single column, both centered
+        if (useColumns) {
+            val midPoint = (lines.size + 1) / 2
+            val leftColumn = lines.take(midPoint)
+            val rightColumn = lines.drop(midPoint)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Column(
+                    modifier = Modifier.padding(end = 16.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    leftColumn.forEach { line ->
+                        Text(
+                            text = line,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+                Column(
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    rightColumn.forEach { line ->
+                        Text(
+                            text = line,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                lines.forEach { line ->
+                    Text(
+                        text = line,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
     }
 }
 

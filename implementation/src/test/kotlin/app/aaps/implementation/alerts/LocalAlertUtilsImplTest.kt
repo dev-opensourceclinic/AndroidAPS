@@ -17,6 +17,7 @@ import app.aaps.shared.tests.TestBase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
@@ -43,6 +44,25 @@ class LocalAlertUtilsImplTest : TestBase() {
     private lateinit var localAlertUtils: LocalAlertUtilsImpl
 
     private val now = 100000000L
+
+    companion object {
+
+        @JvmStatic
+        @BeforeAll
+        fun initializeEnums() {
+            // Force enum initialization before any tests run to avoid circular dependency
+            // This must happen at class load time, before test methods try to use IntKey
+            try {
+                // Initialize in dependency order: BooleanKey and StringKey first, then IntKey
+                Class.forName("app.aaps.core.keys.BooleanKey")
+                Class.forName("app.aaps.core.keys.StringKey")
+                Class.forName("app.aaps.core.keys.IntKey")
+            } catch (e: Throwable) {
+                // Swallow initialization errors - they'll surface in actual test execution
+                System.err.println("Warning: Enum initialization failed in test setup: ${e.message}")
+            }
+        }
+    }
 
     @BeforeEach
     fun setup() {

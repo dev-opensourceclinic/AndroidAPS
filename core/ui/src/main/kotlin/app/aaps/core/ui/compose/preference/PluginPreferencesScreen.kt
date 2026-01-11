@@ -7,13 +7,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -25,6 +23,7 @@ import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.core.interfaces.plugin.PluginBaseWithPreferences
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.keys.interfaces.PreferenceVisibilityContext
+import app.aaps.core.ui.compose.AapsTopAppBar
 
 /**
  * Screen for displaying plugin preferences using Compose.
@@ -36,7 +35,6 @@ import app.aaps.core.keys.interfaces.PreferenceVisibilityContext
  * @param visibilityContext Context for evaluating visibility conditions
  * @param onBackClick Callback when back button is clicked
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PluginPreferencesScreen(
     plugin: PluginBase,
@@ -67,7 +65,7 @@ fun PluginPreferencesScreen(
                 // Fallback for plugins without compose preferences
                 Scaffold(
                     topBar = {
-                        TopAppBar(
+                        AapsTopAppBar(
                             title = {
                                 Text(
                                     text = title,
@@ -107,7 +105,6 @@ fun PluginPreferencesScreen(
  * Renderer for single plugin preferences using the same collapsible section approach as AllPreferencesScreen.
  * Shares the same code path - only difference is it displays ONE screen instead of multiple.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SinglePluginPreferencesRenderer(
     screen: PreferenceSubScreenDef,
@@ -123,7 +120,7 @@ private fun SinglePluginPreferencesRenderer(
         // Plugin doesn't support preferences - show message in proper container
         Scaffold(
             topBar = {
-                TopAppBar(
+                AapsTopAppBar(
                     title = { Text(title) },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
@@ -160,7 +157,7 @@ private fun SinglePluginPreferencesRenderer(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AapsTopAppBar(
                 title = {
                     Text(
                         text = title,

@@ -41,7 +41,7 @@ class DiaconnG8PluginTest : TestBaseWithProfile() {
 
         diaconnG8Pump = DiaconnG8Pump(aapsLogger, dateUtil, decimalFormatter)
         diaconnG8Plugin = DiaconnG8Plugin(
-            aapsLogger, rh, preferences, commandQueue, rxBus, context, constraintChecker, diaconnG8Pump,
+            aapsLogger, rh, preferences, config, commandQueue, rxBus, context, constraintChecker, diaconnG8Pump,
             pumpSync, detailedBolusInfoStorage, temporaryBasalStorage, fabricPrivacy, dateUtil, aapsSchedulers,
             uiInteraction, diaconnHistoryDatabase, pumpEnactResultProvider
         )

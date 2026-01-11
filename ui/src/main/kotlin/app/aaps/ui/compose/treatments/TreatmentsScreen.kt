@@ -9,14 +9,12 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.aaps.core.ui.compose.AapsTheme
+import app.aaps.core.ui.compose.AapsTopAppBar
 import app.aaps.core.ui.compose.ToolbarConfig
 import app.aaps.core.ui.compose.icons.Carbs
 import app.aaps.core.ui.compose.icons.Careportal
@@ -41,7 +40,6 @@ import app.aaps.core.ui.compose.icons.TempBasal
 import app.aaps.core.ui.compose.icons.TempTarget
 import app.aaps.core.ui.compose.icons.UserEntry
 import app.aaps.ui.R
-import app.aaps.ui.compose.profileSwitch.ProfileSwitchScreen
 import app.aaps.ui.compose.treatments.viewmodels.TreatmentsViewModel
 import kotlinx.coroutines.launch
 
@@ -52,7 +50,7 @@ import kotlinx.coroutines.launch
  * @param viewModel ViewModel containing all dependencies and child ViewModels
  * @param onNavigateBack Callback when back navigation is requested
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TreatmentsScreen(
     viewModel: TreatmentsViewModel,
@@ -171,7 +169,7 @@ fun TreatmentsScreen(
                     content = {
                         ProfileSwitchScreen(
                             viewModel = viewModel.profileSwitchViewModel,
-                            activePlugin = viewModel.activePlugin,
+                            localProfileManager = viewModel.localProfileManager,
                             decimalFormatter = viewModel.decimalFormatter,
                             uel = viewModel.uel,
                             setToolbarConfig = { config ->
@@ -259,7 +257,7 @@ fun TreatmentsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AapsTopAppBar(
                 title = { Text(toolbarConfig.title) },
                 navigationIcon = { toolbarConfig.navigationIcon() },
                 actions = { toolbarConfig.actions(this) }

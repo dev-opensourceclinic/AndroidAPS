@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.widget.TextView
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,12 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +32,7 @@ import app.aaps.core.interfaces.protection.ProtectionCheck
 import app.aaps.core.interfaces.ui.UiInteraction
 import app.aaps.core.keys.interfaces.PreferenceVisibilityContext
 import app.aaps.core.ui.compose.AapsTheme
+import app.aaps.core.ui.compose.AapsTopAppBar
 import app.aaps.core.ui.compose.ComposablePluginContent
 import app.aaps.core.ui.compose.LocalPreferences
 import app.aaps.core.ui.compose.LocalRxBus
@@ -83,7 +81,6 @@ class SingleFragmentActivity : DaggerAppCompatActivityWithResult() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     private fun setupComposeContent(plugin: PluginBase) {
         val composeContent = plugin.getComposeContent() ?: return
 
@@ -129,7 +126,7 @@ class SingleFragmentActivity : DaggerAppCompatActivityWithResult() {
                         // Show plugin content
                         Scaffold(
                             topBar = {
-                                TopAppBar(
+                                AapsTopAppBar(
                                     title = { Text(toolbarConfig.title) },
                                     navigationIcon = { toolbarConfig.navigationIcon() },
                                     actions = { toolbarConfig.actions(this) }
@@ -177,7 +174,7 @@ class SingleFragmentActivity : DaggerAppCompatActivityWithResult() {
             ).commit()
         }
 
-        overview.setVersionView(findViewById<TextView>(R.id.version))
+        overview.setVersionView(findViewById(R.id.version))
 
         // Add menu items for Fragment-based plugins
         val singleFragmentMenuProvider = object : MenuProvider {

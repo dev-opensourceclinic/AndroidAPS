@@ -5,7 +5,6 @@ import app.aaps.core.interfaces.pump.DetailedBolusInfo
 import app.aaps.core.interfaces.pump.PumpSync
 import app.aaps.core.interfaces.queue.CommandQueue
 import app.aaps.core.interfaces.ui.UiInteraction
-import app.aaps.pump.eopatch.core.response.BolusStopResponse
 import app.aaps.pump.eopatch.core.scan.BleConnectionState
 import app.aaps.pump.eopatch.vo.PatchLifecycleEvent
 import app.aaps.pump.eopatch.vo.PatchState
@@ -51,23 +50,8 @@ class EopatchPumpPluginBolusTest : EopatchTestBase() {
         patchConfig.macAddress = "00:11:22:33:44:55"
 
         plugin = EopatchPumpPlugin(
-            aapsLogger,
-            rh,
-            preferences,
-            commandQueue,
-            aapsSchedulers,
-            rxBus,
-            fabricPrivacy,
-            dateUtil,
-            pumpSync,
-            patchManager,
-            patchManagerExecutor,
-            alarmManager,
-            eopatchPreferenceManager,
-            uiInteraction,
-            pumpEnactResultProvider,
-            patchConfig,
-            normalBasalManager
+            aapsLogger, rh, preferences, config, commandQueue, aapsSchedulers, rxBus, fabricPrivacy, dateUtil, pumpSync, patchManager, patchManagerExecutor,
+            alarmManager, eopatchPreferenceManager, uiInteraction, pumpEnactResultProvider, patchConfig, normalBasalManager
         )
     }
 

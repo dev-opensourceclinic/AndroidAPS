@@ -1,5 +1,6 @@
-package app.aaps.plugins.main.profile
+package app.aaps.ui.compose.profileManagement
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,20 +17,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -41,8 +35,7 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,29 +55,58 @@ import app.aaps.core.graph.BasalProfileGraphCompose
 import app.aaps.core.graph.IcProfileGraphCompose
 import app.aaps.core.graph.IsfProfileGraphCompose
 import app.aaps.core.graph.TargetBgProfileGraphCompose
+import app.aaps.core.interfaces.profile.ProfileErrorType
 import app.aaps.core.objects.profile.ProfileSealed
-import app.aaps.core.ui.compose.OkCancelDialog
-import app.aaps.core.ui.compose.OkDialog
+import app.aaps.core.ui.R
+import app.aaps.core.ui.compose.AapsTopAppBar
 import app.aaps.core.ui.compose.SliderWithButtons
 import app.aaps.core.ui.compose.ValueInputDialog
-import app.aaps.plugins.main.R
+import app.aaps.ui.compose.profileManagement.viewmodels.ProfileEditorViewModel
+import app.aaps.ui.compose.profileManagement.viewmodels.ProfileUiState
+import app.aaps.ui.compose.profileManagement.viewmodels.SingleProfileState
 import java.text.DecimalFormat
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileEditorScreen(
     viewModel: ProfileEditorViewModel,
-    onBackClick: () -> Unit,
-    onActivateProfile: (profileName: String) -> Unit = {}
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
+    // Unsaved changes dialog
+    var showUnsavedChangesDialog by remember { mutableStateOf(false) }
+
+    if (showUnsavedChangesDialog) {
+        UnsavedChangesDialog(
+            onSave = {
+                viewModel.saveProfile()
+                showUnsavedChangesDialog = false
+                onBackClick()
+            },
+            onDiscard = {
+                viewModel.resetProfile()
+                showUnsavedChangesDialog = false
+                onBackClick()
+            },
+            onCancel = { showUnsavedChangesDialog = false }
+        )
+    }
+
+    // Handle back navigation with unsaved changes check
+    val handleBack: () -> Unit = {
+        if (state.isEdited) {
+            showUnsavedChangesDialog = true
+        } else {
+            onBackClick()
+        }
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
+            AapsTopAppBar(
                 title = { Text(stringResource(app.aaps.core.ui.R.string.localprofile)) },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = handleBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(app.aaps.core.ui.R.string.back)
@@ -121,26 +144,9 @@ fun ProfileEditorScreen(
                                 contentDescription = stringResource(app.aaps.core.ui.R.string.save)
                             )
                         }
-                    } else if (state.isValid) {
-                        // Activate profile button (when not edited and valid)
-                        FilledTonalButton(
-                            onClick = { state.currentProfile?.name?.let { onActivateProfile(it) } },
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Text(stringResource(app.aaps.core.ui.R.string.activate_profile))
-                        }
                     }
                     Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                }
             )
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
@@ -165,65 +171,89 @@ fun ProfileEditorScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                // Profile header with editable name and profile switcher
-                ProfileHeader(
-                    profiles = state.profiles,
-                    currentIndex = state.currentProfileIndex,
+                // Profile name header with edit capability
+                ProfileNameHeader(
                     profileName = state.currentProfile?.name ?: "",
-                    onProfileSelect = { viewModel.selectProfile(it) },
-                    onForceProfileSelect = { viewModel.forceSelectProfile(it) },
                     onProfileNameChange = { viewModel.updateProfileName(it) },
-                    onAddProfile = { viewModel.addNewProfile() },
-                    onCloneProfile = { viewModel.cloneProfile() },
-                    onRemoveProfile = { viewModel.removeCurrentProfile() },
-                    isEdited = state.isEdited
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                // Units display
-                Text(
-                    text = "${stringResource(R.string.units_colon)} ${state.units}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    units = state.units
                 )
 
                 Spacer(Modifier.height(12.dp))
 
-                // Tab layout
+                // Tab layout with error indication
+                val diaHasError = state.tabErrors.containsKey(ProfileErrorType.DIA)
+                val icHasError = state.tabErrors.containsKey(ProfileErrorType.IC)
+                val isfHasError = state.tabErrors.containsKey(ProfileErrorType.ISF)
+                val basalHasError = state.tabErrors.containsKey(ProfileErrorType.BASAL)
+                val targetHasError = state.tabErrors.containsKey(ProfileErrorType.TARGET)
+
                 PrimaryTabRow(selectedTabIndex = state.selectedTab) {
                     Tab(
                         selected = state.selectedTab == 0,
                         onClick = { viewModel.selectTab(0) },
+                        modifier = Modifier.background(
+                            if (diaHasError) MaterialTheme.colorScheme.errorContainer else Color.Transparent
+                        ),
                         text = { Text(stringResource(R.string.dia_short)) }
                     )
                     Tab(
                         selected = state.selectedTab == 1,
                         onClick = { viewModel.selectTab(1) },
+                        modifier = Modifier.background(
+                            if (icHasError) MaterialTheme.colorScheme.errorContainer else Color.Transparent
+                        ),
                         text = { Text(stringResource(app.aaps.core.ui.R.string.ic_short)) }
                     )
                     Tab(
                         selected = state.selectedTab == 2,
                         onClick = { viewModel.selectTab(2) },
+                        modifier = Modifier.background(
+                            if (isfHasError) MaterialTheme.colorScheme.errorContainer else Color.Transparent
+                        ),
                         text = { Text(stringResource(app.aaps.core.ui.R.string.isf_short)) }
                     )
                     Tab(
                         selected = state.selectedTab == 3,
                         onClick = { viewModel.selectTab(3) },
+                        modifier = Modifier.background(
+                            if (basalHasError) MaterialTheme.colorScheme.errorContainer else Color.Transparent
+                        ),
                         text = { Text(stringResource(R.string.basal_short)) }
                     )
                     Tab(
                         selected = state.selectedTab == 4,
                         onClick = { viewModel.selectTab(4) },
+                        modifier = Modifier.background(
+                            if (targetHasError) MaterialTheme.colorScheme.errorContainer else Color.Transparent
+                        ),
                         text = { Text(stringResource(R.string.target_short)) }
                     )
                 }
 
                 Spacer(Modifier.height(16.dp))
 
-                // Tab content
+                // Tab content with error display
                 state.currentProfile?.let { profile ->
+                    // Get error message for current tab
+                    val currentTabError = when (state.selectedTab) {
+                        0 -> state.tabErrors[ProfileErrorType.DIA]
+                        1 -> state.tabErrors[ProfileErrorType.IC]
+                        2 -> state.tabErrors[ProfileErrorType.ISF]
+                        3 -> state.tabErrors[ProfileErrorType.BASAL]
+                        4 -> state.tabErrors[ProfileErrorType.TARGET]
+                        else -> null
+                    }
+
+                    // Show error message if present
+                    currentTabError?.let { error ->
+                        Text(
+                            text = error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+
                     when (state.selectedTab) {
                         0 -> DiaContent(
                             dia = profile.dia,
@@ -266,69 +296,21 @@ fun ProfileEditorScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileHeader(
-    profiles: List<String>,
-    currentIndex: Int,
+private fun ProfileNameHeader(
     profileName: String,
-    onProfileSelect: (Int) -> Unit,
-    onForceProfileSelect: (Int) -> Unit,
     onProfileNameChange: (String) -> Unit,
-    onAddProfile: () -> Unit,
-    onCloneProfile: () -> Unit,
-    onRemoveProfile: () -> Unit,
-    isEdited: Boolean
+    units: String
 ) {
-    var expanded by remember { mutableStateOf(false) }
     var isEditingName by remember { mutableStateOf(false) }
     var editedName by remember(profileName) { mutableStateOf(profileName) }
     val focusRequester = remember { FocusRequester() }
-
-    // Dialog states
-    var showDeleteConfirmation by remember { mutableStateOf(false) }
-    var showSwitchConfirmation by remember { mutableStateOf<Int?>(null) }
-    var showEditedWarning by remember { mutableStateOf<String?>(null) } // "add" or "clone"
 
     // Request focus when entering edit mode
     LaunchedEffect(isEditingName) {
         if (isEditingName) {
             focusRequester.requestFocus()
         }
-    }
-
-    // Delete confirmation dialog
-    if (showDeleteConfirmation) {
-        OkCancelDialog(
-            title = stringResource(R.string.delete_current_profile),
-            message = profileName,
-            onConfirm = {
-                onRemoveProfile()
-                showDeleteConfirmation = false
-            },
-            onDismiss = { showDeleteConfirmation = false }
-        )
-    }
-
-    // Switch profile confirmation (when edited)
-    showSwitchConfirmation?.let { targetIndex ->
-        OkCancelDialog(
-            message = stringResource(R.string.do_you_want_switch_profile),
-            onConfirm = {
-                onForceProfileSelect(targetIndex)
-                showSwitchConfirmation = null
-            },
-            onDismiss = { showSwitchConfirmation = null }
-        )
-    }
-
-    // Warning when trying to add/clone while edited
-    if (showEditedWarning != null) {
-        OkDialog(
-            title = "",
-            message = stringResource(R.string.save_or_reset_changes_first),
-            onDismiss = { showEditedWarning = null }
-        )
     }
 
     if (isEditingName) {
@@ -371,7 +353,8 @@ private fun ProfileHeader(
     } else {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Profile name with edit icon
             Row(
@@ -398,82 +381,43 @@ private fun ProfileHeader(
                 )
             }
 
-            Spacer(Modifier.width(8.dp))
-
-            // Profile switcher dropdown
-            Box {
-                IconButton(onClick = { expanded = true }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.switch_profile),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    profiles.forEachIndexed { index, profile ->
-                        DropdownMenuItem(
-                            text = { Text(profile) },
-                            onClick = {
-                                expanded = false
-                                if (index != currentIndex) {
-                                    if (isEdited) {
-                                        showSwitchConfirmation = index
-                                    } else {
-                                        onProfileSelect(index)
-                                    }
-                                }
-                            },
-                            leadingIcon = if (index == currentIndex) {
-                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                            } else null
-                        )
-                    }
-                }
-            }
-
-            // Add profile
-            IconButton(onClick = {
-                if (isEdited) {
-                    showEditedWarning = "add"
-                } else {
-                    onAddProfile()
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.a11y_add_new_profile),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            // Clone profile
-            IconButton(onClick = {
-                if (isEdited) {
-                    showEditedWarning = "clone"
-                } else {
-                    onCloneProfile()
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.ContentCopy,
-                    contentDescription = stringResource(R.string.a11y_clone_profile),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            // Remove profile
-            IconButton(onClick = { showDeleteConfirmation = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.a11y_delete_current_profile),
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
+            // Units display
+            Text(
+                text = "${stringResource(R.string.units_colon)} $units",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
+}
+
+@Composable
+private fun UnsavedChangesDialog(
+    onSave: () -> Unit,
+    onDiscard: () -> Unit,
+    onCancel: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text(stringResource(R.string.unsaved_changes)) },
+        text = { Text(stringResource(R.string.unsaved_changes_message)) },
+        confirmButton = {
+            FilledTonalButton(onClick = onSave) {
+                Text(stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onCancel) {
+                    Text(stringResource(R.string.cancel))
+                }
+                Spacer(Modifier.width(8.dp))
+                TextButton(onClick = onDiscard) {
+                    Text(stringResource(R.string.discard))
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -770,4 +714,3 @@ private fun TargetContent(
         }
     }
 }
-

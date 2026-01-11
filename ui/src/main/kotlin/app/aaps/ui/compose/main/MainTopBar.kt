@@ -3,18 +3,16 @@ package app.aaps.ui.compose.main
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import app.aaps.core.ui.compose.AapsTopAppBar
 
 sealed class MainMenuItem(val id: String) {
     data object Preferences : MainMenuItem("preferences")
     data object PluginPreferences : MainMenuItem("plugin_preferences")
-    data object Profile : MainMenuItem("profile")
     data object Treatments : MainMenuItem("treatments")
     data object HistoryBrowser : MainMenuItem("history_browser")
     data object SetupWizard : MainMenuItem("setup_wizard")
@@ -24,14 +22,13 @@ sealed class MainMenuItem(val id: String) {
     data object Exit : MainMenuItem("exit")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainTopBar(
     onMenuClick: () -> Unit,
     onPreferencesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TopAppBar(
+    AapsTopAppBar(
         title = { },
         navigationIcon = {
             IconButton(onClick = onMenuClick) {

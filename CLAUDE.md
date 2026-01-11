@@ -1,5 +1,31 @@
 # Project Preferences
 
+## Token Usage Reduction (Delay Conversation Compaction)
+
+- **Use Task agents for exploration instead of direct Glob/Grep:**
+    - `Task tool with subagent_type=Explore` summarizes findings
+    - Direct Glob/Grep returns raw content which consumes more tokens
+- **Limit file reads:**
+    - Use `limit` parameter (100-200 lines) for large files
+    - Use `offset` to target specific sections you need
+    - Don't re-read files already seen in conversation
+- **Use efficient Grep modes:**
+    - `output_mode: "files_with_matches"` (default) - just file paths
+    - `output_mode: "count"` - just counts
+    - Only use `"content"` when you need actual line content
+    - Use `head_limit` to cap number of results
+- **Suppress verbose Bash output:**
+    - Use `--quiet` flag for gradle: `.\gradlew.bat assembleFullDebug --quiet --no-daemon`
+    - Pipe to `tail -50` for long outputs
+    - Avoid commands that dump entire logs
+- **Be specific in searches:**
+    - Narrow glob patterns: `src/**/specific/*.kt` instead of `**/*.kt`
+    - Precise regex patterns to reduce false matches
+- **Avoid redundant operations:**
+    - Reference line numbers from memory instead of re-reading
+    - Don't explore same directories multiple times
+    - Combine related searches when possible
+
 ## User Preferences
 
 - **When user says "ALL":**
@@ -43,6 +69,11 @@
 - Avoid duplication while writing new code and resources. Prefer moving to another module. Elaborate
   if you think, it's necessary
 - When resource strings are affected, change only english version. Ignore translations
+- **Avoid adding new module dependencies** - Adding dependencies between modules can significantly
+  slow down compilation time. Always discuss before adding dependencies. Prefer alternatives:
+    - Inline constants instead of importing from another module
+    - Move shared code to existing common modules
+    - Use interfaces defined in core modules
 
 ## Migration Procedures
 

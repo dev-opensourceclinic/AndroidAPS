@@ -16,10 +16,10 @@ import app.aaps.core.interfaces.configuration.ConfigBuilder
 import app.aaps.core.interfaces.constraints.ConstraintsChecker
 import app.aaps.core.interfaces.db.PersistenceLayer
 import app.aaps.core.interfaces.logging.UserEntryLogger
-import app.aaps.core.interfaces.profile.ProfileSource
 import app.aaps.core.interfaces.pump.PumpStatusProvider
 import app.aaps.core.interfaces.queue.Callback
 import app.aaps.core.interfaces.queue.CommandQueue
+import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.smsCommunicator.Sms
 import app.aaps.core.interfaces.sync.XDripBroadcast
 import app.aaps.core.interfaces.utils.DateUtil
@@ -60,7 +60,7 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
     @Mock lateinit var constraintChecker: ConstraintsChecker
     @Mock lateinit var commandQueue: CommandQueue
     @Mock lateinit var loop: LoopPlugin
-    @Mock lateinit var profileSource: ProfileSource
+    @Mock lateinit var sp: SP
     @Mock lateinit var otp: OneTimePassword
     @Mock lateinit var xDripBroadcast: XDripBroadcast
     @Mock lateinit var uel: UserEntryLogger
@@ -97,8 +97,8 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
 
         val authRequestProvider = Provider { AuthRequest(aapsLogger, smsCommunicatorPlugin, rh, otp, dateUtil, commandQueue) }
         smsCommunicatorPlugin = SmsCommunicatorPlugin(
-            aapsLogger, rh, smsManager, aapsSchedulers, preferences, constraintChecker, rxBus, profileFunction, profileUtil, fabricPrivacy, activePlugin, commandQueue,
-            loop, iobCobCalculator, xDripBroadcast,
+            aapsLogger, rh, smsManager, aapsSchedulers, preferences, sp, constraintChecker, rxBus, profileFunction, profileUtil, fabricPrivacy, activePlugin, localProfileManager,
+            commandQueue, loop, iobCobCalculator, xDripBroadcast,
             otp, config, dateUtilMocked, uel,
             smbGlucoseStatusProvider, persistenceLayer, decimalFormatter, configBuilder, authRequestProvider, pumpStatusProvider, testScope
         )
@@ -151,7 +151,7 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
         whenever(iobCobCalculator.calculateIobFromBolus()).thenReturn(IobTotal(0))
         whenever(iobCobCalculator.calculateIobFromTempBasalsIncludingConvertedExtended()).thenReturn(IobTotal(0))
 
-        whenever(activePlugin.activeProfileSource).thenReturn(profileSource)
+        whenever(localProfileManager.profile).thenReturn(getValidProfileStore())
         whenever(profileFunction.getProfile()).thenReturn(validProfile)
         whenever(pumpStatusProvider.shortStatus(anyBoolean())).thenReturn(testPumpPlugin.pumpSpecificShortStatus(true))
         whenever(otp.name()).thenReturn("User")
@@ -679,13 +679,14 @@ class SmsCommunicatorPluginTest : TestBaseWithProfile() {
         assertThat(smsCommunicatorPlugin.messages[1].text).isEqualTo("Wrong format")
 
         //PROFILE LIST (no profile defined)
+        whenever(localProfileManager.profile).thenReturn(null)
         smsCommunicatorPlugin.messages = ArrayList()
         sms = Sms("1234", "PROFILE LIST")
         smsCommunicatorPlugin.processSms(sms)
         assertThat(smsCommunicatorPlugin.messages[0].text).isEqualTo("PROFILE LIST")
         assertThat(smsCommunicatorPlugin.messages[1].text).isEqualTo("Not configured")
 
-        whenever(profileSource.profile).thenReturn(getValidProfileStore())
+        whenever(localProfileManager.profile).thenReturn(getValidProfileStore())
         whenever(profileFunction.getProfileName()).thenReturn(TESTPROFILENAME)
 
         //PROFILE STATUS

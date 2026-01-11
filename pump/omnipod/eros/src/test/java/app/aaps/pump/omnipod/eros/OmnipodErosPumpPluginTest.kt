@@ -52,7 +52,7 @@ class OmnipodErosPumpPluginTest : TestBaseWithProfile() {
 
         // mock all the things
         val plugin = OmnipodErosPumpPlugin(
-            aapsLogger, rh, preferences, commandQueue, TestAapsSchedulers(), rxBus, context,
+            aapsLogger, rh, preferences, config, commandQueue, TestAapsSchedulers(), rxBus, context,
             erosPodStateManager, aapsOmnipodErosManager, fabricPrivacy, rileyLinkServiceData, dateUtil, aapsOmnipodUtil,
             rileyLinkUtil, omnipodAlertUtil, profileFunction, pumpSync, uiInteraction, erosHistoryDatabase, decimalFormatter, pumpEnactResultProvider
         )
