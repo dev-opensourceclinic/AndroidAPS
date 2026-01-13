@@ -345,7 +345,7 @@ private fun QuickActionsSection(
                     )
                     if (showTempTarget) {
                         TileButton(
-                            text = stringResource(app.aaps.core.ui.R.string.temporary_target),
+                            text = stringResource(app.aaps.core.ui.R.string.temp_target_management),
                             iconRes = app.aaps.core.objects.R.drawable.ic_temptarget_high,
                             onClick = onTempTargetClick,
                             modifier = Modifier.weight(1f)
@@ -428,7 +428,7 @@ private fun TileButton(
 
     androidx.compose.material3.Surface(
         onClick = onClick,
-        modifier = modifier.height(88.dp),
+        modifier = modifier.height(96.dp),
         shape = MaterialTheme.shapes.extraLarge,
         color = containerColor,
         contentColor = contentColor,
@@ -439,22 +439,21 @@ private fun TileButton(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp)
+                .padding(horizontal = 8.dp, vertical = 8.dp)
         ) {
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(28.dp),
                 tint = iconColor
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = text,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.labelLarge,
-                textAlign = TextAlign.Center,
-                lineHeight = MaterialTheme.typography.labelLarge.lineHeight
+                style = MaterialTheme.typography.labelMedium,
+                textAlign = TextAlign.Center
             )
         }
     }

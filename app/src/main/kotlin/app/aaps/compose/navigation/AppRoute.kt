@@ -17,6 +17,7 @@ sealed class AppRoute(val route: String) {
         fun createRoute(profileIndex: Int) = "profile_activation/$profileIndex"
     }
     data object Treatments : AppRoute("treatments")
+    data object TempTargetManagement : AppRoute("temp_target_management")
     data object Stats : AppRoute("stats")
     data object ProfileHelper : AppRoute("profile_helper")
     data object Preferences : AppRoute("preferences")

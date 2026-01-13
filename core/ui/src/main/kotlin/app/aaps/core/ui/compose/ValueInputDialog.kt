@@ -27,6 +27,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.aaps.core.ui.R
 import java.text.DecimalFormat
+import kotlin.math.roundToInt
+import app.aaps.core.keys.R as KeysR
 
 /**
  * Dialog for entering a numeric value directly.
@@ -37,6 +39,7 @@ import java.text.DecimalFormat
  * @param label Optional label for the input field
  * @param summary Optional summary/description text to show below the label
  * @param unitLabel Optional unit label to show after value
+ * @param unitLabelResId Resource ID for unit label. When R.string.units_min, shows formatted preview
  * @param valueFormat Format for displaying/parsing the value
  * @param onValueConfirm Called when user confirms with a valid value
  * @param onDismiss Called when dialog is dismissed
@@ -49,6 +52,7 @@ fun ValueInputDialog(
     label: String? = null,
     summary: String? = null,
     unitLabel: String = "",
+    unitLabelResId: Int = 0,
     valueFormat: DecimalFormat = DecimalFormat("0.0"),
     onValueConfirm: (Double) -> Unit,
     onDismiss: () -> Unit
@@ -60,6 +64,9 @@ fun ValueInputDialog(
     }
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+
+    // Check if this is minutes input for formatted preview
+    val isMinutesUnit = unitLabelResId == KeysR.string.units_min
 
     fun validateAndParse(): Double? {
         val text = textFieldValue.text.replace(",", ".")
@@ -78,11 +85,16 @@ fun ValueInputDialog(
                     null
                 }
 
+                isMinutesUnit && parsed != parsed.roundToInt().toDouble() -> {
+                    isError = true
+                    errorMessage = "Minutes must be whole numbers"
+                    null
+                }
+
                 else -> {
                     isError = false
-                    // Round to step
-                    val rounded = (parsed / step).toLong() * step
-                    rounded.coerceIn(valueRange.start, valueRange.endInclusive)
+                    // Accept value as-is (no rounding to step)
+                    parsed
                 }
             }
         } catch (e: NumberFormatException) {
@@ -98,6 +110,14 @@ fun ValueInputDialog(
             onDismiss()
         }
     }
+
+    // Compute formatted preview for minutes
+    val formattedPreview: String? = if (isMinutesUnit) {
+        val minutes = textFieldValue.text.replace(",", ".").toDoubleOrNull()?.roundToInt()
+        if (minutes != null && minutes >= 60) {
+            "= ${formatMinutesAsDuration(minutes)}"
+        } else null
+    } else null
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -123,9 +143,17 @@ fun ValueInputDialog(
                     },
                     singleLine = true,
                     isError = isError,
-                    supportingText = if (isError) {
-                        { Text(errorMessage, color = MaterialTheme.colorScheme.error) }
-                    } else null,
+                    supportingText = when {
+                        isError                  -> {
+                            { Text(errorMessage, color = MaterialTheme.colorScheme.error) }
+                        }
+
+                        formattedPreview != null -> {
+                            { Text(formattedPreview, color = MaterialTheme.colorScheme.primary) }
+                        }
+
+                        else                     -> null
+                    },
                     suffix = if (unitLabel.isNotEmpty()) {
                         { Text(unitLabel) }
                     } else null,

@@ -57,6 +57,8 @@ import app.aaps.ui.compose.profileManagement.viewmodels.ProfileHelperViewModel
 import app.aaps.ui.compose.profileManagement.viewmodels.ProfileManagementViewModel
 import app.aaps.ui.compose.stats.StatsScreen
 import app.aaps.ui.compose.stats.viewmodels.StatsViewModel
+import app.aaps.ui.compose.tempTarget.TempTargetManagementScreen
+import app.aaps.ui.compose.tempTarget.viewmodels.TempTargetManagementViewModel
 import app.aaps.ui.compose.treatments.TreatmentsScreen
 import app.aaps.ui.compose.treatments.viewmodels.TreatmentsViewModel
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -83,6 +85,7 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
     @Inject lateinit var mainViewModel: MainViewModel
     @Inject lateinit var actionsViewModel: ActionsViewModel
     @Inject lateinit var treatmentsViewModel: TreatmentsViewModel
+    @Inject lateinit var tempTargetManagementViewModel: TempTargetManagementViewModel
     @Inject lateinit var statsViewModel: StatsViewModel
     @Inject lateinit var profileHelperViewModel: ProfileHelperViewModel
     @Inject lateinit var profileEditorViewModel: ProfileEditorViewModel
@@ -184,7 +187,7 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
                             onTempTargetClick = {
                                 protectionCheck.requestProtection(ProtectionCheck.Protection.BOLUS) { result ->
                                     if (result == ProtectionResult.GRANTED) {
-                                        uiInteraction.runTempTargetDialog(supportFragmentManager)
+                                        navController.navigate(AppRoute.TempTargetManagement.route)
                                     }
                                 }
                             },
@@ -265,6 +268,13 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
                                     }
                                 }
                             }
+                        )
+                    }
+
+                    composable(AppRoute.TempTargetManagement.route) {
+                        TempTargetManagementScreen(
+                            viewModel = tempTargetManagementViewModel,
+                            onNavigateBack = { navController.popBackStack() }
                         )
                     }
 

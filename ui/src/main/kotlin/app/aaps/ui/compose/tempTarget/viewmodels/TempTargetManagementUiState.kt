@@ -1,0 +1,65 @@
+package app.aaps.ui.compose.tempTarget.viewmodels
+
+import app.aaps.core.data.model.TT
+import app.aaps.core.data.model.TTPreset
+import app.aaps.core.interfaces.resources.ResourceHelper
+
+/**
+ * UI state for TempTargetManagementScreen
+ */
+data class TempTargetManagementUiState(
+    /** Currently active temporary target (if any) */
+    val activeTT: TT? = null,
+
+    /** Remaining time in milliseconds for active TT */
+    val remainingTimeMs: Long? = null,
+
+    /** List of user-defined presets (minimum 3 default presets) */
+    val presets: List<TTPreset> = emptyList(),
+
+    /** Currently selected card index in carousel (0 = active TT if exists, then presets) */
+    val currentCardIndex: Int = 0,
+
+    /** Currently selected preset (null if custom/active card selected) */
+    val selectedPreset: TTPreset? = null,
+
+    // ===== Editor fields (saved to preset via Save button) =====
+
+    /** Name for custom presets (empty for default presets) */
+    val editorName: String = "",
+
+    /** Target value in user's current units (mg/dL or mmol/L for display in slider) */
+    val editorTarget: Double = 100.0,
+
+    /** Duration in milliseconds (converted to minutes for display) */
+    val editorDuration: Long = 60L * 60L * 1000L, // 60 minutes default
+
+    // ===== Activation fields (NOT saved to preset, only for activation) =====
+
+    /** Date/time for activation (default: now) */
+    val eventTime: Long = System.currentTimeMillis(),
+
+    /** Whether user modified the event time */
+    val eventTimeChanged: Boolean = false,
+
+    /** Optional notes for this activation */
+    val notes: String = "",
+
+    /** Whether to show notes field (from preferences) */
+    val showNotesField: Boolean = false,
+
+    // ===== Loading/Error state =====
+
+    /** Loading indicator */
+    val isLoading: Boolean = true,
+
+    /** Error message if loading/saving failed */
+    val error: String? = null
+)
+
+/**
+ * Extension function to get display name for a TTPreset
+ * Returns localized string from nameRes or custom name
+ */
+fun TTPreset.getDisplayName(rh: ResourceHelper): String =
+    nameRes?.let { rh.gs(it) } ?: name ?: "Unknown"

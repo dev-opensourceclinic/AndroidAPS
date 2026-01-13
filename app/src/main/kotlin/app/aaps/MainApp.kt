@@ -13,6 +13,8 @@ import app.aaps.core.data.configuration.Constants
 import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.RM
 import app.aaps.core.data.model.TE
+import app.aaps.core.data.model.TT
+import app.aaps.core.data.model.TTPreset
 import app.aaps.core.data.ue.Action
 import app.aaps.core.data.ue.Sources
 import app.aaps.core.data.ue.ValueWithUnit
@@ -26,6 +28,7 @@ import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
 import app.aaps.core.interfaces.plugin.PluginBase
 import app.aaps.core.interfaces.profile.ProfileFunction
+import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.ui.UiInteraction
@@ -41,6 +44,7 @@ import app.aaps.core.keys.ProfileComposedBooleanKey
 import app.aaps.core.keys.ProfileComposedDoubleKey
 import app.aaps.core.keys.ProfileComposedStringKey
 import app.aaps.core.keys.StringKey
+import app.aaps.core.keys.StringNonKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.keys.interfaces.Preferences
 import app.aaps.core.ui.extensions.runOnUiThread
@@ -60,6 +64,7 @@ import app.aaps.receivers.ChargingStateReceiver
 import app.aaps.receivers.KeepAliveWorker
 import app.aaps.receivers.TimeDateOrTZChangeReceiver
 import app.aaps.ui.activityMonitor.ActivityMonitor
+import app.aaps.ui.compose.tempTarget.viewmodels.toJson
 import app.aaps.ui.widget.Widget
 import app.aaps.utils.configureLeakCanary
 import com.google.firebase.Firebase
@@ -108,6 +113,7 @@ class MainApp : DaggerApplication() {
     @Inject lateinit var rh: Provider<ResourceHelper>
     @Inject lateinit var loop: Loop
     @Inject lateinit var profileFunction: ProfileFunction
+    @Inject lateinit var profileUtil: ProfileUtil
     @Inject lateinit var fabricPrivacy: FabricPrivacy
     @Inject @ApplicationScope lateinit var appScope: CoroutineScope
     lateinit var appComponent: AppComponent
@@ -395,6 +401,89 @@ class MainApp : DaggerApplication() {
             }
             sp.remove("aps_mode")
         }
+
+        // Migrate temp target presets from old preference keys to JSON array
+        migrateTempTargetPresets()
+    }
+
+    /**
+     * Migrates temp target presets from old individual preference keys to unified JSON storage.
+     * Creates 3 default presets (Eating Soon, Activity, Hypo) for new installations.
+     * For existing installations, migrates values from old keys.
+     * Old keys remain functional for legacy TempTargetDialog.
+     */
+    private fun migrateTempTargetPresets() {
+        // Check if migration already completed
+        val existing = preferences.get(StringNonKey.TempTargetPresets)
+        if (existing != "[]" && existing.isNotEmpty()) {
+            return // Already migrated
+        }
+
+        // Check if old preferences exist (existing installation vs new installation)
+        val hasOldPreferences = preferences.getIfExists(UnitDoubleKey.OverviewEatingSoonTarget) != null
+
+        val units = profileFunction.getUnits()
+
+        // Create 3 default presets - values always stored in mg/dL
+        val presets = listOf(
+            TTPreset(
+                id = "eatingsoon",
+                nameRes = app.aaps.core.ui.R.string.eatingsoon,
+                reason = TT.Reason.EATING_SOON,
+                targetValue = if (hasOldPreferences) {
+                    profileUtil.convertToMgdl(preferences.get(UnitDoubleKey.OverviewEatingSoonTarget), units)
+                } else {
+                    Constants.DEFAULT_TT_EATING_SOON_TARGET
+                },
+                duration = if (hasOldPreferences) {
+                    preferences.get(IntKey.OverviewEatingSoonDuration) * 60L * 1000L
+                } else {
+                    Constants.DEFAULT_TT_EATING_SOON_DURATION * 60L * 1000L
+                },
+                isDeletable = false
+            ),
+            TTPreset(
+                id = "activity",
+                nameRes = app.aaps.core.ui.R.string.activity,
+                reason = TT.Reason.ACTIVITY,
+                targetValue = if (hasOldPreferences) {
+                    profileUtil.convertToMgdl(preferences.get(UnitDoubleKey.OverviewActivityTarget), units)
+                } else {
+                    Constants.DEFAULT_TT_ACTIVITY_TARGET
+                },
+                duration = if (hasOldPreferences) {
+                    preferences.get(IntKey.OverviewActivityDuration) * 60L * 1000L
+                } else {
+                    Constants.DEFAULT_TT_ACTIVITY_DURATION * 60L * 1000L
+                },
+                isDeletable = false
+            ),
+            TTPreset(
+                id = "hypo",
+                nameRes = app.aaps.core.ui.R.string.hypo,
+                reason = TT.Reason.HYPOGLYCEMIA,
+                targetValue = if (hasOldPreferences) {
+                    profileUtil.convertToMgdl(preferences.get(UnitDoubleKey.OverviewHypoTarget), units)
+                } else {
+                    Constants.DEFAULT_TT_HYPO_TARGET
+                },
+                duration = if (hasOldPreferences) {
+                    preferences.get(IntKey.OverviewHypoDuration) * 60L * 1000L
+                } else {
+                    Constants.DEFAULT_TT_HYPO_DURATION * 60L * 1000L
+                },
+                isDeletable = false
+            )
+        )
+
+        // Save to new JSON format
+        preferences.put(StringNonKey.TempTargetPresets, presets.toJson())
+
+        aapsLogger.debug(LTag.CORE, "Migrated temp target presets to JSON storage")
+
+        // NOTE: Old preferences are NOT removed to keep legacy TempTargetDialog functional
+        // They are marked as @Deprecated in preference key definitions
+        // Removal will be done when legacy UI is completely removed in the future
     }
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {

@@ -19,4 +19,6 @@ enum class StringNonKey(
     TotalBaseBasal("TBB", defaultValue = "10.00"),
     PumpCommonBolusStorage(key = "pump_sync_storage_bolus", defaultValue = ""),
     PumpCommonTbrStorage(key = "pump_sync_storage_tbr", defaultValue = ""),
+    TempTargetPresets(key = "temp_target_presets", defaultValue = "[]"),
+
 }

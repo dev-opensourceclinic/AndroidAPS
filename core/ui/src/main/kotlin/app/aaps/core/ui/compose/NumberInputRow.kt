@@ -73,17 +73,11 @@ fun NumberInputRow(
 
     // Check if this is minutes input for special formatting
     val isMinutesUnit = unitLabelResId == KeysR.string.units_min
-    val intValue = value.roundToInt()
 
     // Format the displayed value
     val displayText = when {
-        // Special formatting for minutes >= 60 as "Xh Ym"
-        isMinutesUnit && intValue >= 60 -> {
-            val hours = intValue / 60
-            val mins = intValue % 60
-            stringResource(app.aaps.core.ui.R.string.format_hour_minute, hours, mins)
-        }
-
+        // Special formatting for minutes as "Xh Ym" when >= 60
+        isMinutesUnit -> formatMinutesAsDuration(value.roundToInt())
         unitLabel.isNotEmpty()          -> "${valueFormat.format(value)} $unitLabel"
         else                            -> valueFormat.format(value)
     }

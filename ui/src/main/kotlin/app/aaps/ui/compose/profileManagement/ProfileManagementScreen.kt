@@ -64,6 +64,7 @@ import app.aaps.core.ui.compose.OkCancelDialog
 import app.aaps.core.ui.compose.icons.ProfileSwitch
 import app.aaps.ui.R
 import app.aaps.ui.compose.components.ContentContainer
+import app.aaps.ui.compose.components.PageIndicatorDots
 import app.aaps.ui.compose.profileManagement.viewmodels.ProfileManagementViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
@@ -237,42 +238,10 @@ fun ProfileManagementScreen(
                             }
 
                             // Page indicator dots
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                repeat(uiState.profiles.size) { index ->
-                                    val isSelected = pagerState.currentPage == index
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(horizontal = 4.dp)
-                                            .width(if (isSelected) 24.dp else 8.dp)
-                                            .height(8.dp)
-                                            .graphicsLayer {
-                                                shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
-                                                clip = true
-                                            }
-                                            .then(
-                                                Modifier.padding(0.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        androidx.compose.foundation.Canvas(
-                                            modifier = Modifier.fillMaxSize()
-                                        ) {
-                                            drawRoundRect(
-                                                color = if (isSelected)
-                                                    Color(0xFF6200EE)
-                                                else
-                                                    Color(0xFFBDBDBD),
-                                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx())
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                            PageIndicatorDots(
+                                pageCount = uiState.profiles.size,
+                                currentPage = pagerState.currentPage
+                            )
 
                             // Profile Viewer
                             uiState.selectedProfile?.let { profile ->

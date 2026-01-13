@@ -32,6 +32,14 @@ object Constants {
     const val MIN_TT_MMOL = 4.0
     const val MAX_TT_MMOL = 10.0
 
+    // Temp target preset defaults (target in mg/dL, duration in minutes)
+    const val DEFAULT_TT_EATING_SOON_TARGET = 90.0
+    const val DEFAULT_TT_EATING_SOON_DURATION = 45
+    const val DEFAULT_TT_ACTIVITY_TARGET = 140.0
+    const val DEFAULT_TT_ACTIVITY_DURATION = 90
+    const val DEFAULT_TT_HYPO_TARGET = 160.0
+    const val DEFAULT_TT_HYPO_DURATION = 60
+
     //NSClientInternal
     const val MAX_LOG_LINES = 90
 

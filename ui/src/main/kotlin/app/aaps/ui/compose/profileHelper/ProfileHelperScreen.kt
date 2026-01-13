@@ -48,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +60,7 @@ import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.objects.profile.ProfileSealed
 import app.aaps.core.ui.compose.AapsTopAppBar
 import app.aaps.core.ui.compose.NumberInputRow
+import app.aaps.core.ui.compose.clearFocusOnTap
 import app.aaps.ui.R
 import app.aaps.ui.compose.profileManagement.ProfileCompareContent
 import app.aaps.ui.compose.profileManagement.ProfileCompareRow
@@ -86,6 +88,7 @@ fun ProfileHelperScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var showProfileTypeMenu0 by remember { mutableStateOf(false) }
@@ -177,6 +180,7 @@ fun ProfileHelperScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .clearFocusOnTap(focusManager)
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = 8.dp)
         ) {

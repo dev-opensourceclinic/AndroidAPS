@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.aaps.core.data.configuration.Constants
@@ -49,6 +50,7 @@ import app.aaps.core.ui.compose.DatePickerModal
 import app.aaps.core.ui.compose.NumberInputRow
 import app.aaps.core.ui.compose.OkCancelDialog
 import app.aaps.core.ui.compose.TimePickerModal
+import app.aaps.core.ui.compose.clearFocusOnTap
 import app.aaps.ui.R
 import java.util.Calendar
 
@@ -80,6 +82,7 @@ fun ProfileActivationScreen(
     onNavigateBack: () -> Unit,
     onActivate: (durationMinutes: Int, percentage: Int, timeshiftHours: Int, withTT: Boolean, notes: String, timestamp: Long, timeChanged: Boolean) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     var duration by remember { mutableDoubleStateOf(0.0) }
     var percentage by remember { mutableDoubleStateOf(100.0) }
     var timeshift by remember { mutableDoubleStateOf(0.0) }
@@ -243,6 +246,7 @@ fun ProfileActivationScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .clearFocusOnTap(focusManager)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)

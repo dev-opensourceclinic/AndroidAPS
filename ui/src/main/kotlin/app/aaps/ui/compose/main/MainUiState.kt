@@ -1,5 +1,20 @@
 package app.aaps.ui.compose.main
 
+/**
+ * State of the TempTarget chip in Overview
+ */
+enum class TempTargetChipState {
+
+    /** No temp target, showing profile default */
+    None,
+
+    /** No temp target, but APS adjusted the target */
+    Adjusted,
+
+    /** Active temp target */
+    Active
+}
+
 data class MainUiState(
     val drawerCategories: List<DrawerCategory> = emptyList(),
     val selectedCategoryForSheet: DrawerCategory? = null,
@@ -11,5 +26,10 @@ data class MainUiState(
     val showAboutDialog: Boolean = false,
     // Profile state for top bar chip
     val profileName: String = "",
-    val isProfileModified: Boolean = false
+    val isProfileModified: Boolean = false,
+    val profileProgress: Float = 0f, // 0-1 progress for temporary profile switch
+    // TempTarget state for chip
+    val tempTargetText: String = "",
+    val tempTargetState: TempTargetChipState = TempTargetChipState.None,
+    val tempTargetProgress: Float = 0f // 0-1 progress for active temp target
 )

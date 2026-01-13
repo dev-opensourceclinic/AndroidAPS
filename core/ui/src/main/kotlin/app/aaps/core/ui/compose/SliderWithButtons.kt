@@ -30,9 +30,41 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.aaps.core.interfaces.resources.ResourceHelper
+import app.aaps.core.ui.R
 import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
+import app.aaps.core.keys.R as KeysR
+
+/**
+ * Formats minutes as duration string: "Xh Ym" when >= 60, "X mins" otherwise.
+ * Composable version using stringResource.
+ */
+@Composable
+fun formatMinutesAsDuration(minutes: Int): String {
+    return if (minutes >= 60) {
+        val hours = minutes / 60
+        val mins = minutes % 60
+        stringResource(R.string.format_hour_minute, hours, mins)
+    } else {
+        stringResource(R.string.format_mins, minutes)
+    }
+}
+
+/**
+ * Formats minutes as duration string: "Xh Ym" when >= 60, "X mins" otherwise.
+ * Non-composable version using ResourceHelper.
+ */
+fun formatMinutesAsDuration(minutes: Int, rh: ResourceHelper): String {
+    return if (minutes >= 60) {
+        val hours = minutes / 60
+        val mins = minutes % 60
+        rh.gs(R.string.format_hour_minute, hours, mins)
+    } else {
+        rh.gs(R.string.format_mins, minutes)
+    }
+}
 
 /**
  * A Slider with +/- buttons on each side for fine-grained value control.
@@ -46,7 +78,8 @@ import kotlin.math.roundToInt
  * @param valueFormatResId Resource ID for formatting value with unit (e.g., "%1$.1f U" or "%1$d min")
  * @param formatAsInt If true, value is formatted as Int for stringResource (use with %d format strings)
  * @param valueFormat Format for the value (used for dialog and fallback)
- * @param unitLabel Unit label for dialog input suffix
+ * @param unitLabel Unit label for dialog input suffix (deprecated, use unitLabelResId)
+ * @param unitLabelResId Resource ID for unit label. When R.string.units_min, auto-formats as "Xh Ym"
  * @param dialogLabel Label for the input dialog
  * @param dialogSummary Summary/description for the input dialog
  * @param modifier Modifier for the Row container
@@ -62,6 +95,7 @@ fun SliderWithButtons(
     formatAsInt: Boolean = false,
     valueFormat: DecimalFormat = DecimalFormat("0.0"),
     unitLabel: String = "",
+    unitLabelResId: Int = 0,
     dialogLabel: String? = null,
     dialogSummary: String? = null,
     modifier: Modifier = Modifier
@@ -69,6 +103,14 @@ fun SliderWithButtons(
     val minValue = valueRange.start
     val maxValue = valueRange.endInclusive
     var showDialog by remember { mutableStateOf(false) }
+
+    // Check if this is minutes input for special formatting
+    val isMinutesUnit = unitLabelResId == KeysR.string.units_min
+    val resolvedUnitLabel = when {
+        unitLabelResId != 0    -> stringResource(unitLabelResId)
+        unitLabel.isNotEmpty() -> unitLabel
+        else                   -> ""
+    }
 
     Row(
         modifier = modifier,
@@ -119,14 +161,20 @@ fun SliderWithButtons(
 
         // Optional clickable value label
         if (showValue) {
-            val displayText = if (valueFormatResId != null) {
-                if (formatAsInt) {
-                    stringResource(valueFormatResId, value.roundToInt())
-                } else {
-                    stringResource(valueFormatResId, value)
+            val displayText = when {
+                // Special formatting for minutes >= 60 as "Xh Ym"
+                isMinutesUnit                  -> formatMinutesAsDuration(value.roundToInt())
+
+                valueFormatResId != null       -> {
+                    if (formatAsInt) {
+                        stringResource(valueFormatResId, value.roundToInt())
+                    } else {
+                        stringResource(valueFormatResId, value)
+                    }
                 }
-            } else {
-                "${valueFormat.format(value)}${if (unitLabel.isNotEmpty()) " $unitLabel" else ""}"
+
+                resolvedUnitLabel.isNotEmpty() -> "${valueFormat.format(value)} $resolvedUnitLabel"
+                else                           -> valueFormat.format(value)
             }
             Text(
                 text = displayText,
@@ -135,7 +183,7 @@ fun SliderWithButtons(
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.End,
                 modifier = Modifier
-                    .widthIn(min = if (valueFormatResId != null || unitLabel.isNotEmpty()) 56.dp else 40.dp)
+                    .widthIn(min = if (isMinutesUnit || valueFormatResId != null || resolvedUnitLabel.isNotEmpty()) 56.dp else 40.dp)
                     .clickable { showDialog = true }
                     .padding(start = 4.dp)
             )
@@ -150,7 +198,8 @@ fun SliderWithButtons(
             step = step,
             label = dialogLabel,
             summary = dialogSummary,
-            unitLabel = unitLabel,
+            unitLabel = resolvedUnitLabel,
+            unitLabelResId = unitLabelResId,
             valueFormat = valueFormat,
             onValueConfirm = onValueChange,
             onDismiss = { showDialog = false }
@@ -159,7 +208,11 @@ fun SliderWithButtons(
 }
 
 private fun roundToStep(value: Double, step: Double): Double {
-    return (value / step).roundToInt() * step
+    val scaled = (value / step).roundToInt() * step
+    // Fix floating point precision errors (e.g., 6.1000000000005 -> 6.1)
+    val decimals = step.toString().substringAfter('.', "").length
+    val factor = Math.pow(10.0, decimals.toDouble())
+    return Math.round(scaled * factor) / factor
 }
 
 /**

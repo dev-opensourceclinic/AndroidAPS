@@ -153,7 +153,7 @@ fun AapsSnackbarHost(
             is SnackbarMessage.Warning -> Triple(colors.warningContainer, colors.onWarningContainer, Icons.Default.Warning)
             is SnackbarMessage.Info -> Triple(colors.infoContainer, colors.onInfoContainer, Icons.Default.Info)
             is SnackbarMessage.Success -> Triple(colors.successContainer, colors.onSuccessContainer, Icons.Default.CheckCircle)
-            null -> Triple(MaterialTheme.colorScheme.inverseSurface, MaterialTheme.colorScheme.inverseOnSurface, Icons.Default.Info)
+            null                    -> Triple(MaterialTheme.colorScheme.inverseSurface, MaterialTheme.colorScheme.inverseOnSurface, Icons.Default.Info)
         }
 
         Snackbar(

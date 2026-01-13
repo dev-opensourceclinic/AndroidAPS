@@ -19,6 +19,10 @@ import androidx.compose.ui.graphics.Color
  * - invalidated: Red - Invalid/deleted items color
  * - inProgress: Amber - Items with temporary modifications (e.g., profile with percentage/timeshift)
  * - onInProgress: Dark text color for use on inProgress background
+ * - ttEatingSoon: Orange (carbs color) - Eating Soon temp target badge
+ * - ttActivity: Blue (exercise color) - Activity temp target badge
+ * - ttHypoglycemia: Red (low color) - Hypoglycemia temp target badge
+ * - ttCustom: Purple - Custom temp target badge
  *
  * Colors match the existing theme attribute colors for consistency with the rest of the app.
  *
@@ -28,6 +32,10 @@ import androidx.compose.ui.graphics.Color
  * @property invalidatedRecord Color for invalid/deleted items
  * @property inProgress Color for items with temporary modifications (matches ribbonWarningColor)
  * @property onInProgress Text color for use on inProgress background (matches ribbonTextWarningColor)
+ * @property ttEatingSoon Color for Eating Soon temp target badge
+ * @property ttActivity Color for Activity temp target badge
+ * @property ttHypoglycemia Color for Hypoglycemia temp target badge
+ * @property ttCustom Color for Custom/Automation/Manual temp target badge
  */
 data class GeneralColors(
     val activeInsulinText: Color,
@@ -38,7 +46,14 @@ data class GeneralColors(
     val statusWarning: Color,
     val statusCritical: Color,
     val inProgress: Color,
-    val onInProgress: Color
+    val onInProgress: Color,
+    val ttEatingSoon: Color,
+    val ttActivity: Color,
+    val ttHypoglycemia: Color,
+    val ttCustom: Color,
+    val adjusted: Color,
+    val onAdjusted: Color,
+    val onBadge: Color
 )
 
 /**
@@ -54,7 +69,14 @@ internal val LightGeneralColors = GeneralColors(
     statusWarning = Color(0xFFFFC107),       // amber for warning status
     statusCritical = Color(0xFFF44336),      // red for critical status
     inProgress = Color(0xFFF4D700),          // ribbonWarning - amber for modified/temporary items
-    onInProgress = Color(0xFF303030)         // ribbonTextWarning - dark text on amber background
+    onInProgress = Color(0xFF303030),        // ribbonTextWarning - dark text on amber background
+    ttEatingSoon = Color(0xFFFB8C00),        // orange/carbs color for Eating Soon (matches TempTargetDialog)
+    ttActivity = Color(0xFF42A5F5),          // blue/exercise color for Activity (matches TempTargetDialog)
+    ttHypoglycemia = Color(0xFFFF0000),      // red/low color for Hypoglycemia (matches TempTargetDialog)
+    ttCustom = Color(0xFF9C27B0),            // purple for Custom/Automation/Manual
+    adjusted = Color(0xFF4CAF50),            // green for APS-adjusted target chip
+    onAdjusted = Color(0xFFFFFFFF),          // white text on adjusted target
+    onBadge = Color(0xFFFFFFFF)              // white text on colored badges
 )
 
 /**
@@ -70,7 +92,14 @@ internal val DarkGeneralColors = GeneralColors(
     statusWarning = Color(0xFFFFD54F),       // lighter amber for dark mode
     statusCritical = Color(0xFFE57373),      // lighter red for dark mode
     inProgress = Color(0xFFF4D700),          // ribbonWarning - same in both modes
-    onInProgress = Color(0xFF303030)         // ribbonTextWarning - same in both modes
+    onInProgress = Color(0xFF303030),        // ribbonTextWarning - same in both modes
+    ttEatingSoon = Color(0xFFFFB74D),        // lighter orange/carbs for Eating Soon (dark mode)
+    ttActivity = Color(0xFF64B5F6),          // lighter blue/exercise for Activity (dark mode)
+    ttHypoglycemia = Color(0xFFEF5350),      // lighter red/low for Hypoglycemia (dark mode)
+    ttCustom = Color(0xFFBA68C8),            // lighter purple for Custom/Automation/Manual (dark mode)
+    adjusted = Color(0xFF81C784),            // lighter green for APS-adjusted target chip (dark mode)
+    onAdjusted = Color(0xFF000000),          // dark text on adjusted target (dark mode)
+    onBadge = Color(0xFFFFFFFF)              // white text on colored badges
 )
 
 /**

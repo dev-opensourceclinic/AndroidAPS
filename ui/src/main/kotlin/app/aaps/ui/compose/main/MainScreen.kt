@@ -1,17 +1,22 @@
 package app.aaps.ui.compose.main
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -158,14 +163,29 @@ fun MainScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        // Profile chip at the top of content
-                        if (uiState.profileName.isNotEmpty()) {
-                            ProfileChip(
-                                profileName = uiState.profileName,
-                                isModified = uiState.isProfileModified,
-                                onClick = onProfileManagementClick,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
+                        // Chips column at the top of content
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Profile chip
+                            if (uiState.profileName.isNotEmpty()) {
+                                ProfileChip(
+                                    profileName = uiState.profileName,
+                                    isModified = uiState.isProfileModified,
+                                    progress = uiState.profileProgress,
+                                    onClick = onProfileManagementClick
+                                )
+                            }
+                            // TempTarget chip (show when text is available)
+                            if (uiState.tempTargetText.isNotEmpty()) {
+                                TempTargetChip(
+                                    targetText = uiState.tempTargetText,
+                                    state = uiState.tempTargetState,
+                                    progress = uiState.tempTargetProgress,
+                                    onClick = onTempTargetClick
+                                )
+                            }
                         }
 
                         // Placeholder for overview content
@@ -257,34 +277,96 @@ private fun SwitchUiFab(
 private fun ProfileChip(
     profileName: String,
     isModified: Boolean,
+    progress: Float,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val chipColors = if (isModified) {
-        SuggestionChipDefaults.suggestionChipColors(
-            containerColor = AapsTheme.generalColors.inProgress,
-            labelColor = AapsTheme.generalColors.onInProgress,
-            iconContentColor = AapsTheme.generalColors.onInProgress
-        )
-    } else {
-        SuggestionChipDefaults.suggestionChipColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            iconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+    val containerColor = if (isModified) AapsTheme.generalColors.inProgress else MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = if (isModified) AapsTheme.generalColors.onInProgress else MaterialTheme.colorScheme.onSurfaceVariant
+
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp),
+        color = containerColor,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(app.aaps.core.ui.R.drawable.ic_ribbon_profile),
+                    contentDescription = null,
+                    tint = contentColor
+                )
+                Text(
+                    text = profileName,
+                    color = contentColor,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            if (progress > 0f) {
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth().height(3.dp),
+                    color = contentColor.copy(alpha = 0.7f),
+                    trackColor = contentColor.copy(alpha = 0.2f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TempTargetChip(
+    targetText: String,
+    state: TempTargetChipState,
+    progress: Float,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val containerColor = when (state) {
+        TempTargetChipState.Active   -> AapsTheme.generalColors.inProgress
+        TempTargetChipState.Adjusted -> AapsTheme.generalColors.adjusted
+        TempTargetChipState.None     -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = when (state) {
+        TempTargetChipState.Active   -> AapsTheme.generalColors.onInProgress
+        TempTargetChipState.Adjusted -> AapsTheme.generalColors.onAdjusted
+        TempTargetChipState.None     -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    SuggestionChip(
+    Surface(
         onClick = onClick,
-        label = { Text(profileName) },
-        icon = {
-            Icon(
-                painter = painterResource(app.aaps.core.ui.R.drawable.ic_ribbon_profile),
-                contentDescription = null,
-                modifier = Modifier.padding(start = 4.dp)
-            )
-        },
-        colors = chipColors,
-        modifier = modifier
-    )
+        shape = RoundedCornerShape(8.dp),
+        color = containerColor,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(app.aaps.core.ui.R.drawable.ic_crosstarget),
+                    contentDescription = null,
+                    tint = contentColor
+                )
+                Text(
+                    text = targetText,
+                    color = contentColor,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            if (progress > 0f) {
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth().height(3.dp),
+                    color = contentColor.copy(alpha = 0.7f),
+                    trackColor = contentColor.copy(alpha = 0.2f)
+                )
+            }
+        }
+    }
 }

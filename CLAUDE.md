@@ -69,6 +69,23 @@
 - Avoid duplication while writing new code and resources. Prefer moving to another module. Elaborate
   if you think, it's necessary
 - When resource strings are affected, change only english version. Ignore translations
+- **Never manipulate localized strings programmatically** - Using patterns like
+  `.replace(",", ".")`,
+  `.removeSuffix(":")`, or stripping characters from resource strings breaks localization. Different
+  languages have different punctuation and formatting rules. If a string needs different formats,
+  create separate resource strings instead.
+- **In Compose code, use `stringResource()` not `ResourceHelper`** - Compose has built-in
+  `stringResource(R.string.xyz)` function. Only use `ResourceHelper` (rh) in non-Composable contexts
+  (ViewModels, regular functions). This keeps Compose code cleaner and more idiomatic.
+- **Clear focus on tap outside text fields** - Compose does NOT auto-clear focus like Android Views.
+  For screens with text fields, use the shared `clearFocusOnTap` modifier:
+  ```kotlin
+  val focusManager = LocalFocusManager.current
+  Column(modifier = Modifier.clearFocusOnTap(focusManager)) {
+      // Content with text fields
+  }
+  ```
+  The modifier is in `app.aaps.core.ui.compose.clearFocusOnTap`.
 - **Avoid adding new module dependencies** - Adding dependencies between modules can significantly
   slow down compilation time. Always discuss before adding dependencies. Prefer alternatives:
     - Inline constants instead of importing from another module
@@ -86,6 +103,8 @@ When performing large-scale code migrations (e.g., XML→Compose, old API→new 
     - Identify and categorize files by complexity (simple → medium → complex)
     - Track file counts and status for each phase
     - Update plan as you learn new information
+  - During collection of information on every new info compare compatibilty with previous. Ask if it
+    conflicts or something is not clear
 - **Use grep/glob extensively** to find ALL instances before starting
     - Search for old patterns to ensure nothing is missed
     - Count total files/instances that need migration
