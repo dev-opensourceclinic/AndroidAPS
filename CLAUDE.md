@@ -28,6 +28,10 @@
 
 ## User Preferences
 
+- **Do NOT mark anything as "fully functional" or "complete" without user confirmation:**
+    - Always wait for user to test and confirm before claiming something works
+    - Build success ≠ feature complete - user must verify runtime behavior
+    - Never update PLAN.md or documentation to say something is "working" until user confirms
 - **When user says "ALL":**
     - Do NOT optimize, batch, summarize, or take shortcuts
     - Create a todo item for EVERY item/file to be processed
@@ -43,6 +47,12 @@
     - For Compose UI: Always use theme values instead of hardcoded dp/padding/colors. If proper
       setting doesn't exist, discuss it before creating hardcoded values.
     - If hardcoded values exist, consider moving them to theme for consistency and maintainability
+- **NEVER use Android attrs in Compose code:**
+    - ❌ BAD: `rh.gac(context, R.attr.highColor)` - Android attribute resolution doesn't work well
+      with Compose
+    - ✅ GOOD: Define colors in Compose theme and use them (e.g., `AapsTheme.colors.bgHigh`)
+    - Domain models should NOT contain `@ColorInt` - use enums/sealed classes for classification
+    - Map classification to theme colors in UI layer (Composables)
 - **Type safety principles:**
     - Prefer specific types over `Any?` whenever possible
     - Document why `Any?` is used if it's truly necessary (e.g., module boundary constraints)

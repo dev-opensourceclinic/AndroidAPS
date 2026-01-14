@@ -1,4 +1,4 @@
-package app.aaps.ui.compose.tempTarget.components
+package app.aaps.ui.compose.tempTarget
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +28,7 @@ import app.aaps.core.data.model.TTPreset
 import app.aaps.core.interfaces.profile.ProfileUtil
 import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.interfaces.utils.DateUtil
+import app.aaps.core.ui.R
 import app.aaps.core.ui.compose.SliderWithButtons
 import java.text.DecimalFormat
 import app.aaps.core.keys.R as KeysR
@@ -86,7 +87,7 @@ fun TempTargetEditor(
     ) {
         // Section header
         Text(
-            text = stringResource(app.aaps.core.ui.R.string.preset_settings),
+            text = stringResource(R.string.preset_settings),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -97,7 +98,7 @@ fun TempTargetEditor(
             OutlinedTextField(
                 value = editorName,
                 onValueChange = onNameChange,
-                label = { Text(stringResource(app.aaps.core.ui.R.string.name_short).removeSuffix(":")) },
+                label = { Text(stringResource(R.string.name_short).removeSuffix(":")) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors()
@@ -107,7 +108,7 @@ fun TempTargetEditor(
         // Target value slider
         Column {
             Text(
-                text = stringResource(app.aaps.core.ui.R.string.temporary_target),
+                text = stringResource(R.string.temporary_target),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -139,7 +140,7 @@ fun TempTargetEditor(
                     DecimalFormat("0.0")
                 },
                 unitLabel = units.asText,
-                dialogLabel = stringResource(app.aaps.core.ui.R.string.temporary_target),
+                dialogLabel = stringResource(R.string.temporary_target),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -147,7 +148,7 @@ fun TempTargetEditor(
         // Duration slider
         Column {
             Text(
-                text = stringResource(app.aaps.core.ui.R.string.duration),
+                text = stringResource(R.string.duration),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -161,7 +162,7 @@ fun TempTargetEditor(
                 showValue = true,
                 valueFormat = DecimalFormat("0"),
                 unitLabelResId = KeysR.string.units_min,
-                dialogLabel = stringResource(app.aaps.core.ui.R.string.duration),
+                dialogLabel = stringResource(R.string.duration),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -173,7 +174,7 @@ fun TempTargetEditor(
 
         // Activation section header
         Text(
-            text = stringResource(app.aaps.core.ui.R.string.activation),
+            text = stringResource(R.string.activation),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -190,7 +191,7 @@ fun TempTargetEditor(
                 onValueChange = {},
                 readOnly = true,
                 enabled = false,
-                label = { Text(stringResource(app.aaps.core.ui.R.string.date)) },
+                label = { Text(stringResource(R.string.date)) },
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Filled.DateRange,
@@ -215,7 +216,7 @@ fun TempTargetEditor(
                 onValueChange = {},
                 readOnly = true,
                 enabled = false,
-                label = { Text(stringResource(app.aaps.core.ui.R.string.time)) },
+                label = { Text(stringResource(R.string.time)) },
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Schedule,
@@ -240,7 +241,7 @@ fun TempTargetEditor(
             OutlinedTextField(
                 value = notes,
                 onValueChange = onNotesChange,
-                label = { Text(stringResource(app.aaps.core.ui.R.string.notes_label)) },
+                label = { Text(stringResource(R.string.notes_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
                 maxLines = 4,

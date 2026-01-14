@@ -36,9 +36,9 @@ dependencies {
     api(libs.androidx.compose.material.icons.extended)
     api(libs.androidx.compose.runtime)
     api(libs.androidx.lifecycle.runtime.compose)
-
-
     api(libs.androidx.core)
+    api(libs.kotlinx.datetime)
+
     ksp(libs.com.google.dagger.compiler)
     ksp(libs.com.google.dagger.android.processor)
 }

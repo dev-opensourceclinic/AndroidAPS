@@ -593,7 +593,7 @@ class InsightPlugin @Inject constructor(
                         bolusCancelled = true
                         confirmAlert(AlertType.WARNING_38)
                         alertService?.ignore(null)
-                        aapsLogger.info(LTag.PUMP, "XXXX Stop Thread end)")
+                        aapsLogger.info(LTag.PUMP, "Stop Thread end)")
                     }
                 } catch (e: AppLayerErrorException) {
                     aapsLogger.info(LTag.PUMP, "Exception while canceling bolus: " + e.javaClass.canonicalName + " (" + e.errorCode + ")")

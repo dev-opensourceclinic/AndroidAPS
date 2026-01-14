@@ -174,10 +174,10 @@ class ActionsViewModel @Inject constructor(
                 }
             }
 
-            // Build status items
+            // Build status items (without expensive TDD calculation)
             val sensorStatus = buildSensorStatus()
             val insulinStatus = buildInsulinStatus(isPatchPump, pumpDescription.maxResorvoirReading.toDouble())
-            val cannulaStatus = buildCannulaStatus(isPatchPump)
+            val cannulaStatus = buildCannulaStatus(isPatchPump, includeTddCalculation = false)
             val batteryStatus = if (!isPatchPump || pumpDescription.useHardwareLink) {
                 buildBatteryStatus()
             } else null
@@ -205,6 +205,14 @@ class ActionsViewModel @Inject constructor(
                     isPatchPump = isPatchPump,
                     customActions = customActions
                 )
+            }
+
+            // Calculate cannula usage in background (expensive operation)
+            viewModelScope.launch {
+                val cannulaStatusWithUsage = buildCannulaStatus(isPatchPump, includeTddCalculation = true)
+                _uiState.update { state ->
+                    state.copy(cannulaStatus = cannulaStatusWithUsage)
+                }
             }
         }
     }
@@ -257,14 +265,14 @@ class ActionsViewModel @Inject constructor(
         )
     }
 
-    private suspend fun buildCannulaStatus(isPatchPump: Boolean): StatusItem {
+    private suspend fun buildCannulaStatus(isPatchPump: Boolean, includeTddCalculation: Boolean = true): StatusItem {
         val event = withContext(Dispatchers.IO) {
             persistenceLayer.getLastTherapyRecordUpToNow(TE.Type.CANNULA_CHANGE)
         }
         val insulinUnit = rh.gs(R.string.insulin_unit_shortname)
 
-        // Calculate usage since last cannula change
-        val usage = if (event != null) {
+        // Calculate usage since last cannula change (expensive - can be deferred)
+        val usage = if (includeTddCalculation && event != null) {
             withContext(Dispatchers.IO) {
                 tddCalculator.calculateInterval(event.timestamp, dateUtil.now(), allowMissingData = false)?.totalAmount ?: 0.0
             }

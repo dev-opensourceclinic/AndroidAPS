@@ -1,6 +1,5 @@
 package app.aaps.ui.compose.tempTarget
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -64,8 +62,6 @@ import app.aaps.core.ui.compose.formatMinutesAsDuration
 import app.aaps.ui.R
 import app.aaps.ui.compose.components.ContentContainer
 import app.aaps.ui.compose.components.PageIndicatorDots
-import app.aaps.ui.compose.tempTarget.components.TempTargetCarouselCard
-import app.aaps.ui.compose.tempTarget.components.TempTargetEditor
 import app.aaps.ui.compose.tempTarget.viewmodels.TempTargetManagementViewModel
 import app.aaps.ui.compose.tempTarget.viewmodels.getDisplayName
 import java.util.Calendar
@@ -314,7 +310,6 @@ fun TempTargetManagementScreen(
                                 isSelected = pagerState.currentPage == page,
                                 units = viewModel.units,
                                 profileUtil = viewModel.profileUtil,
-                                rh = viewModel.rh,
                                 modifier = Modifier
                                     .graphicsLayer {
                                         val pageOffset = (

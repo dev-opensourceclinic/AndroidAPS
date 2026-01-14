@@ -1,4 +1,4 @@
-package app.aaps.ui.compose.tempTarget.components
+package app.aaps.ui.compose.tempTarget
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +36,6 @@ import app.aaps.core.data.model.GlucoseUnit
 import app.aaps.core.data.model.TT
 import app.aaps.core.data.model.TTPreset
 import app.aaps.core.interfaces.profile.ProfileUtil
-import app.aaps.core.interfaces.resources.ResourceHelper
 import app.aaps.core.ui.compose.AapsTheme
 import app.aaps.core.ui.compose.formatMinutesAsDuration
 import app.aaps.ui.R
@@ -63,7 +62,6 @@ fun TempTargetCarouselCard(
     isSelected: Boolean,
     units: GlucoseUnit,
     profileUtil: ProfileUtil,
-    rh: ResourceHelper,
     modifier: Modifier = Modifier
 ) {
     val isActiveCard = preset == null && activeTT != null
@@ -75,7 +73,7 @@ fun TempTargetCarouselCard(
     }
 
     LaunchedEffect(isActiveCard, activeTT?.timestamp, activeTT?.duration) {
-        if (isActiveCard && activeTT != null) {
+        if (isActiveCard) {
             while (true) {
                 val now = System.currentTimeMillis()
                 val elapsed = now - activeTT.timestamp
