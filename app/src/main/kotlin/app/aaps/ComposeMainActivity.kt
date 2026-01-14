@@ -43,6 +43,7 @@ import app.aaps.plugins.configuration.activities.SingleFragmentActivity
 import app.aaps.plugins.configuration.setupwizard.SetupWizardActivity
 import app.aaps.plugins.main.skins.SkinProvider
 import app.aaps.ui.compose.actions.viewmodels.ActionsViewModel
+import app.aaps.ui.compose.graphs.viewmodels.GraphViewModel
 import app.aaps.ui.compose.main.MainMenuItem
 import app.aaps.ui.compose.main.MainNavDestination
 import app.aaps.ui.compose.main.MainScreen
@@ -84,6 +85,7 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
     // ViewModels
     @Inject lateinit var mainViewModel: MainViewModel
     @Inject lateinit var actionsViewModel: ActionsViewModel
+    @Inject lateinit var graphViewModel: GraphViewModel
     @Inject lateinit var treatmentsViewModel: TreatmentsViewModel
     @Inject lateinit var tempTargetManagementViewModel: TempTargetManagementViewModel
     @Inject lateinit var statsViewModel: StatsViewModel
@@ -249,7 +251,8 @@ class ComposeMainActivity : DaggerAppCompatActivityWithResult() {
                             },
                             onActionsError = { comment, title ->
                                 uiInteraction.runAlarm(comment, title, app.aaps.core.ui.R.raw.boluserror)
-                            }
+                            },
+                            graphViewModel = graphViewModel
                         )
                     }
 

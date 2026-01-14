@@ -5,11 +5,12 @@ import androidx.compose.ui.graphics.Color
 
 /**
  * Color scheme for general UI elements across the app.
- * Provides consistent color coding for common elements like IOB, COB, etc.
+ * Provides consistent color coding for common elements like IOB, COB, BG ranges, etc.
  *
  * **Usage:**
  * - Treatment screens
  * - Overview screen
+ * - BG graphs
  * - General UI elements
  *
  * **Color Assignment:**
@@ -23,6 +24,9 @@ import androidx.compose.ui.graphics.Color
  * - ttActivity: Blue (exercise color) - Activity temp target badge
  * - ttHypoglycemia: Red (low color) - Hypoglycemia temp target badge
  * - ttCustom: Purple - Custom temp target badge
+ * - bgHigh: Orange - BG above high mark
+ * - bgInRange: Green - BG within target range
+ * - bgLow: Red - BG below low mark
  *
  * Colors match the existing theme attribute colors for consistency with the rest of the app.
  *
@@ -36,6 +40,15 @@ import androidx.compose.ui.graphics.Color
  * @property ttActivity Color for Activity temp target badge
  * @property ttHypoglycemia Color for Hypoglycemia temp target badge
  * @property ttCustom Color for Custom/Automation/Manual temp target badge
+ * @property bgHigh Color for BG readings above high mark (matches highColor attr)
+ * @property bgInRange Color for BG readings within target range (matches bgInRange attr)
+ * @property bgLow Color for BG readings below low mark (matches lowColor attr)
+ * @property originalBgValue Color for regular CGM BG readings (white/outlined dots)
+ * @property iobPrediction Color for IOB-based BG predictions (blue)
+ * @property cobPrediction Color for COB-based BG predictions (orange)
+ * @property aCobPrediction Color for absorbed COB predictions (lighter orange)
+ * @property uamPrediction Color for UAM (unannounced meals) predictions (yellow)
+ * @property ztPrediction Color for zero-temp predictions (cyan)
  */
 data class GeneralColors(
     val activeInsulinText: Color,
@@ -53,7 +66,17 @@ data class GeneralColors(
     val ttCustom: Color,
     val adjusted: Color,
     val onAdjusted: Color,
-    val onBadge: Color
+    val onBadge: Color,
+    val bgHigh: Color,
+    val bgInRange: Color,
+    val bgLow: Color,
+    val bgTargetRangeArea: Color,
+    val originalBgValue: Color,
+    val iobPrediction: Color,
+    val cobPrediction: Color,
+    val aCobPrediction: Color,
+    val uamPrediction: Color,
+    val ztPrediction: Color
 )
 
 /**
@@ -76,7 +99,17 @@ internal val LightGeneralColors = GeneralColors(
     ttCustom = Color(0xFF9C27B0),            // purple for Custom/Automation/Manual
     adjusted = Color(0xFF4CAF50),            // green for APS-adjusted target chip
     onAdjusted = Color(0xFFFFFFFF),          // white text on adjusted target
-    onBadge = Color(0xFFFFFFFF)              // white text on colored badges
+    onBadge = Color(0xFFFFFFFF),             // white text on colored badges
+    bgHigh = Color(0xFFFB8C00),              // orange for high BG (matches @color/high in values)
+    bgInRange = Color(0xFF00FF00),           // pure green for in-range BG (matches @color/inRange)
+    bgLow = Color(0xFFFF0000),               // pure red for low BG (matches @color/low)
+    bgTargetRangeArea = Color(0x2800FF00),   // green with ~16% alpha for target range area (matches @color/inRangeBackground)
+    originalBgValue = Color(0xFFFFFFFF),     // white for regular CGM readings (matches originalBgValueColor attr)
+    iobPrediction = Color(0xFF1E88E5),       // blue for IOB predictions (matches iobColor attr)
+    cobPrediction = Color(0xFFFB8C00),       // orange for COB predictions (matches cobColor attr)
+    aCobPrediction = Color(0x80FB8C00),      // lighter orange for absorbed COB (50% alpha)
+    uamPrediction = Color(0xFFC9BD60),       // yellow-ish for UAM predictions (matches uamColor attr)
+    ztPrediction = Color(0xFF00D2D2)         // cyan for zero-temp predictions (matches ztColor attr)
 )
 
 /**
@@ -99,7 +132,17 @@ internal val DarkGeneralColors = GeneralColors(
     ttCustom = Color(0xFFBA68C8),            // lighter purple for Custom/Automation/Manual (dark mode)
     adjusted = Color(0xFF81C784),            // lighter green for APS-adjusted target chip (dark mode)
     onAdjusted = Color(0xFF000000),          // dark text on adjusted target (dark mode)
-    onBadge = Color(0xFFFFFFFF)              // white text on colored badges
+    onBadge = Color(0xFFFFFFFF),             // white text on colored badges
+    bgHigh = Color(0xFFFFFF00),              // yellow for high BG (dark mode, matches @color/high in values-night)
+    bgInRange = Color(0xFF00FF00),           // pure green for in-range BG (matches @color/inRange - same in both modes)
+    bgLow = Color(0xFFFF0000),               // pure red for low BG (matches @color/low - same in both modes)
+    bgTargetRangeArea = Color(0x4000FF00),   // green with ~25% alpha for target range area (matches @color/inRangeBackground in values-night)
+    originalBgValue = Color(0xFFFFFFFF),     // white for regular CGM readings (same in both modes)
+    iobPrediction = Color(0xFF64B5F6),       // lighter blue for IOB predictions (dark mode)
+    cobPrediction = Color(0xFFFFB74D),       // lighter orange for COB predictions (dark mode)
+    aCobPrediction = Color(0x80FFB74D),      // lighter orange for absorbed COB (50% alpha, dark mode)
+    uamPrediction = Color(0xFFE6D39A),       // lighter yellow for UAM predictions (dark mode)
+    ztPrediction = Color(0xFF4DD4D4)         // lighter cyan for zero-temp predictions (dark mode)
 )
 
 /**

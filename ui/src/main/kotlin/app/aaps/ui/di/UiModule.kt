@@ -1,10 +1,12 @@
 package app.aaps.ui.di
 
+import app.aaps.core.interfaces.overview.graph.CalculatedGraphDataCache
 import app.aaps.ui.activities.BolusProgressHelperActivity
 import app.aaps.ui.activities.ErrorActivity
 import app.aaps.ui.activities.ProfileViewerActivity
 import app.aaps.ui.activities.QuickWizardListActivity
 import app.aaps.ui.activities.TDDStatsActivity
+import app.aaps.ui.compose.graphs.CalculatedGraphDataCacheImpl
 import app.aaps.ui.dialogs.BolusProgressDialog
 import app.aaps.ui.dialogs.CalibrationDialog
 import app.aaps.ui.dialogs.CarbsDialog
@@ -24,12 +26,19 @@ import app.aaps.ui.dialogs.WizardInfoDialog
 import app.aaps.ui.services.AlarmSoundService
 import app.aaps.ui.widget.Widget
 import app.aaps.ui.widget.WidgetConfigureActivity
+import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
-@Module
+@Module(includes = [UiModule.Bindings::class])
 @Suppress("unused")
 abstract class UiModule {
+
+    @Module
+    interface Bindings {
+
+        @Binds fun bindCalculatedGraphDataCache(impl: CalculatedGraphDataCacheImpl): CalculatedGraphDataCache
+    }
 
     @ContributesAndroidInjector abstract fun contributesAlarmSoundService(): AlarmSoundService
 

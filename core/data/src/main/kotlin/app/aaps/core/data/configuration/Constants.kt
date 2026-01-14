@@ -88,4 +88,7 @@ object Constants {
      * so we add leeway to still accept given amount of older tokens
      */
     const val OTP_ACCEPT_OLD_TOKENS_COUNT = 1
+
+    // Graph time range
+    const val GRAPH_TIME_RANGE_HOURS = 24
 }
