@@ -6,7 +6,7 @@
     <string name="recovering">Đang Khôi Phục</string>
     <string name="insight_status">Trạng thái</string>
     <string name="recovery_duration">Thời gian hồi phục</string>
-    <string name="last_connected">Kết nối gần nhất</string>
+    <string name="last_connected">Đã kết nối lúc</string>
     <string name="start_pump">Khởi động Pump</string>
     <string name="stop_pump">Dừng Pump</string>
     <string name="started">Đã bắt đầu</string>
