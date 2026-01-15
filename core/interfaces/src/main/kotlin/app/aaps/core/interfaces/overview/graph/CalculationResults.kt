@@ -49,3 +49,115 @@ data class BgDataPoint(
     val type: BgType,              // Type determines rendering style and color
     val filledGap: Boolean = false, // For bucketed data - if true, render semi-transparent
 )
+
+// ============================================================================
+// Secondary Graph Domain Models (Phase 5)
+// ============================================================================
+
+/**
+ * Generic data point for line graphs (IOB, COB, Activity, BGI, Ratio, etc.)
+ */
+data class GraphDataPoint(
+    val timestamp: Long,
+    val value: Double
+)
+
+/**
+ * Deviation type for color classification in deviation bars
+ */
+enum class DeviationType {
+    POSITIVE,    // Green - above expected (pastSensitivity = "+")
+    NEGATIVE,    // Red - below expected (pastSensitivity = "-")
+    EQUAL,       // Black/gray - as expected (pastSensitivity = "=")
+    UAM,         // UAM color (type = "uam")
+    CSF          // Gray - carb absorption (type = "csf" or pastSensitivity = "C")
+}
+
+/**
+ * Deviation bar data point with color classification
+ */
+data class DeviationDataPoint(
+    val timestamp: Long,
+    val value: Double,
+    val deviationType: DeviationType
+)
+
+/**
+ * COB failover marker point (when min absorption rate is used)
+ */
+data class CobFailOverPoint(
+    val timestamp: Long,
+    val cobValue: Double
+)
+
+// ============================================================================
+// Graph-level data classes (one per secondary graph)
+// ============================================================================
+
+/**
+ * IOB graph data: regular IOB line + prediction points
+ */
+data class IobGraphData(
+    val iob: List<GraphDataPoint>,
+    val predictions: List<GraphDataPoint>
+)
+
+/**
+ * Absolute IOB graph data: absolute IOB line only
+ */
+data class AbsIobGraphData(
+    val absIob: List<GraphDataPoint>
+)
+
+/**
+ * COB graph data: COB line + failover marker points
+ */
+data class CobGraphData(
+    val cob: List<GraphDataPoint>,
+    val failOverPoints: List<CobFailOverPoint>
+)
+
+/**
+ * Activity graph data: historical activity + prediction line
+ */
+data class ActivityGraphData(
+    val activity: List<GraphDataPoint>,
+    val activityPrediction: List<GraphDataPoint>
+)
+
+/**
+ * BGI (Blood Glucose Impact) graph data: historical + prediction line
+ */
+data class BgiGraphData(
+    val bgi: List<GraphDataPoint>,
+    val bgiPrediction: List<GraphDataPoint>
+)
+
+/**
+ * Deviations graph data: deviation bars with color types
+ */
+data class DeviationsGraphData(
+    val deviations: List<DeviationDataPoint>
+)
+
+/**
+ * Autosens ratio graph data: ratio percentage line
+ */
+data class RatioGraphData(
+    val ratio: List<GraphDataPoint>
+)
+
+/**
+ * Deviation slope graph data: max and min slope lines
+ */
+data class DevSlopeGraphData(
+    val dsMax: List<GraphDataPoint>,
+    val dsMin: List<GraphDataPoint>
+)
+
+/**
+ * Variable sensitivity graph data: sensitivity line from APS results
+ */
+data class VarSensGraphData(
+    val varSens: List<GraphDataPoint>
+)

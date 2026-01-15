@@ -8,12 +8,16 @@
 | 2     | Worker modifications (BG, Bucketed)          | ✅ Done |
 | 3     | Vico Composables (BgGraphCompose)            | ✅ Done |
 | 4     | Integration (MainScreen)                     | ✅ Done |
-| 5     | Extract to OverviewScreen                    | ✅ Done |
+| 5     | Secondary Graph Data Flows                   | ✅ Done |
 
 **✅ BG Graph Data Migration: COMPLETED**
 - BG Graph fully working with real data, zoom, and scroll
-- Overview screen extracted to dedicated composable
 - Ready to add more graph elements
+
+**✅ Phase 5: Secondary Graph Data Flows: COMPLETED**
+- Extracted data from PrepareIobAutosensGraphDataWorker to cache flows
+- 9 graph-level flows (IOB, AbsIOB, COB, Activity, BGI, Deviations, Ratio, DevSlope, VarSens)
+- Data layer only - ready for future graph composables
 
 ---
 
@@ -150,31 +154,7 @@ val offsetToNextHour = if (minutesIntoHour == 0) 0 else 60 - minutesIntoHour
 HorizontalAxis.ItemPlacer.aligned(spacing = { 60 }, offset = { offsetToNextHour })
 ```
 
-### 6. Scroll + Zoom Configuration
-
-```kotlin
-scrollState = rememberVicoScrollState(
-    scrollEnabled = true,
-    initialScroll = remember { Scroll.Absolute.End }  // Start at most recent
-),
-zoomState = rememberVicoZoomState(
-    zoomEnabled = true,
-    initialZoom = remember { Zoom.x(360.0) }  // 6 hours (360 minutes)
-)
-```
-
-### 7. Smoothed Values
-
-**Use `.recalculated` not `.value` for bucketed data:**
-
-```kotlin
-val valueInUnits = profileUtil.fromMgdlToUnits(inMemoryGlucoseValue.recalculated)
-```
-
-- `.recalculated` = `smoothed ?: value` (smoothed with fallback)
-- `.value` = original unsmoothed reading
-
-### 8. Time Range in First Worker
+### 5. Time Range in First Worker
 
 PrepareBucketedDataWorker runs first - must set `timeRange`:
 
@@ -187,7 +167,7 @@ if (calculatedGraphDataCache.timeRangeFlow.value == null) {
     ))
 }
 ```
-
+All following migrated Workers must adjust time range to support new system
 ---
 
 ## Domain Models
@@ -213,8 +193,6 @@ Key types:
 - `ui/.../compose/graphs/CalculatedGraphDataCacheImpl.kt`
 - `ui/.../compose/overview/OverviewScreen.kt`
 - `ui/.../compose/overview/OverviewGraphsSection.kt`
-- `ui/.../compose/overview/ProfileChip.kt`
-- `ui/.../compose/overview/TempTargetChip.kt`
 - `core/interfaces/.../graph/CalculationResults.kt`
 - `core/interfaces/.../graph/CalculatedGraphDataCache.kt`
 
@@ -262,9 +240,278 @@ api(libs.jjoe64.graphview)
 
 ---
 
-## Next Steps
+## Phase 5: Secondary Graph Data Flows
 
-### Phase 6: Additional Graph Elements (In Progress)
+**Status:** ✅ Done
+
+**Goal:** Extract data from `PrepareIobAutosensGraphDataWorker` to cache flows. Data layer only - no UI.
+
+### Architecture Decision: One Flow Per Graph
+
+Data is produced in a single worker loop but consumed by different graphs. Group flows by graph consumer:
+
+| Graph | Flow | Data Contents |
+|-------|------|---------------|
+| IOB | `iobGraphFlow` | iob line + predictions points |
+| AbsIOB | `absIobGraphFlow` | absolute iob line |
+| COB | `cobGraphFlow` | cob line + failover points |
+| Activity | `activityGraphFlow` | activity line + prediction line |
+| BGI | `bgiGraphFlow` | bgi line + prediction line |
+| Deviations | `deviationsGraphFlow` | deviation bars (with color type) |
+| Ratio | `ratioGraphFlow` | autosens ratio line |
+| DevSlope | `devSlopeGraphFlow` | dsMax + dsMin lines |
+| VarSens | `varSensGraphFlow` | variable sensitivity line |
+
+**Total: 9 graph-level flows**
+
+### Domain Models (to add in CalculationResults.kt)
+
+```kotlin
+/** Generic data point for line graphs */
+data class GraphDataPoint(
+    val timestamp: Long,
+    val value: Double
+)
+
+/** Deviation bar with color classification */
+data class DeviationDataPoint(
+    val timestamp: Long,
+    val value: Double,
+    val deviationType: DeviationType
+)
+
+enum class DeviationType {
+    POSITIVE,    // Green - above expected
+    NEGATIVE,    // Red - below expected
+    EQUAL,       // Black/gray - as expected
+    UAM,         // UAM color
+    CSF          // Gray - carb absorption
+}
+
+/** COB failover marker point */
+data class CobFailOverPoint(
+    val timestamp: Long,
+    val cobValue: Double
+)
+
+// Graph-level data classes
+data class IobGraphData(
+    val iob: List<GraphDataPoint>,
+    val predictions: List<GraphDataPoint>
+)
+
+data class AbsIobGraphData(
+    val absIob: List<GraphDataPoint>
+)
+
+data class CobGraphData(
+    val cob: List<GraphDataPoint>,
+    val failOverPoints: List<CobFailOverPoint>
+)
+
+data class ActivityGraphData(
+    val activity: List<GraphDataPoint>,
+    val activityPrediction: List<GraphDataPoint>
+)
+
+data class BgiGraphData(
+    val bgi: List<GraphDataPoint>,
+    val bgiPrediction: List<GraphDataPoint>
+)
+
+data class DeviationsGraphData(
+    val deviations: List<DeviationDataPoint>
+)
+
+data class RatioGraphData(
+    val ratio: List<GraphDataPoint>
+)
+
+data class DevSlopeGraphData(
+    val dsMax: List<GraphDataPoint>,
+    val dsMin: List<GraphDataPoint>
+)
+
+data class VarSensGraphData(
+    val varSens: List<GraphDataPoint>
+)
+```
+
+### Cache Interface Additions (CalculatedGraphDataCache.kt)
+
+```kotlin
+// Secondary graph flows (one per graph)
+val iobGraphFlow: StateFlow<IobGraphData?>
+val absIobGraphFlow: StateFlow<AbsIobGraphData?>
+val cobGraphFlow: StateFlow<CobGraphData?>
+val activityGraphFlow: StateFlow<ActivityGraphData?>
+val bgiGraphFlow: StateFlow<BgiGraphData?>
+val deviationsGraphFlow: StateFlow<DeviationsGraphData?>
+val ratioGraphFlow: StateFlow<RatioGraphData?>
+val devSlopeGraphFlow: StateFlow<DevSlopeGraphData?>
+val varSensGraphFlow: StateFlow<VarSensGraphData?>
+
+// Update methods
+fun updateIobGraph(data: IobGraphData)
+fun updateAbsIobGraph(data: AbsIobGraphData)
+fun updateCobGraph(data: CobGraphData)
+fun updateActivityGraph(data: ActivityGraphData)
+fun updateBgiGraph(data: BgiGraphData)
+fun updateDeviationsGraph(data: DeviationsGraphData)
+fun updateRatioGraph(data: RatioGraphData)
+fun updateDevSlopeGraph(data: DevSlopeGraphData)
+fun updateVarSensGraph(data: VarSensGraphData)
+```
+
+### Worker Modifications (PrepareIobAutosensGraphDataWorker.kt)
+
+**Critical: Use cache time range (24h), not overviewData range**
+
+All workers must use the same 24h time range for consistency:
+
+```kotlin
+// MIGRATION: KEEP - Get time range from cache (24h)
+val cacheTimeRange = calculatedGraphDataCache.timeRangeFlow.value
+val newFromTime = cacheTimeRange?.fromTime ?: fromTime  // fallback to legacy
+val newEndTime = cacheTimeRange?.endTime ?: endTime
+
+// Use newFromTime/newEndTime for Compose data collection
+// Keep original fromTime/endTime for legacy GraphView output
+```
+
+**Dual loop approach:**
+- Legacy arrays: use `fromTime`/`endTime` (overviewData, 6h default)
+- Compose lists: use `newFromTime`/`newEndTime` (cache, 24h)
+
+Or **single extended loop:**
+- Extend loop to 24h
+- Both legacy and Compose get same data
+- Legacy GraphView will just display the user's selected range anyway
+
+Add cache updates at end of `doWorkAndLog()`:
+
+```kotlin
+// MIGRATION: KEEP - Compose cache updates
+calculatedGraphDataCache.updateIobGraph(IobGraphData(
+    iob = iobListCompose,
+    predictions = iobPredictionsListCompose
+))
+// ... similar for other 8 graphs
+```
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `core/interfaces/.../graph/CalculationResults.kt` | Add domain models |
+| `core/interfaces/.../graph/CalculatedGraphDataCache.kt` | Add 9 flows + update methods |
+| `ui/.../compose/graphs/CalculatedGraphDataCacheImpl.kt` | Implement 9 flows |
+| `workflow/.../PrepareIobAutosensGraphDataWorker.kt` | Inject cache, use 24h range, add cache updates |
+
+### Worker Injection Addition
+
+```kotlin
+class PrepareIobAutosensGraphDataWorker(...) : LoggingWorker(...) {
+    // ... existing injections ...
+    @Inject lateinit var calculatedGraphDataCache: CalculatedGraphDataCache  // ADD THIS
+```
+
+### Time Range Pattern (from PrepareBgDataWorker)
+
+```kotlin
+// Keep original range for legacy GraphView
+val fromTimeOld = data.overviewData.fromTime
+val endTimeOld = data.overviewData.endTime
+
+// Get 24h range for Compose from cache
+val cacheRange = calculatedGraphDataCache.timeRangeFlow.value
+val fromTimeNew = cacheRange?.fromTime ?: fromTimeOld
+val endTimeNew = cacheRange?.endTime ?: endTimeOld
+
+// Use extended range for data loop (covers both systems)
+val fromTime = min(fromTimeOld, fromTimeNew)
+val endTime = max(endTimeOld, endTimeNew)
+```
+
+### Migration Markers (consistency)
+
+Use same markers as BG workers:
+```kotlin
+// MIGRATION: KEEP - Core dependencies
+// MIGRATION: DELETE - Remove after migration
+// ========== MIGRATION: DELETE - Start GraphView-specific code ==========
+// ========== MIGRATION: KEEP - Start Compose/Vico code ==========
+```
+
+### Reset Method Update (CalculatedGraphDataCacheImpl)
+
+**Pattern: Non-nullable flows with empty data default** (consistent with BG flows)
+
+```kotlin
+// Initialize with empty data (not null)
+private val _iobGraphFlow = MutableStateFlow(IobGraphData(emptyList(), emptyList()))
+
+override fun reset() {
+    // existing BG flows...
+    _timeRangeFlow.value = null
+    _bgReadingsFlow.value = emptyList()
+    _bucketedDataFlow.value = emptyList()
+
+    // Secondary graph flows - reset to empty data (not null)
+    _iobGraphFlow.value = IobGraphData(emptyList(), emptyList())
+    _absIobGraphFlow.value = AbsIobGraphData(emptyList())
+    _cobGraphFlow.value = CobGraphData(emptyList(), emptyList())
+    // ... etc
+
+    calcProgressPct = 100
+}
+```
+
+### Checklist
+
+- [x] Add domain models to CalculationResults.kt
+- [x] Add flows to CalculatedGraphDataCache interface
+- [x] Implement flows in CalculatedGraphDataCacheImpl
+- [x] Inject CalculatedGraphDataCache in PrepareIobAutosensGraphDataWorker
+- [x] Modify worker to use cache's 24h time range
+- [x] Add dual output (9 cache updates) to worker
+- [x] Compile and verify no errors
+
+---
+
+## Future Phases
+
+### Phase 6: Secondary Graph Composables
+
+**Step Graph Rendering:**
+- Original GraphView used manual intermediate points (2 Y-values at same X) for step effect
+- Vico doesn't support duplicate X values - requires function (one Y per X)
+- Solution: Use `PointConnector.Square` for step graphs
+
+**TODO:** Create custom `StepPointConnector` (copy of `Square` initially), adjust based on actual rendering results. The original had horizontal→vertical steps, `Square` does vertical→horizontal. May need to tweak or accept the difference.
+
+| Graph | Connector | Reason |
+|-------|-----------|--------|
+| IOB | `StepPointConnector` | Step graph (original had step logic) |
+| AbsIOB | `StepPointConnector` | Step graph (original had step logic) |
+| COB | `StepPointConnector` | Step graph (original had step logic) |
+| Activity | Default | Smooth line |
+| BGI | Default | Smooth line |
+| Deviations | N/A | Bar chart |
+| Ratio | Default | Smooth line |
+| DevSlope | Default | Smooth line |
+| VarSens | Default | Smooth line |
+
+- [ ] Create IobGraphCompose.kt
+- [ ] Create CobGraphCompose.kt
+- [ ] Create ActivityGraphCompose.kt
+- [ ] Create BgiGraphCompose.kt
+- [ ] Create DeviationsGraphCompose.kt
+- [ ] Create RatioGraphCompose.kt
+- [ ] Create DevSlopeGraphCompose.kt
+- [ ] Create VarSensGraphCompose.kt
+
+### Phase 7: Additional BG Graph Elements
 
 - [ ] Add predictions to BG graph (IOB, COB predictions)
 - [ ] Add target range area to BG graph
@@ -272,9 +519,8 @@ api(libs.jjoe64.graphview)
 - [ ] Add bolus markers
 - [ ] Add carbs markers
 
-### Future Phases
+### Phase 8: Integration & Cleanup
 
-- [ ] Create IOB graph (IobGraphCompose.kt)
-- [ ] Create COB graph (CobGraphCompose.kt)
-- [ ] Add other graph types (Activity, Deviations, Basal, etc.)
+- [ ] Integrate secondary graphs into Overview
 - [ ] Profile graph integration
+- [ ] Delete legacy GraphView code

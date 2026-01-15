@@ -32,10 +32,46 @@ interface CalculatedGraphDataCache {
     fun updateBgReadings(data: List<BgDataPoint>)
     fun updateBucketedData(data: List<BgDataPoint>)
 
-    // TODO: Add other graph data in future phases
-    // val iobDataFlow: StateFlow<List<IobDataPoint>>
-    // fun updateIobData(data: List<IobDataPoint>)
-    // etc.
+    // =========================================================================
+    // Secondary graph flows (Phase 5) - one per graph
+    // Non-nullable with empty data default (consistent with BG flows)
+    // =========================================================================
+
+    // IOB graph: regular IOB line + prediction points
+    val iobGraphFlow: StateFlow<IobGraphData>
+    fun updateIobGraph(data: IobGraphData)
+
+    // Absolute IOB graph: absolute IOB line only
+    val absIobGraphFlow: StateFlow<AbsIobGraphData>
+    fun updateAbsIobGraph(data: AbsIobGraphData)
+
+    // COB graph: COB line + failover marker points
+    val cobGraphFlow: StateFlow<CobGraphData>
+    fun updateCobGraph(data: CobGraphData)
+
+    // Activity graph: historical activity + prediction line
+    val activityGraphFlow: StateFlow<ActivityGraphData>
+    fun updateActivityGraph(data: ActivityGraphData)
+
+    // BGI graph: historical + prediction line
+    val bgiGraphFlow: StateFlow<BgiGraphData>
+    fun updateBgiGraph(data: BgiGraphData)
+
+    // Deviations graph: deviation bars with color types
+    val deviationsGraphFlow: StateFlow<DeviationsGraphData>
+    fun updateDeviationsGraph(data: DeviationsGraphData)
+
+    // Ratio graph: autosens ratio percentage line
+    val ratioGraphFlow: StateFlow<RatioGraphData>
+    fun updateRatioGraph(data: RatioGraphData)
+
+    // Dev slope graph: max and min slope lines
+    val devSlopeGraphFlow: StateFlow<DevSlopeGraphData>
+    fun updateDevSlopeGraph(data: DevSlopeGraphData)
+
+    // Variable sensitivity graph: sensitivity line from APS results
+    val varSensGraphFlow: StateFlow<VarSensGraphData>
+    fun updateVarSensGraph(data: VarSensGraphData)
 
     fun reset()
 }

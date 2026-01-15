@@ -7,7 +7,7 @@ import app.aaps.core.data.model.GV
 import app.aaps.core.data.time.T
 import app.aaps.core.graph.data.BarGraphSeries
 import app.aaps.core.graph.data.DataPointWithLabelInterface
-import app.aaps.core.graph.data.DeviationDataPoint
+import app.aaps.core.graph.data.DeviationDataPointLegacy
 import app.aaps.core.graph.data.FixedLineGraphSeries
 import app.aaps.core.graph.data.LineGraphSeries
 import app.aaps.core.graph.data.PointsWithLabelGraphSeries
@@ -81,7 +81,7 @@ class OverviewDataImpl @Inject constructor(
         cobSeries = FixedLineGraphSeries<ScaledDataPoint>()
         cobMinFailOverSeries = PointsWithLabelGraphSeries<DataPointWithLabelInterface>()
         maxDevValueFound = Double.MIN_VALUE
-        deviationsSeries = BarGraphSeries<DeviationDataPoint>()
+        deviationsSeries = BarGraphSeries<DeviationDataPointLegacy>()
         maxRatioValueFound = 5.0                    //even if sens data equals 0 for all the period, minimum scale is between 95% and 105%
         minRatioValueFound = -maxRatioValueFound
         ratioSeries = LineGraphSeries<ScaledDataPoint>()
@@ -231,7 +231,7 @@ class OverviewDataImpl @Inject constructor(
 
     override var maxDevValueFound = Double.MIN_VALUE
     override val devScale = Scale()
-    override var deviationsSeries: SeriesData = BarGraphSeries<DeviationDataPoint>()
+    override var deviationsSeries: SeriesData = BarGraphSeries<DeviationDataPointLegacy>()
 
     override var maxRatioValueFound = 5.0                    //even if sens data equals 0 for all the period, minimum scale is between 95% and 105%
     override var minRatioValueFound = -maxRatioValueFound

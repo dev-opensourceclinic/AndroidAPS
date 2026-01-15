@@ -145,21 +145,9 @@ class IobCobOref1Worker(
                         val initialIndex = autosensDataTable.indexOfKey(hourAgoData.time)
                         aapsLogger.debug(LTag.AUTOSENS) { ">>>>> bucketed_data.size()=" + bucketedData.size + " i=" + i + " hourAgoData=" + hourAgoData.toString() }
                         var past = 1
-//                        try {
                         while (past < 12) {
                             val ad = autosensDataTable.valueAt(initialIndex + past)
                             aapsLogger.debug(LTag.AUTOSENS) { ">>>>> past=$past ad=$ad" }
-                            /*
-                                                            if (ad == null) {
-                                                                aapsLogger.debug(LTag.AUTOSENS, {autosensDataTable.toString()})
-                                                                aapsLogger.debug(LTag.AUTOSENS, {bucketedData.toString()})
-                                                                //aapsLogger.debug(LTag.AUTOSENS, iobCobCalculatorPlugin.getBgReadingsDataTable().toString())
-                                                                val notification = Notification(Notification.SEND_LOGFILES, rh.gs(R.string.send_logfiles), Notification.LOW)
-                                                                rxBus.send(EventNewNotification(notification))
-                                                                sp.putBoolean("log_AUTOSENS", true)
-                                                                break
-                                                            }
-                            */
                             // let it here crash on NPE to get more data as i cannot reproduce this bug
                             val deviationSlope = (ad.avgDeviation - avgDeviation) / (ad.time - bgTime) * 1000 * 60 * 5
                             if (ad.avgDeviation > maxDeviation) {
@@ -172,17 +160,6 @@ class IobCobOref1Worker(
                             }
                             past++
                         }
-                        // } catch (e: Exception) {
-                        //     aapsLogger.error("Unhandled exception", e)
-                        //     fabricPrivacy.logException(e)
-                        //     aapsLogger.debug(autosensDataTable.toString())
-                        //     aapsLogger.debug(bucketedData.toString())
-                        //     //aapsLogger.debug(iobCobCalculatorPlugin.getBgReadingsDataTable().toString())
-                        //     val notification = Notification(Notification.SEND_LOGFILES, rh.gs(R.string.send_logfiles), Notification.LOW)
-                        //     rxBus.send(EventNewNotification(notification))
-                        //     sp.putBoolean("log_AUTOSENS", true)
-                        //     break
-                        // }
                     } else {
                         aapsLogger.debug(LTag.AUTOSENS) { ">>>>> bucketed_data.size()=${bucketedData.size} i=$i hourAgoData=null" }
                     }
