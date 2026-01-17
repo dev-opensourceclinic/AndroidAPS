@@ -28,16 +28,16 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEY_BASE64 }}" > $GITHUB_WORKSPACE/androidaps.keystore.base64
-          base64 -d $GITHUB_WORKSPACE/androidaps.keystore.base64 > $GITHUB_WORKSPACE/androidaps.keystore
-          rm $GITHUB_WORKSPACE/androidaps.keystore.base64
-          echo "Keystore location: $GITHUB_WORKSPACE/androidaps.keystore"
-          ls -l $GITHUB_WORKSPACE/androidaps.keystore
+          echo "${{ secrets.KEY_BASE64 }}" > $RUNNER_TEMP/androidaps.keystore.base64
+          base64 -d $RUNNER_TEMP/androidaps.keystore.base64 > $RUNNER_TEMP/androidaps.keystore
+          rm $RUNNER_TEMP/androidaps.keystore.base64
+          echo "Keystore location: $RUNNER_TEMP/androidaps.keystore"
+          ls -l $RUNNER_TEMP/androidaps.keystore
 
       - name: Keystore validation
         run: |
-          keytool -list -v -keystore $GITHUB_WORKSPACE/androidaps.keystore -storepass ${{ secrets.SIGNING_STORE_PASSWORD }} -alias ${{ secrets.SIGNING_KEY_ALIAS }} > $GITHUB_WORKSPACE/keystore.txt
-          cat $GITHUB_WORKSPACE/keystore.txt
+          keytool -list -v -keystore $RUNNER_TEMP/androidaps.keystore -storepass ${{ secrets.SIGNING_STORE_PASSWORD }} -alias ${{ secrets.SIGNING_KEY_ALIAS }} > $RUNNER_TEMP/keystore.txt
+          cat $RUNNER_TEMP/keystore.txt
 
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
             -Dorg.gradle.daemon=true \
             -Dorg.gradle.workers.max=8 \
             -Dorg.gradle.caching=true \
-            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/androidaps.keystore \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/androidaps.keystore" \
             -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
