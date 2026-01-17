@@ -124,6 +124,15 @@ jobs:
               -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
               -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
 
+      - name: Show Build APKs Output
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Listing app build outputs:"
+          ls -R app/build/outputs/apk/
+          echo "Listing wear build outputs:"
+          ls -R wear/build/outputs/apk/
+
       - name: Rename APKs with version
         run: |
           mv app/build/outputs/apk/full/release/*.apk app-full-release.apk
