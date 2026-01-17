@@ -1,29 +1,42 @@
-name: TEMP
-
 on:
   workflow_dispatch:
     inputs:
-      buildVariant:
-        description: 'Select Build Variant'
+      user_id:
+        description: "User ID"
         required: true
-        default: 'fullRelease'
-        type: choice
-        options:
-          - fullRelease
-          - fullDebug
-          - aapsclientRelease
-          - aapsclientDebug
-          - aapsclient2Release
-          - aapsclient2Debug
-          - pumpcontrolRelease
-          - pumpcontrolDebug
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: true
+        type: string
+        default: "master"
 
 jobs:
   build:
-
-    name: Build AAPS
     runs-on: ubuntu-latest
     steps:
+
+      - name: Print Availability Secrets
+        run: |
+          echo "Available secrets:"
+          echo "KEY_BASE64: ${{ secrets.KEY_BASE64 != '' && '✓' || '✗' }}"
+          echo "SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS != '' && '✓' || '✗' }}"
+          echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
+          echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEY_BASE64 }}" > $RUNNER_TEMP/androidaps.keystore.base64
+          base64 -d $RUNNER_TEMP/androidaps.keystore.base64 > $RUNNER_TEMP/androidaps.keystore
+          rm $RUNNER_TEMP/androidaps.keystore.base64
+          echo "Keystore location: $RUNNER_TEMP/androidaps.keystore"
+          ls -l $RUNNER_TEMP/androidaps.keystore
+
+      - name: Keystore validation
+        run: |
+          keytool -list -v -keystore $RUNNER_TEMP/androidaps.keystore -storepass ${{ secrets.SIGNING_STORE_PASSWORD }} -alias ${{ secrets.SIGNING_KEY_ALIAS }} > $RUNNER_TEMP/keystore.txt
+          cat $RUNNER_TEMP/keystore.txt
+
       - name: Decode Secrets Keystore Set and Oauth2 to Env
         run: |
           if [ -n "${{ secrets.KEYSTORE_SET }}" ]; then
@@ -101,6 +114,7 @@ jobs:
           echo "✅ Keystore, alias, and key password are valid."
           rm -f "$KEYTOOL_LOG"
           echo "✅ Keystore and credentials validated."
+
       - name: Checkout source code
         uses: actions/checkout@v4
 
