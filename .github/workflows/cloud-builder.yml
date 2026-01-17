@@ -128,7 +128,6 @@ jobs:
         run: |
           mv app/build/outputs/apk/full/release/*.apk app-full-release.apk
           mv wear/build/outputs/apk/full/release/*.apk wear-full-release.apk
-          mv app/build/outputs/apk/aapsclient/release/*.apk aapsclient-release.apk
 
       - name: Upload Artifact - Phone APK
         id: upload-artifact-phone
@@ -144,12 +143,12 @@ jobs:
           name: smartwatch
           path: wear-full-release.apk
 
-      - name: Upload Artifact - AAPSClient APK
-        id: upload-artifact-aapsclient
-        uses: actions/upload-artifact@v4
-        with:
-          name: aapsclient
-          path: aapsclient-release.apk
+      # - name: Upload Artifact - AAPSClient APK
+      #   id: upload-artifact-aapsclient
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: aapsclient
+      #     path: aapsclient-release.apk
 
       - name: Signing off
         run: |
@@ -161,8 +160,7 @@ jobs:
               "run_id": "${{ github.run_id }}",
               "download_url": {
                 "phone": "${{ steps.upload-artifact-phone.outputs.artifact-url }}",
-                "smartwatch": "${{ steps.upload-artifact-watch.outputs.artifact-url }}",
-                "aapsclient": "${{ steps.upload-artifact-aapsclient.outputs.artifact-url }}"
+                "smartwatch": "${{ steps.upload-artifact-watch.outputs.artifact-url }}"
               }
             }'
 
