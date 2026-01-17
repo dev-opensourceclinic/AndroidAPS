@@ -63,10 +63,10 @@ jobs:
             -Dorg.gradle.daemon=true \
             -Dorg.gradle.workers.max=8 \
             -Dorg.gradle.caching=true \
-            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/androidaps.keystore" \
-            -Pandroid.injected.signing.store.password=${{ secrets.SIGNING_STORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.SIGNING_KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.SIGNING_KEY_PASSWORD }}
+            -Pandroid.injected.signing.store.file="$secrets.KEYSTORE_BASE64" \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
 
       - name: Upload Artifact - Phone APK
