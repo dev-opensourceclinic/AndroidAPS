@@ -140,21 +140,26 @@ jobs:
 
       - name: Rename APKs
         run: |
-          mv app/build/outputs/apk/full/release/*.apk app-full-release.apk
-          mv wear/build/outputs/apk/full/release/*.apk wear-full-release.apk
+          if [[ "${{ env.BUILD_VARIANT }}" == "aapsclientFullrelease" ]]; then
+            mv app/build/outputs/apk/aapsclient/release/*.apk app-full-release.apk
+            mv wear/build/outputs/apk/aapsclient/release/*.apk wear-full-release.apk
+          else
+            mv app/build/outputs/apk/full/release/*.apk app-full-release.apk
+            mv wear/build/outputs/apk/full/release/*.apk wear-full-release.apk
+          fi
 
       - name: Upload Artifact - Phone APK
         id: upload-artifact-phone
         uses: actions/upload-artifact@v4
         with:
-          name: phone-${{ env.VERSION }}
+          name: phone-${{ env.BUILD_VARIANT }}-${{ env.VERSION }}
           path: app-full-release.apk
 
       - name: Upload Artifact - Smartwatch APK
         id: upload-artifact-watch
         uses: actions/upload-artifact@v4
         with:
-          name: smartwatch-${{ env.VERSION }}
+          name: smartwatch-${{ env.BUILD_VARIANT }}-${{ env.VERSION }}
           path: wear-full-release.apk
 
       - name: Signing off
