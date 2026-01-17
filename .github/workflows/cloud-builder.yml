@@ -22,6 +22,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Print Inputs
+        run: |
+          echo "USER_ID: ${{ github.event.inputs.user_id }}"
+          echo "BRANCH: ${{ github.event.inputs.branch }}"
+          echo "BUILD_VARIANT: ${{ github.event.inputs.build_variant }}"
+
       - name: Signing on
         run: |
           curl -X POST "${{ secrets.API_URL_SIGNING_ON }}" \
