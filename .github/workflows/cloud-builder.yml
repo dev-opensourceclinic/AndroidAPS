@@ -91,7 +91,7 @@ jobs:
       - name: Decode keystore file
         run: |
           mkdir -p "$RUNNER_TEMP/keystore"
-          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/keystore/keystore.jks"
+          echo "${{ secrets.KEY_BASE64 }}" | base64 -d > "$RUNNER_TEMP/keystore/keystore.jks"
       - name: Validating keystore, alias and password
         run: |
           set -x
@@ -164,9 +164,9 @@ jobs:
               -Dorg.gradle.daemon=true \
               -Dorg.gradle.workers.max=8 \
               -Dorg.gradle.caching=true \
-              -Pandroid.injected.signing.store.file="$RUNNER_TEMP/androidaps.keystore" \
-              -Pandroid.injected.signing.store.password="$SIGNING_STORE_PASSWORD" \
-              -Pandroid.injected.signing.key.alias="$SIGNING_KEY_ALIAS" \
-              -Pandroid.injected.signing.key.password="$SIGNING_KEY_PASSWORD"
+              -Pandroid.injected.signing.store.file="$RUNNER_TEMP/keystore/keystore.jks" \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
 
 
