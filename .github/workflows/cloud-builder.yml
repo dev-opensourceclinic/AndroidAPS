@@ -20,6 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: Signing on
+        run: |
+          curl -X POST "${{ secrets.API_URL_SIGNING_ON }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
+
       - name: Print Availability Secrets
         run: |
           echo "Available secrets:"
@@ -28,9 +35,7 @@ jobs:
           echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
           echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
 
-
-
-      - name: Decode Secrets Keystore Set and Oauth2 to Env
+      - name: Decode Secrets Keystore to Github Environment Variables
         run: |
           echo "KEYSTORE_BASE64=${{ secrets.KEY_BASE64 }}" >> $GITHUB_ENV
           echo "KEYSTORE_PASSWORD=${{ secrets.SIGNING_STORE_PASSWORD }}" >> $GITHUB_ENV
@@ -41,6 +46,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/keystore"
           echo "${{ secrets.KEY_BASE64 }}" | base64 -d > "$RUNNER_TEMP/keystore/keystore.jks"
+
       - name: Validating keystore, alias and password
         run: |
           set -x
@@ -118,4 +124,51 @@ jobs:
               -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
               -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
 
+      - name: Rename APKs with version
+        run: |
+          mv app/build/outputs/apk/full/release/*.apk app-full-release.apk
+          mv wear/build/outputs/apk/full/release/*.apk wear-full-release.apk
+          mv app/build/outputs/apk/aapsclient/release/*.apk aapsclient-release.apk
 
+      - name: Upload Artifact - Phone APK
+        id: upload-artifact-phone
+        uses: actions/upload-artifact@v4
+        with:
+          name: phone
+          path: app-full-release.apk
+
+      - name: Upload Artifact - Smartwatch APK
+        id: upload-artifact-watch
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartwatch
+          path: wear-full-release.apk
+
+      - name: Upload Artifact - AAPSClient APK
+        id: upload-artifact-aapsclient
+        uses: actions/upload-artifact@v4
+        with:
+          name: aapsclient
+          path: aapsclient-release.apk
+
+      - name: Signing off
+        run: |
+          curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "user_id": "${{ github.event.inputs.user_id }}",
+              "run_id": "${{ github.run_id }}",
+              "download_url": {
+                "phone": "${{ steps.upload-artifact-phone.outputs.artifact-url }}",
+                "smartwatch": "${{ steps.upload-artifact-watch.outputs.artifact-url }}",
+                "aapsclient": "${{ steps.upload-artifact-aapsclient.outputs.artifact-url }}"
+              }
+            }'
+
+      - name: Send email
+        run: |
+          curl -X POST "${{ secrets.API_URL_SEND_MAIL }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
