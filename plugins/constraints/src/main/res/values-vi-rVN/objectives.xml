@@ -9,7 +9,7 @@
     <string name="objectives_0_gate">Xác minh rằng dữ liệu đường huyết (BG) có sẵn trong Nightscout và dữ liệu insulin từ bơm đang được tải lên</string>
     <string name="objectives_0_learned">Bạn đã thực hiện thiết lập cơ bản cho hệ sinh thái AAPS. Nightscout không bắt buộc để AAPS hoạt động nhưng rất hữu ích cho việc báo cáo hoặc theo dõi bệnh nhân khác. Nếu bạn chỉ dùng Nightscout cho riêng mình thì không cần phải kết nối với NS mọi lúc. Bạn có thể thiết lập để tải dữ liệu, ví dụ chỉ khi có Wi-Fi ở nhà, nhằm tiết kiệm pin.</string>
     <string name="objectives_openloop_objective">Bắt đầu với chế độ vòng hở (open loop)</string>
-    <string name="objectives_openloop_gate">Chạy ở chế độ Vòng hở (Open Loop) trong vài ngày và tự tay thực hiện nhiều basal tạm thời. Thiết lập và sử dụng các mục tiêu tạm thời và mục tiêu tạm thời mặc định (ví dụ cho hoạt động thể chất hoặc xử lý hạ đường huyết bằng carbs)</string>
+    <string name="objectives_openloop_gate">Chạy ở chế độ Vòng lặp mở (Open Loop) trong vài ngày và tự tay thực hiện nhiều liều nền tạm thời. Thiết lập và sử dụng các mục tiêu tạm thời và mục tiêu tạm thời mặc định (ví dụ cho hoạt động thể chất hoặc xử lý hạ đường huyết bằng carbs)</string>
     <string name="objectives_openloop_learned">Chế độ Vòng hở (Open loop) có thể được sử dụng để đưa ra khuyến nghị nếu bạn không có bơm tương thích hoặc bạn chưa sẵn sàng chuyển sang chế độ vòng kín (closed loop).</string>
     <string name="objectives_maxbasal_objective">Hiểu về chế độ vòng hở (open loop), bao gồm các khuyến nghị liều nền tạm thời của nó</string>
     <string name="objectives_maxbasal_gate">Dựa trên kinh nghiệm đó, quyết định mức liều nền tối đa nên là bao nhiêu và thiết lập nó trên bơm cũng như trong phần Tùy chọn (preferences). Ở Chế độ đơn giản (simple mode), giá trị này được tính toán theo khuyến nghị trong wiki và không cần phải tự thiết lập.</string>
@@ -42,7 +42,7 @@
     <string name="objectives_useprofileswitch">Đặt Cấu hình 90% trong 10 phút (nhấn giữ tên cấu hình trên màn hình Tổng quan – Overview)</string>
     <string name="objectives_usedisconnectpump">Mô phỏng Tắm. Ngắt kết nối bơm trong 1 giờ (nhấn giữ trên Open Loop)</string>
     <string name="objectives_usereconnectpump">… và kết nối lại theo cách tương tự</string>
-    <string name="objectives_usetemptarget">Tạo mục tiêu tạm thời tùy chỉnh với thời gian 10 phút (nhấn giữ mục tiêu hiện tại của bạn)</string>
+    <string name="objectives_usetemptarget">Tạo mục tiêu tạm thời tùy chỉnh với thời gian 10 phút (Nhấn và giữ vào mục tiêu hiện tại của bạn)</string>
     <string name="objectives_useactions">Trong Config Builder, bật plugin Actions, đặt nó ở chế độ hiển thị và mở nội dung của nó từ menu trên cùng</string>
     <string name="objectives_useloop">Hiển thị nội dung của plugin Loop</string>
     <string name="objectives_usescale">Sử dụng chức năng thu phóng bằng cách nhấn giữ biểu đồ đường huyết</string>
