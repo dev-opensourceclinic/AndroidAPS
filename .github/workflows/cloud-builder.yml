@@ -1,3 +1,5 @@
+name: Cloud Builder
+
 on:
   workflow_dispatch:
     inputs:
