@@ -28,66 +28,15 @@ jobs:
           echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
           echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
 
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEY_BASE64 }}" > $RUNNER_TEMP/androidaps.keystore.base64
-          base64 -d $RUNNER_TEMP/androidaps.keystore.base64 > $RUNNER_TEMP/androidaps.keystore
-          rm $RUNNER_TEMP/androidaps.keystore.base64
-          echo "Keystore location: $RUNNER_TEMP/androidaps.keystore"
-          ls -l $RUNNER_TEMP/androidaps.keystore
 
-      - name: Keystore validation
-        run: |
-          keytool -list -v -keystore $RUNNER_TEMP/androidaps.keystore -storepass ${{ secrets.SIGNING_STORE_PASSWORD }} -alias ${{ secrets.SIGNING_KEY_ALIAS }} > $RUNNER_TEMP/keystore.txt
-          cat $RUNNER_TEMP/keystore.txt
 
       - name: Decode Secrets Keystore Set and Oauth2 to Env
         run: |
-          if [ -n "${{ secrets.KEYSTORE_SET }}" ]; then
-            echo "🔐 Decoding KEYSTORE_SET..."
-            DECODED=$(echo "${{ secrets.KEYSTORE_SET }}" | base64 -d)
-            KEYSTORE_BASE64=$(echo "$DECODED" | cut -d'|' -f1)
-            KEYSTORE_PASSWORD=$(echo "$DECODED" | cut -d'|' -f2)
-            KEY_ALIAS=$(echo "$DECODED" | cut -d'|' -f3)
-            KEY_PASSWORD=$(echo "$DECODED" | cut -d'|' -f4)
-            echo "KEYSTORE_BASE64=$KEYSTORE_BASE64" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
-            echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
-            echo "::add-mask::$KEYSTORE_BASE64"
-            echo "::add-mask::$KEYSTORE_PASSWORD"
-            echo "::add-mask::$KEY_ALIAS"
-            echo "::add-mask::$KEY_PASSWORD"
-            echo "✅ Keystore parameters extracted from KEYSTORE_SET"
-          else
-            echo "ℹ️ KEYSTORE_SET not provided, using separate secrets."
-            echo "KEYSTORE_BASE64=${{ secrets.KEYSTORE_BASE64 }}" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
-          fi
-          echo "GDRIVE_OAUTH2=${{ secrets.GDRIVE_OAUTH2 }}" >> $GITHUB_ENV
-      - name: Check Secrets
-        run: |
-          echo "🔍 Checking required secrets..."
-          MISSING=0
-          check_secret() {
-            if [ -z "$1" ]; then
-              echo "❌ Missing secret: $2"
-              MISSING=1
-            fi
-          }
-          # Check secrets
-          
-          check_secret "$KEYSTORE_BASE64" "KEYSTORE_BASE64"
-          check_secret "$KEYSTORE_PASSWORD" "KEYSTORE_PASSWORD"
-          check_secret "$KEY_ALIAS" "KEY_ALIAS"
-          check_secret "$KEY_PASSWORD" "KEY_PASSWORD"
-          if [ "$MISSING" -eq 1 ]; then
-            echo "🛑 Missing required secrets. Stopping build."
-            exit 1
-          fi
-          echo "✅ All required secrets are present."
+          echo "KEYSTORE_BASE64=${{ secrets.KEY_BASE64 }}" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=${{ secrets.SIGNING_STORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=${{ secrets.SIGNING_KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=${{ secrets.SIGNING_KEY_PASSWORD }}" >> $GITHUB_ENV
+
       - name: Decode keystore file
         run: |
           mkdir -p "$RUNNER_TEMP/keystore"
