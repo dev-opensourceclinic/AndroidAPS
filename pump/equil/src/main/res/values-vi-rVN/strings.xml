@@ -15,7 +15,7 @@
     <string name="equil_hint_dressing">Thao tác này sẽ dừng việc truyền insulin và khiến piston bơm rút về đáy!</string>
     <string name="equil_history">Lịch sử</string>
     <string name="equil_insulin_reservoir">Bình chứa Insulin</string>
-    <string name="equil_mode">Chế độ hoạt động</string>
+    <string name="equil_mode">Chế độ đang chạy</string>
     <string name="equil_mode_running">Đang chạy</string>
     <string name="equil_mode_stopped">Đã dừng</string>
     <string name="equil_mode_suspended">Bị tạm dừng</string>
