@@ -22,7 +22,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-
       - name: Signing on
         run: |
           curl -X POST "${{ secrets.API_URL_SIGNING_ON }}" \
@@ -93,15 +92,12 @@ jobs:
           if [[ "$VARIANT_TYPE" == "debug" ]]; then VERSION_SUFFIX="$VERSION_SUFFIX-debug"; fi
           if [[ -n "$VERSION_SUFFIX" && "$VERSION_SUFFIX" != -* ]]; then VERSION_SUFFIX="-$VERSION_SUFFIX"; fi
           echo "VERSION_SUFFIX=$VERSION_SUFFIX" >> $GITHUB_ENV
+
       - name: Extract VERSION
         run: |
-          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-          if echo "$BRANCH_NAME" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
-            VERSION="$BRANCH_NAME"
-          else
-            VERSION=$(grep 'val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F '"' '{print $2}')
-          fi
+          VERSION=$(grep 'val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F '"' '{print $2}')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -136,7 +132,7 @@ jobs:
           echo "Listing wear build outputs:"
           ls -R wear/build/outputs/apk/
 
-      - name: Rename APKs with version
+      - name: Rename APKs
         run: |
           mv app/build/outputs/apk/full/release/*.apk app-full-release.apk
           mv wear/build/outputs/apk/full/release/*.apk wear-full-release.apk
@@ -145,22 +141,15 @@ jobs:
         id: upload-artifact-phone
         uses: actions/upload-artifact@v4
         with:
-          name: phone
+          name: phone-${{ env.VERSION }}
           path: app-full-release.apk
 
       - name: Upload Artifact - Smartwatch APK
         id: upload-artifact-watch
         uses: actions/upload-artifact@v4
         with:
-          name: smartwatch
+          name: smartwatch-${{ env.VERSION }}
           path: wear-full-release.apk
-
-      # - name: Upload Artifact - AAPSClient APK
-      #   id: upload-artifact-aapsclient
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: aapsclient
-      #     path: aapsclient-release.apk
 
       - name: Signing off
         run: |
