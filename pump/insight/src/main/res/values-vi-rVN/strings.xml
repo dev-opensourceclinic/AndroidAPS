@@ -11,7 +11,7 @@
     <string name="stop_pump">Dừng Pump</string>
     <string name="started">Đã bắt đầu</string>
     <string name="stopped">Đã dừng</string>
-    <string name="operating_mode">Chế độ hoạt động</string>
+    <string name="operating_mode">Chế độ vận hành</string>
     <string name="description_pump_insight_local">Tích hợp Pump cho các Pump Accu-Chek Insight</string>
     <string name="not_inserted">Chưa được lắp</string>
     <string name="tdd_bolus">Tổng liều Bolus</string>
@@ -50,7 +50,7 @@
     <string name="log_reservoir_changes">Ghi lại thay đổi bình chứa insulin</string>
     <string name="log_tube_changes">Ghi lại thay đổi dây truyền</string>
     <string name="log_battery_changes">Ghi lại thay đổi Pin</string>
-    <string name="log_operating_mode_changes">Ghi lại thay đổi chế độ hoạt động</string>
+    <string name="log_operating_mode_changes">Ghi lại thay đổi chế độ vận hành</string>
     <string name="log_alerts">Ghi lại cảnh báo</string>
     <string name="enable_tbr_emulation">Bật mô phỏng TBR</string>
     <string name="enable_tbr_emulation_summary">Sử dụng liều bolus mở rộng thay vì TBR để vượt qua giới hạn 250%</string>
