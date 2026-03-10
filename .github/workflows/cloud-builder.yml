@@ -1,0 +1,184 @@
+name: Cloud Builder
+
+on:
+  workflow_dispatch:
+    inputs:
+      user_id:
+        description: "User ID"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: true
+        type: string
+        default: "master"
+      build_variant:
+        description: "Build Variant"
+        required: false
+        type: string
+        default: "fullRelease"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Inputs
+        run: |
+          echo "USER_ID: ${{ github.event.inputs.user_id }}"
+          echo "BRANCH: ${{ github.event.inputs.branch }}"
+          echo "BUILD_VARIANT: ${{ github.event.inputs.build_variant }}"
+
+      - name: Signing on
+        run: |
+          curl -X POST "${{ secrets.API_URL_SIGNING_ON }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
+
+      - name: Print Availability Secrets
+        run: |
+          echo "Available secrets:"
+          echo "KEY_BASE64: ${{ secrets.KEY_BASE64 != '' && '✓' || '✗' }}"
+          echo "SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS != '' && '✓' || '✗' }}"
+          echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
+          echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
+
+      - name: Decode Secrets Keystore to Github Environment Variables
+        run: |
+          echo "KEYSTORE_BASE64=${{ secrets.KEY_BASE64 }}" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=${{ secrets.SIGNING_STORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=${{ secrets.SIGNING_KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=${{ secrets.SIGNING_KEY_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Decode keystore file
+        run: |
+          mkdir -p "$RUNNER_TEMP/keystore"
+          echo "${{ secrets.KEY_BASE64 }}" | base64 -d > "$RUNNER_TEMP/keystore/keystore.jks"
+
+      - name: Validating keystore, alias and password
+        run: |
+          set -x
+          echo "🔐 Validating keystore, alias and password"
+          # Create a dummy JAR file (quick method using zip)
+          echo "test" > dummy.txt
+          zip -q dummy.jar dummy.txt
+          rm dummy.txt
+          
+          # Attempt to validate using jarsigner
+          JARSIGNER_LOG=$(mktemp)
+          if ! jarsigner \
+              -keystore "$RUNNER_TEMP/keystore/keystore.jks" \
+              -storepass "$KEYSTORE_PASSWORD" \
+              -keypass "$KEY_PASSWORD" \
+              dummy.jar "$KEY_ALIAS" > "$JARSIGNER_LOG" 2>&1; then
+            echo "❌ Either KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_PASSWORD, or KEY_ALIAS is incorrect"
+            echo "🔍 jarsigner error output:"
+            cat "$JARSIGNER_LOG"
+            rm -f "$JARSIGNER_LOG" dummy.jar
+            exit 1
+          fi
+          rm -f "$JARSIGNER_LOG" dummy.jar
+          echo "✅ Keystore, alias, and key password are valid."
+          rm -f "$KEYTOOL_LOG"
+          echo "✅ Keystore and credentials validated."
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set BUILD_VARIANT
+        run: |
+          BUILD_VARIANT="${{ github.event.inputs.build_variant }}"
+          echo "BUILD_VARIANT=$BUILD_VARIANT" >> $GITHUB_ENV
+          VARIANT_FLAVOR=$(echo "$BUILD_VARIANT" | sed -E 's/(Release|Debug)$//' | tr '[:upper:]' '[:lower:]')
+          VARIANT_TYPE=$(echo "$BUILD_VARIANT" | grep -oE '(Release|Debug)$' | tr '[:upper:]' '[:lower:]')
+          echo "VARIANT_FLAVOR=$VARIANT_FLAVOR" >> $GITHUB_ENV
+          echo "VARIANT_TYPE=$VARIANT_TYPE" >> $GITHUB_ENV
+          VERSION_SUFFIX=""
+          if [[ "$VARIANT_FLAVOR" != "full" ]]; then VERSION_SUFFIX="$VARIANT_FLAVOR"; fi
+          if [[ "$VARIANT_TYPE" == "debug" ]]; then VERSION_SUFFIX="$VERSION_SUFFIX-debug"; fi
+          if [[ -n "$VERSION_SUFFIX" && "$VERSION_SUFFIX" != -* ]]; then VERSION_SUFFIX="-$VERSION_SUFFIX"; fi
+          echo "VERSION_SUFFIX=$VERSION_SUFFIX" >> $GITHUB_ENV
+
+      - name: Extract VERSION
+        run: |
+          VERSION=$(grep 'val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F '"' '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          # When upgrading the JDK, please update this section accordingly as well.
+          java-version: 21
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build APKs
+        run: |
+              ./gradlew :app:assemble${{ env.BUILD_VARIANT }} :wear:assemble${{ env.BUILD_VARIANT }} \
+              -Dorg.gradle.jvmargs="-Xmx8g -XX:+UseParallelGC -Xss1024m" \
+              -Dkotlin.daemon.jvm.options="-Xmx2g" \
+              -Dkotlin.compiler.execution.strategy="in-process" \
+              -Dorg.gradle.daemon=true \
+              -Dorg.gradle.workers.max=8 \
+              -Dorg.gradle.caching=true \
+              -Pandroid.injected.signing.store.file="$RUNNER_TEMP/keystore/keystore.jks" \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+
+      - name: Show Build APKs Output
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Listing app build outputs:"
+          ls -R app/build/outputs/apk/
+          echo "Listing wear build outputs:"
+          ls -R wear/build/outputs/apk/
+
+      - name: Rename APKs
+        run: |
+          if [[ "${{ env.BUILD_VARIANT }}" == "aapsclientFullrelease" ]]; then
+            mv app/build/outputs/apk/aapsclient/release/*.apk app-full-release.apk
+            mv wear/build/outputs/apk/aapsclient/release/*.apk wear-full-release.apk
+          else
+            mv app/build/outputs/apk/full/release/*.apk app-full-release.apk
+            mv wear/build/outputs/apk/full/release/*.apk wear-full-release.apk
+          fi
+
+      - name: Upload Artifact - Phone APK
+        id: upload-artifact-phone
+        uses: actions/upload-artifact@v4
+        with:
+          name: phone-${{ env.BUILD_VARIANT }}-${{ env.VERSION }}
+          path: app-full-release.apk
+
+      - name: Upload Artifact - Smartwatch APK
+        id: upload-artifact-watch
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartwatch-${{ env.BUILD_VARIANT }}-${{ env.VERSION }}
+          path: wear-full-release.apk
+
+      - name: Signing off
+        run: |
+          curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "user_id": "${{ github.event.inputs.user_id }}",
+              "run_id": "${{ github.run_id }}",
+              "download_url": {
+                "phone": "${{ steps.upload-artifact-phone.outputs.artifact-url }}",
+                "smartwatch": "${{ steps.upload-artifact-watch.outputs.artifact-url }}"
+              }
+            }'
+
+      - name: Send email
+        run: |
+          curl -X POST "${{ secrets.API_URL_SEND_MAIL }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
